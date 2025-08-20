@@ -10,7 +10,7 @@ use Flarum\Tags\Tag;
 use Illuminate\Support\Arr;
 use Psr\Http\Message\ServerRequestInterface;
 use Tobscure\JsonApi\Document;
-use Flarum\Foundation\ValidationException;
+use Walsgit\Discussion\Cards\Validator\TagSettingsValidator;
 
 class UpdateTagSettingsController extends AbstractShowController
 {
@@ -25,11 +25,18 @@ class UpdateTagSettingsController extends AbstractShowController
     protected $settings;
 
     /**
-     * @param SettingsRepositoryInterface $settings
+     * @var TagSettingsValidator
      */
-    public function __construct(SettingsRepositoryInterface $settings)
+    protected $validator;
+
+    /**
+     * @param SettingsRepositoryInterface $settings
+     * @param TagSettingsValidator        $validator
+     */
+    public function __construct(SettingsRepositoryInterface $settings, TagSettingsValidator $validator)
     {
         $this->settings = $settings;
+        $this->validator = $validator;
     }
 
     /**
@@ -37,44 +44,20 @@ class UpdateTagSettingsController extends AbstractShowController
      */
     public function data(ServerRequestInterface $request, Document $document)
     {
-        RequestUtil::getActor($request);
+        RequestUtil::getActor($request)->assertAdmin();
+
         $id = Arr::get($request->getQueryParams(), 'id');
         $data = Arr::get($request->getParsedBody(), 'data', []);
+
         $tagSettings = isset($data['tagSettings']) ? json_decode($data['tagSettings'], true) : [];
 
-        // Validate the tag settings
-        $this->validateTagSettings($tagSettings);
-        
+        $this->validator->assertValid($tagSettings);
+
+        // Sauvegarde en base
         $tag = Tag::findOrFail($id);
         $tag->walsgit_discussion_cards_tag_settings = $data['tagSettings'];
         $tag->save();
 
         return $tag;
-    }
-
-    private function validateTagSettings($settings)
-    {
-        $translator = resolve('translator');
-
-        $validator = resolve('validator')->make($settings, [
-            'primaryCards' => 'nullable|numeric|min:0',
-            'desktopCardWidth' => 'nullable|numeric|min:10|max:100',
-            'tabletCardWidth' => 'nullable|numeric|min:10|max:100',
-        ],
-        [
-            'primaryCards.min' => $translator->trans('walsgit_discussion_cards.admin.tag_modal.validation.primaryCards_error'),
-            'desktopCardWidth.min' => $translator->trans('walsgit_discussion_cards.admin.tag_modal.validation.desktopCardWidth_error'),
-            'desktopCardWidth.max' => $translator->trans('walsgit_discussion_cards.admin.tag_modal.validation.desktopCardWidth_error'),
-            'tabletCardWidth.min' => $translator->trans('walsgit_discussion_cards.admin.tag_modal.validation.tabletCardWidth_error'),
-            'tabletCardWidth.max' => $translator->trans('walsgit_discussion_cards.admin.tag_modal.validation.tabletCardWidth_error'),
-        ]);
-
-        if ($validator->fails()) {
-            $errors = $validator->errors()->toArray();
-            $firstError = reset($errors);
-            throw new ValidationException([
-                'message' => is_array($firstError) ? $firstError[0] : $firstError
-            ]);
-        }
     }
 }
