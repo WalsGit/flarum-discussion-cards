@@ -1,0 +1,43 @@
+{
+    "name": "walsgit/flarum-discussion-cards",
+    "description": "Output of discussions lists in form of cards",
+    "type": "flarum-extension",
+    "keywords": ["flarum", "extension", "discussion", "cards"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Wa!id",
+            "homepage": "https://discuss.flarum.org/u/Walid"
+        }
+    ],
+    "funding": [
+        {
+            "type": "website",
+            "url": "https://walsgit.github.io/Donations/"
+        }
+    ],
+    "require": {
+        "flarum/core": "^1.8.0",
+        "flarum/tags": "^1.8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Walsgit\\Discussion\\Cards\\": "src/"
+        }
+    },
+    "extra": {
+        "flarum-extension": {
+            "title": "Flarum Discussion Сards",
+            "category": "feature",
+            "icon": {
+                "name": "fas fa-border-all",
+                "backgroundColor": "#008e97",
+                "color": "#fff"
+            }
+        }
+    },
+    "support": {
+        "issues": "https://github.com/WalsGit/flarum-discussion-cards/issues",
+        "forum": "https://discuss.flarum.org/d/36343-flarum-discussion-cards"
+    }
+}
