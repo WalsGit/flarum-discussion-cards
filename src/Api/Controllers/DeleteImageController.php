@@ -29,7 +29,7 @@ class DeleteImageController extends AbstractDeleteController
 
         $this->settings->set($key, null);
 
-        $uploadDir = new Filesystem(new Local($this->paths->public.'/assets'));
+        $uploadDir = new Filesystem(new Local($this->paths->public.'/assets/extensions/walsgit-discussion-cards'));
 
         if ($uploadDir->has($path)) {
             $uploadDir->delete($path);
