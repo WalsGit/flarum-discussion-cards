@@ -4,58 +4,57 @@ namespace Walsgit\Discussion\Cards\Api\Controllers;
 
 use Flarum\Api\Controller\ShowForumController;
 use Flarum\Foundation\Paths;
+use Flarum\Http\RequestUtil;
 use Flarum\Settings\SettingsRepositoryInterface;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Intervention\Image\ImageManagerStatic as Image;
-use League\Flysystem\Adapter\Local;
-use League\Flysystem\Filesystem;
-use League\Flysystem\MountManager;
 use Psr\Http\Message\ServerRequestInterface;
 use Tobscure\JsonApi\Document;
+use Walsgit\Discussion\Cards\Validator\ImageUploadValidator;
 
 class UploadImageController extends ShowForumController
 {
-    protected $settings;
-    protected $paths;
+    protected SettingsRepositoryInterface $settings;
+    protected Paths $paths;
+    protected ImageUploadValidator $validator;
 
-    public function __construct(SettingsRepositoryInterface $settings, Paths $paths)
+    public function __construct(SettingsRepositoryInterface $settings, Paths $paths, ImageUploadValidator $validator)
     {
         $this->settings = $settings;
         $this->paths = $paths;
+        $this->validator = $validator;
     }
 
     public function data(ServerRequestInterface $request, Document $document)
     {
-        $request->getAttribute('actor')->assertAdmin();
+        $actor = RequestUtil::getActor($request);
+        $actor->assertAdmin();
 
-        $file = Arr::get($request->getUploadedFiles(), 'walsgit_discussion_cards_default_image');
+        $uploadedFile = $request->getUploadedFiles()['walsgit_discussion_cards_default_image'] ?? null;
 
-        $tmpFile = tempnam($this->paths->storage . '/tmp', 'card_image');
-        $file->moveTo($tmpFile);
+        // File Validation
+        $this->validator->assertValid(['walsgit_discussion_cards_default_image' => $uploadedFile]);
 
-        $image = Image::make($tmpFile)
+        // Path & filename settings
+        $uploadDir = $this->paths->public . '/assets/extensions/walsgit-discussion-cards';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $filename = 'default-card-image.webp';
+        $filePath = $uploadDir . '/' . $filename;
+
+        // Image processing
+        $image = Image::make($uploadedFile->getStream()->getMetadata('uri'))
             ->resize(400, null, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
-            })->encode('png');
+            })
+            ->encode('webp', 80);
 
-        file_put_contents($tmpFile, $image);
+        $image->save($filePath);
 
-        $mount = new MountManager([
-            'source' => new Filesystem(new Local(pathinfo($tmpFile, PATHINFO_DIRNAME))),
-            'target' => new Filesystem(new Local($this->paths->public . '/assets')),
-        ]);
-
-        if (($path = $this->settings->get($key = "walsgit_discussion_cards_default_image_path")) && $mount->has($file = "target://$path")) {
-            $mount->delete($file);
-        }
-
-        $uploadName = 'card-image-' . Str::lower(Str::random(8)) . '.png';
-
-        $mount->move('source://' . pathinfo($tmpFile, PATHINFO_BASENAME), "target://$uploadName");
-
-        $this->settings->set($key, $uploadName);
+        // Save filename in settings
+        $this->settings->set('walsgit_discussion_cards_default_image_path', $filename);
 
         return parent::data($request, $document);
     }

@@ -687,7 +687,7 @@ function getPostImage(post, image, isblogPost, key) {
   if (isblogPost && (0,_isValideImageUrl__WEBPACK_IMPORTED_MODULE_0__["default"])(image)) {
     return image;
   }
-  var assetImage = app.forum.attribute("baseUrl") + "/assets/" + image;
+  var assetImage = app.forum.attribute("baseUrl") + "/assets/extensions/walsgit-discussion-cards/" + image;
   if (post) {
     var src = regex.exec(post.contentHtml());
     if (typeof key === "number" && key > 0) {

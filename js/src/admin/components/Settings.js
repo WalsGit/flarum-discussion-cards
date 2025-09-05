@@ -106,7 +106,7 @@ export default class Settings extends ExtensionPage {
 								</p>
 								{app.forum.attribute("walsgitDiscussionCardsDefaultImage") === null 
 									? <div className="imgStub"></div> 
-									: <img className="DC-UserUploadedImage" src={app.forum.attribute("baseUrl") + "/assets/" + app.forum.attribute("walsgitDiscussionCardsDefaultImage")}/>
+									: <img className="DC-UserUploadedImage" src={app.forum.attribute("baseUrl") + "/assets/extensions/walsgit-discussion-cards/" + app.forum.attribute("walsgitDiscussionCardsDefaultImage")}/>
 								}
 								{m(UploadImageButton, {name: "walsgit_discussion_cards_default_image", class: "DC-UploadImageBtn"})}
 							</div>

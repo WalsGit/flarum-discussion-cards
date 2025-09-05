@@ -9,37 +9,87 @@ use Psr\Http\Message\UploadedFileInterface;
 class ImageUploadValidator extends AbstractValidator
 {
     protected function getRules(): array
+{
+    return [
+        'walsgit_discussion_cards_tag_default_image' => [
+            'required',
+            function ($attribute, $value, $fail) {
+                $this->validateUploadedFile($attribute, $value, $fail);
+            },
+        ],
+        'walsgit_discussion_cards_default_image' => [
+            'required',
+            function ($attribute, $value, $fail) {
+                $this->validateUploadedFile($attribute, $value, $fail);
+            },
+        ],
+    ];
+}
+    /**
+     * Callable used by the rules above.
+     *
+     * @param string $attribute
+     * @param mixed $value
+     * @param callable $fail
+     */
+    public function validateUploadedFile($attribute, $value, $fail)
     {
-        return [
-            'walsgit_discussion_cards_tag_default_image' => [
-                'required',
-                function ($attribute, $value, $fail) {
-                    /** @var Translator $translator */
-                    $translator = resolve(Translator::class);
+        /** @var Translator $translator */
+        $translator = resolve(Translator::class);
 
-                    if (!$value instanceof UploadedFileInterface) {
-                        return $fail(
-                            $translator->trans('walsgit_discussion_cards.admin.errors.invalidFile')
-                        );
-                    }
+        if (!$value instanceof UploadedFileInterface) {
+            return $fail($translator->trans('walsgit_discussion_cards.admin.errors.invalidFile'));
+        }
 
-                    // Taille maximale = 2 Mo
-                    if ($value->getSize() > 2 * 1024 * 1024) {
-                        return $fail(
-                            $translator->trans('walsgit_discussion_cards.admin.errors.fileSize')
-                        );
-                    }
+        // Check file size (< 2 Mb)
+        $size = $value->getSize();
 
-                    // Types MIME autorisés
-                    $allowed = ['image/jpeg', 'image/png', 'image/webp'];
-                    if (!in_array($value->getClientMediaType(), $allowed, true)) {
-                        return $fail(
-                            $translator->trans('walsgit_discussion_cards.admin.errors.invalidMime')
-                        );
-                    }
-                },
-            ],
-        ];
+        if ($size === null) {
+            $stream = $value->getStream();
+            $metaUri = $stream->getMetadata('uri');
+            if ($metaUri && is_file($metaUri)) {
+                $size = filesize($metaUri);
+            } else {
+                $contents = $stream->getContents();
+                $size = is_string($contents) ? strlen($contents) : null;
+                // rewind the stream so later code can read it again
+                if (is_object($stream) && method_exists($stream, 'rewind')) {
+                    $stream->rewind();
+                }
+            }
+        }
+
+        if ($size !== null && $size > 2 * 1024 * 1024) {
+            return $fail($translator->trans('walsgit_discussion_cards.admin.errors.fileSize'));
+        }
+
+        // Check MIME type
+        $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp'];
+
+        $clientType = null;
+        if (method_exists($value, 'getClientMediaType')) {
+            $clientType = $value->getClientMediaType();
+        }
+
+        $isAllowed = false;
+        if ($clientType && in_array($clientType, $allowed, true)) {
+            $isAllowed = true;
+        } else {
+            $stream = $value->getStream();
+            $metaUri = $stream->getMetadata('uri');
+            if ($metaUri && is_file($metaUri) && function_exists('finfo_file')) {
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                $detected = finfo_file($finfo, $metaUri);
+                finfo_close($finfo);
+                if ($detected && in_array($detected, $allowed, true)) {
+                    $isAllowed = true;
+                }
+            }
+        }
+
+        if (!$isAllowed) {
+            return $fail($translator->trans('walsgit_discussion_cards.admin.errors.invalidMime'));
+        }
     }
 
     protected function getMessages(): array
@@ -48,8 +98,8 @@ class ImageUploadValidator extends AbstractValidator
         $translator = resolve(Translator::class);
 
         return [
-            'walsgit_discussion_cards_tag_default_image.required' =>
-                $translator->trans('walsgit_discussion_cards.admin.errors.required'),
+            'walsgit_discussion_cards_tag_default_image.required' => $translator->trans('walsgit_discussion_cards.admin.errors.required'),
+            'walsgit_discussion_cards_default_image.required' => $translator->trans('walsgit_discussion_cards.admin.errors.required'),
         ];
     }
 }

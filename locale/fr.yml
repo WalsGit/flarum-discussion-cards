@@ -22,7 +22,7 @@ walsgit_discussion_cards:
         cardOptions_title: "Options des cartes"
         cardOptions_info: "Choisissez quelles données/infos devraient être affichées sur les cartes."
         defaultImage_title: "Image par défaut globale"
-        defaultImage_info: "Ici vous pouvez changer l'image par défaut qui sera utilisée sur les cartes lorsqu'aucune n'est trouvé dans le premier message d'une discussion. <u>IMPORTANT</u>: <em>Notez que modifier l'image annulera toutes les autres modifications non enregistrées des paramètres et rechargera automatiquement la page. SVP sauvegardez toutes vos modifications avant de changer l'image</em> (ou vice versa 😉). Formats acceptés : les fichiers JPG, PNG, GIF, BMP or WebP. Résolution idéale : 400px x 225px (toutes les images uploadées seront converties au format PNG et redimensionnées pour avoir une largeur de 400px, à l'exception des images avec une plus petite largeur, qui garderont leur résolution initales et ne seront pas agrandies). Selon la résolution de votre image, celle-ci pourrait appraître rognée et/ou étirée sur les cartes."
+        defaultImage_info: "Ici vous pouvez changer l'image par défaut qui sera utilisée sur les cartes lorsqu'aucune n'est trouvé dans le premier message d'une discussion. <u>IMPORTANT</u>: <em>Notez que modifier l'image annulera toutes les autres modifications non enregistrées des paramètres et rechargera automatiquement la page. SVP sauvegardez toutes vos modifications avant de changer l'image</em> (ou vice versa 😉). Formats acceptés : les fichiers JPG, PNG, GIF, BMP or WebP. Résolution idéale : 400px x 225px (toutes les images uploadées seront converties au format WebP et redimensionnées pour avoir une largeur de 400px, à l'exception des images avec une plus petite largeur, qui garderont leur résolution initales et ne seront pas agrandies). Selon la résolution de votre image, celle-ci pourrait appraître rognée et/ou étirée sur les cartes."
         previewText_label: "Prévisualisez le message"
         previewText_help: "Si activé, cela affichera sur les cartes le début du premier message de la discussion."
         showAuthor_label: "Affichez l'auteur"
@@ -84,5 +84,5 @@ walsgit_discussion_cards:
       noFileUploaded: "Aucun fichier uploadé!"
       invalidFile: "Fichier non valide !"
       fileSize: "La taille du fichier doit être inférieur à 2 Mo"
-      invalidMime: "Format de fichier non supporté. Formats acceptés : JPEG, PNG ou WebP"
+      invalidMime: "Format de fichier non supporté. Formats acceptés : JPEG, PNG, GIF, BMP ou WebP"
 

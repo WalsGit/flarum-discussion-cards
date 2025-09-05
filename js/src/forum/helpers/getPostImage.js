@@ -8,7 +8,7 @@ export default function getPostImage(post, image, isblogPost = false, key = 1) {
     return image;
   }
 
-  const assetImage = app.forum.attribute("baseUrl") + "/assets/" + image;
+  const assetImage = app.forum.attribute("baseUrl") + "/assets/extensions/walsgit-discussion-cards/" + image;
 
   if (post) {
     const src = regex.exec(post.contentHtml());
