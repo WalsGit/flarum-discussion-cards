@@ -323,7 +323,7 @@ var UploadTagImageButton = /*#__PURE__*/function (_Button) {
       this.attrs.onclick = this.remove.bind(this);
       return m("div", null, m("p", null, m("img", {
         className: "DC-TagDefaultImage",
-        src: "assets/" + (flarum_admin_app__WEBPACK_IMPORTED_MODULE_2___default().store).data.tags[this.tagId].data.attributes.walsgitDiscussionCardsTagDefaultImage,
+        src: "assets/extensions/walsgit-discussion-cards/" + (flarum_admin_app__WEBPACK_IMPORTED_MODULE_2___default().store).data.tags[this.tagId].data.attributes.walsgitDiscussionCardsTagDefaultImage,
         alt: "",
         width: "200px"
       })), m("p", null, _Button.prototype.view.call(this, (0,_babel_runtime_helpers_esm_extends__WEBPACK_IMPORTED_MODULE_0__["default"])({}, vnode, {

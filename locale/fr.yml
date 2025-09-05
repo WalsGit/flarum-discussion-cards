@@ -81,4 +81,8 @@ walsgit_discussion_cards:
       primaryCards: "Le nombre de cartes primaires doit être un nombre positif (0 ou plus)"
       desktopCardWidth: "La Largeur des cartes primaires sur les écrans de bureau doit être un nombre entre 10 and 100"
       tabletCardWidth: "La Largeur des cartes primaires sur les écrans de tablettes doit être un nombre entre 10 and 100"
+      noFileUploaded: "Aucun fichier uploadé!"
+      invalidFile: "Fichier non valide !"
+      fileSize: "La taille du fichier doit être inférieur à 2 Mo"
+      invalidMime: "Format de fichier non supporté. Formats acceptés : JPEG, PNG ou WebP"
 

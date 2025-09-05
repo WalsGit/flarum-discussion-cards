@@ -10,6 +10,8 @@ use Walsgit\Discussion\Cards\Api\Controllers\UploadTagImageController;
 use Walsgit\Discussion\Cards\Api\Controllers\DeleteTagImageController;
 use Walsgit\Discussion\Cards\Api\Controllers\UpdateAllowedTagsController;
 use Walsgit\Discussion\Cards\Api\Controllers\UpdateTagSettingsController;
+use Walsgit\Discussion\Cards\Validator\TagSettingsValidator;
+use Walsgit\Discussion\Cards\Validator\ImageUploadValidator;
 use Flarum\Tags\Api\Serializer\TagSerializer;
 
 return [
@@ -54,6 +56,9 @@ return [
         ->attribute('walsgitDiscussionCardsTagSettings', function ($serializer, $model) {
             return $model->walsgit_discussion_cards_tag_settings;
         }),
+
+    (new Extend\Validator(TagsettingsValidator::class)),
+    (new Extend\Validator(ImageUploadValidator::class)),
 
     (new Extend\Routes('api'))
         ->post('/walsgit_discussion_cards_default_image', 'walsgit_discussion_cards_default_image', UploadImageController::class)

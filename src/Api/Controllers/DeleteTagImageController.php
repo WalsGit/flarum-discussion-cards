@@ -31,7 +31,7 @@ class DeleteTagImageController extends AbstractDeleteController
         $tag->walsgit_discussion_cards_tag_default_image = null;
         $tag->save();
 
-        $uploadDir = new Filesystem(new Local($this->paths->public.'/assets'));
+        $uploadDir = new Filesystem(new Local($this->paths->public.'/assets/extensions/walsgit-discussion-cards/'));
 
         if ($path && $uploadDir->has($path)) {
             $uploadDir->delete($path);

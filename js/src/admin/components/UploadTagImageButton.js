@@ -24,7 +24,7 @@ export default class UploadTagImageButton extends Button {
 					<p>
 						<img
 							className="DC-TagDefaultImage"
-							src={"assets/" + app.store.data.tags[this.tagId].data.attributes.walsgitDiscussionCardsTagDefaultImage}
+							src={"assets/extensions/walsgit-discussion-cards/" + app.store.data.tags[this.tagId].data.attributes.walsgitDiscussionCardsTagDefaultImage}
 							alt=""
 							width="200px"
 						/>
