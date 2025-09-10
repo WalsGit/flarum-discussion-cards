@@ -386,7 +386,20 @@ var UploadTagImageButton = /*#__PURE__*/function (_Button) {
    * @protected
    */;
   _proto.success = function success(response) {
-    window.location.reload();
+    var tag = flarum_admin_app__WEBPACK_IMPORTED_MODULE_2___default().store.getById('tags', this.tagId);
+    if (tag) {
+      if (response && response.data && response.data.attributes) {
+        tag.pushAttributes({
+          walsgitDiscussionCardsTagDefaultImage: response.data.attributes.walsgitDiscussionCardsTagDefaultImage + '?v=' + Date.now()
+        });
+      } else {
+        tag.pushAttributes({
+          walsgitDiscussionCardsTagDefaultImage: null
+        });
+      }
+    }
+    this.loading = false;
+    m.redraw();
   }
 
   /**

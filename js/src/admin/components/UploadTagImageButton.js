@@ -108,8 +108,21 @@ export default class UploadTagImageButton extends Button {
 	 * @protected
 	 */
 	success(response) {
-		window.location.reload();
-	}
+		const tag = app.store.getById('tags', this.tagId);
+
+		if (tag) {
+			if (response && response.data && response.data.attributes) {
+				tag.pushAttributes({
+					walsgitDiscussionCardsTagDefaultImage: response.data.attributes.walsgitDiscussionCardsTagDefaultImage + '?v=' + Date.now()
+				});
+			} else {
+				tag.pushAttributes({ walsgitDiscussionCardsTagDefaultImage: null });
+			}
+		}
+
+		this.loading = false;
+		m.redraw();
+}
 
 	/**
 	 * If upload/removal fails, stop loading.

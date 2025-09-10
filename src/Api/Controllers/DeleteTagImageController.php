@@ -3,9 +3,9 @@
 namespace Walsgit\Discussion\Cards\Api\Controllers;
 
 use Flarum\Api\Controller\AbstractDeleteController;
+use Flarum\Tags\Api\Serializer\TagSerializer;
 use Flarum\Foundation\Paths;
 use Flarum\Tags\Tag;
-use Laminas\Diactoros\Response\EmptyResponse;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 use Psr\Http\Message\ServerRequestInterface;
@@ -14,11 +14,17 @@ class DeleteTagImageController extends AbstractDeleteController
 {
     protected $paths;
 
+    public $serializer = TagSerializer::class;
+
     public function __construct(Paths $paths)
     {
         $this->paths = $paths;
     }
 
+    /**
+     * @param ServerRequestInterface $request
+     * @return Tag
+     */
     protected function delete(ServerRequestInterface $request)
     {
         $request->getAttribute('actor')->assertAdmin();
@@ -31,12 +37,14 @@ class DeleteTagImageController extends AbstractDeleteController
         $tag->walsgit_discussion_cards_tag_default_image = null;
         $tag->save();
 
-        $uploadDir = new Filesystem(new Local($this->paths->public.'/assets/extensions/walsgit-discussion-cards/'));
+        $uploadDir = new Filesystem(new Local(
+            $this->paths->public . '/assets/extensions/walsgit-discussion-cards/'
+        ));
 
         if ($path && $uploadDir->has($path)) {
             $uploadDir->delete($path);
         }
 
-        return new EmptyResponse(204);
+        return $tag;
     }
 }
