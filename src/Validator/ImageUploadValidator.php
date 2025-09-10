@@ -66,24 +66,18 @@ class ImageUploadValidator extends AbstractValidator
         // Check MIME type
         $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp'];
 
-        $clientType = null;
-        if (method_exists($value, 'getClientMediaType')) {
-            $clientType = $value->getClientMediaType();
-        }
-
         $isAllowed = false;
-        if ($clientType && in_array($clientType, $allowed, true)) {
-            $isAllowed = true;
-        } else {
-            $stream = $value->getStream();
-            $metaUri = $stream->getMetadata('uri');
-            if ($metaUri && is_file($metaUri) && function_exists('finfo_file')) {
-                $finfo = finfo_open(FILEINFO_MIME_TYPE);
-                $detected = finfo_file($finfo, $metaUri);
-                finfo_close($finfo);
-                if ($detected && in_array($detected, $allowed, true)) {
-                    $isAllowed = true;
-                }
+
+        $stream = $value->getStream();
+        $metaUri = $stream->getMetadata('uri');
+
+        if ($metaUri && is_file($metaUri) && function_exists('finfo_file')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $detected = finfo_file($finfo, $metaUri);
+            finfo_close($finfo);
+
+            if ($detected && in_array($detected, $allowed, true)) {
+                $isAllowed = true;
             }
         }
 
