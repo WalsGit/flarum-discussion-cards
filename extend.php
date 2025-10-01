@@ -4,15 +4,21 @@ namespace Walsgit\Discussion\Cards;
 
 use Flarum\Extend;
 use Flarum\Api\Controller\ListDiscussionsController;
+use Flarum\Api\Serializer\DiscussionSerializer;
+use Flarum\Discussion\Discussion;
+use Flarum\Tags\Api\Serializer\TagSerializer;
+use Flarum\Api\Serializer\PostSerializer;
+
 use Walsgit\Discussion\Cards\Api\Controllers\UploadImageController;
 use Walsgit\Discussion\Cards\Api\Controllers\DeleteImageController;
 use Walsgit\Discussion\Cards\Api\Controllers\UploadTagImageController;
 use Walsgit\Discussion\Cards\Api\Controllers\DeleteTagImageController;
 use Walsgit\Discussion\Cards\Api\Controllers\UpdateAllowedTagsController;
 use Walsgit\Discussion\Cards\Api\Controllers\UpdateTagSettingsController;
+
 use Walsgit\Discussion\Cards\Validator\TagSettingsValidator;
 use Walsgit\Discussion\Cards\Validator\ImageUploadValidator;
-use Flarum\Tags\Api\Serializer\TagSerializer;
+use Walsgit\Discussion\Cards\Image\CardImageResolver;
 
 return [
     (new Extend\Frontend('forum'))
@@ -26,8 +32,23 @@ return [
     (new Extend\Locales(__DIR__ . '/locale')),
 
     (new Extend\ApiController(ListDiscussionsController::class))
-        ->addInclude(['firstPost', 'posts', 'posts.user']),
-
+        ->addInclude(['firstPost', 'posts', 'posts.user', 'tags']),
+    
+    (new Extend\ApiSerializer(PostSerializer::class))
+        ->attribute('contentHtml', function (PostSerializer $serializer, $post) {
+            if ($post instanceof \Flarum\Post\CommentPost) {
+                return $post->formatContent();
+            }
+            return null;
+        }),
+    
+    (new Extend\ApiSerializer(DiscussionSerializer::class))
+        ->attribute('cardImageUrl', function (DiscussionSerializer $serializer, Discussion $discussion) {
+            /** @var CardImageResolver $resolver */
+            $resolver = resolve(CardImageResolver::class);
+            return $resolver->resolve($discussion);
+        }),
+    
     new Extenders\RegisterLessVariables(),
 
     (new Extend\Settings())
@@ -49,7 +70,7 @@ return [
         ->serializeToForum('walsgitDiscussionCardsShowLastPostInfo', 'walsgit_discussion_cards_showLastPostInfo')
         ->serializeToForum('walsgitDiscussionCardsAllowRepostLinks', 'walsgit_discussion_cards_allowRepostLinks'),
     
-        (new Extend\ApiSerializer(TagSerializer::class))
+    (new Extend\ApiSerializer(TagSerializer::class))
         ->attribute('walsgitDiscussionCardsTagDefaultImage', function ($serializer, $model) {
             return $model->walsgit_discussion_cards_tag_default_image;
         })
@@ -66,5 +87,5 @@ return [
         ->post('/walsgit_discussion_cards_tag_default_image', 'walsgit_discussion_cards_tag_default_image', UploadTagImageController::class)
         ->delete('/walsgit_discussion_cards_tag_default_image', 'walsgit_discussion_cards_tag_default_image.delete', DeleteTagImageController::class)
         ->post('/walsgit_discussion_cards_tag_update_allowedTags', 'walsgit_discussion_cards_updateAllowedTags', UpdateAllowedTagsController::class)
-        ->patch('/tags/{id}/tagSettings', 'walsgit_discussion_cards_updateTagSettings', UpdateTagSettingsController::class)
+        ->patch('/tags/{id}/tagSettings', 'walsgit_discussion_cards_updateTagSettings', UpdateTagSettingsController::class),
 ];
