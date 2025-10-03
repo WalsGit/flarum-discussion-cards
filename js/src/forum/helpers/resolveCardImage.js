@@ -1,6 +1,6 @@
 /**
  * Gets the card image url
  */
-export default async function resolveCardImage(discussion) {
+export default function resolveCardImage(discussion) {
     return discussion.attribute('cardImageUrl') || null;
 }
