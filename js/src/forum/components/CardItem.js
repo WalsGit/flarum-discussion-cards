@@ -1,8 +1,7 @@
-import Component from "flarum/common/Component";
+import BaseItem from "./common/BaseItem";
 import Dropdown from "flarum/common/components/Dropdown";
 import DiscussionControls from "flarum/forum/utils/DiscussionControls";
 import Link from "flarum/common/components/Link";
-import { getDiscussionSettings } from "../helpers/getDiscussionSettings";
 import DiscussionMedia from "./common/DiscussionMedia";
 import DiscussionTitle from "./common/DiscussionTitle";
 import DiscussionBadges from "./common/DiscussionBadges";
@@ -12,37 +11,17 @@ import DiscussionLastPost from "./common/DiscussionLastPost";
 import DiscussionPreview from "./common/DiscussionPreview";
 
 
-export default class CardItem extends Component {
-    oninit(vnode) {
-        super.oninit(vnode);
-        this.discussion = this.attrs.discussion;
-        this.settings = getDiscussionSettings();
-    }
-
+export default class CardItem extends BaseItem {
     view() {
         const discussion = this.discussion;
         const settings = this.settings;
-
-        const isRead =
-			Number(settings.markReadCards) === 1 && discussion.isRead() && app.session.user
-			? "read"
-			: "";
-
-		/* Jump to the last relevant post (first unread or last post) */
-		const jumpTo = Math.min(
-			discussion.lastPostNumber() ?? 0,
-			(discussion.lastReadPostNumber() || 0) + 1
-		);
+        const jumpTo = this.getJumpTo();
 
         return (
             <div
                 key={discussion.id()}
                 data-id={discussion.id()}
-                className={
-                "CardsListItem Card " +
-                isRead +
-                (discussion.isHidden() ? " Hidden" : "")
-                }
+                className={this.getItemClasses("CardsListItem Card")}
             >
                 {DiscussionControls.controls(discussion, this).toArray().length 
                     ? m(
