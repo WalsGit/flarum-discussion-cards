@@ -605,7 +605,7 @@ var DiscussionReplies = /*#__PURE__*/function (_Component) {
         className: "DiscussionListItem-count"
       }, m("span", {
         "aria-hidden": "true"
-      }, flarum_common_utils_abbreviateNumber__WEBPACK_IMPORTED_MODULE_5___default()(discussion.replyCount() || 0)), m("span", {
+      }, flarum_common_utils_abbreviateNumber__WEBPACK_IMPORTED_MODULE_5___default()(postCount)), m("span", {
         className: "visually-hidden"
       }, app.translator.trans("core.forum.discussion_list.unread_replies_a11y_label", {
         count: discussion.replyCount()

@@ -50,7 +50,7 @@ export default class DiscussionReplies extends Component {
             return (
                 <div className="DiscussionListItem-count">
                     <span aria-hidden="true">
-                        {abbreviateNumber(discussion.replyCount() || 0)}
+                        {abbreviateNumber(postCount)}
                     </span>
                     <span className="visually-hidden">
                         {app.translator.trans(
