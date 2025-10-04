@@ -4,7 +4,7 @@
 import Component from "flarum/common/Component";
 import Link from "flarum/common/components/Link";
 import icon from "flarum/common/helpers/icon";
-import LastReplies from "../LastReplies";
+import craftRepliesAvatars from "../../utils/craftRepliesAvatars";
 import abbreviateNumber from "flarum/common/utils/abbreviateNumber";
 
 export default class DiscussionReplies extends Component {
@@ -31,7 +31,7 @@ export default class DiscussionReplies extends Component {
                 <div className="cardSpacer">
                     <Link className="Replies" href={app.route.discussion(discussion, discussion.lastPostNumber())}>
                         <div className="Left">
-                            <div className="Avatars">{m(LastReplies, { discussion })}</div>
+                            <div className="Avatars">{craftRepliesAvatars(discussion)}</div>
                             <div className="Repcount">{replyText}</div>
                         </div>
                         <div className="Arrow">{icon("fas fa-angle-right")}</div>
