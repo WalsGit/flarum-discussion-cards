@@ -15,20 +15,35 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _components_CardItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./components/CardItem */ "./src/forum/components/CardItem.js");
 /* harmony import */ var _components_ListItem__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/ListItem */ "./src/forum/components/ListItem.js");
-/* harmony import */ var _components_LastReplies__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/LastReplies */ "./src/forum/components/LastReplies.js");
-/* harmony import */ var _utils_craftTags__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./utils/craftTags */ "./src/forum/utils/craftTags.js");
-/* harmony import */ var _utils_craftBadges__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./utils/craftBadges */ "./src/forum/utils/craftBadges.js");
+/* harmony import */ var _components_common_DiscussionMedia__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/common/DiscussionMedia */ "./src/forum/components/common/DiscussionMedia.js");
+/* harmony import */ var _components_common_DiscussionPreview__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/common/DiscussionPreview */ "./src/forum/components/common/DiscussionPreview.js");
+/* harmony import */ var _components_common_DiscussionReplies__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/common/DiscussionReplies */ "./src/forum/components/common/DiscussionReplies.js");
+/* harmony import */ var _components_common_DiscussionBadges__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/common/DiscussionBadges */ "./src/forum/components/common/DiscussionBadges.js");
+/* harmony import */ var _components_common_DiscussionLastPost__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/common/DiscussionLastPost */ "./src/forum/components/common/DiscussionLastPost.js");
+/* harmony import */ var _utils_craftTags__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./utils/craftTags */ "./src/forum/utils/craftTags.js");
+/* harmony import */ var _utils_craftBadges__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./utils/craftBadges */ "./src/forum/utils/craftBadges.js");
+
+
+
+
 
 
 
 
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  // Main components
   'walsgit/discussion/cards/components/CardItem': _components_CardItem__WEBPACK_IMPORTED_MODULE_0__["default"],
   'walsgit/discussion/cards/components/ListItem': _components_ListItem__WEBPACK_IMPORTED_MODULE_1__["default"],
-  'walsgit/discussion/cards/components/LastReplies': _components_LastReplies__WEBPACK_IMPORTED_MODULE_2__["default"],
-  'walsgit/discussion/cards/utils/craftTags': _utils_craftTags__WEBPACK_IMPORTED_MODULE_3__["default"],
-  'walsgit/discussion/cards/utils/craftBadges': _utils_craftBadges__WEBPACK_IMPORTED_MODULE_4__["default"]
+  // Reusable subcomponents
+  'walsgit/discussion/cards/components/common/DiscussionMedia': _components_common_DiscussionMedia__WEBPACK_IMPORTED_MODULE_2__["default"],
+  'walsgit/discussion/cards/components/common/DiscussionPreview': _components_common_DiscussionPreview__WEBPACK_IMPORTED_MODULE_3__["default"],
+  'walsgit/discussion/cards/components/common/DiscussionReplies': _components_common_DiscussionReplies__WEBPACK_IMPORTED_MODULE_4__["default"],
+  'walsgit/discussion/cards/components/common/DiscussionBadges': _components_common_DiscussionBadges__WEBPACK_IMPORTED_MODULE_5__["default"],
+  'walsgit/discussion/cards/components/common/DiscussionLastPost': _components_common_DiscussionLastPost__WEBPACK_IMPORTED_MODULE_6__["default"],
+  // Utilities
+  'walsgit/discussion/cards/utils/craftTags': _utils_craftTags__WEBPACK_IMPORTED_MODULE_7__["default"],
+  'walsgit/discussion/cards/utils/craftBadges': _utils_craftBadges__WEBPACK_IMPORTED_MODULE_8__["default"]
 });
 
 /***/ }),
