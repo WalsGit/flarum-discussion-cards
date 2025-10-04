@@ -6,14 +6,18 @@
   position: relative;
 
   &.read {
-    h2, .Repcount {
+
+    h2,
+    .Repcount {
       color: var(--discussion-title-color);
       font-weight: 400;
     }
+
     .previewPost {
       color: var(--discussion-title-color);
       font-weight: 300;
     }
+
     .Repcount {
       font-weight: 500;
     }
@@ -31,7 +35,7 @@
         display: none;
       }
     }
-    
+
   }
 
   .imageLabel {
@@ -46,6 +50,7 @@
       padding-left: 18px;
       left: 0;
       background: linear-gradient(to right, rgba(0, 0, 0, 0.7) 0%, rgba(255, 255, 255, 0) 100%);
+
       @media @phone {
         display: none;
       }
@@ -99,6 +104,8 @@
   bottom: 0;
   padding: 5px 15px;
   border-radius: inherit;
+  justify-content: space-between;
+  align-items: center;
 
   @media @phone {
     border-radius: unset;
@@ -111,7 +118,9 @@
 
   .Left {
     display: flex;
-    width: 100%;
+    width: fit-content;
+    min-width: 40%;
+    margin-right: 15px;
   }
 
   .Avatars {
@@ -142,11 +151,30 @@
     opacity: 1;
   }
 
+  .Right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .terminalPost {
+    display: flex;
+    position: relative;
+    padding: 2px 0 0 10px;
+    font-size: 11px;
+    color: var(--muted-more-color);
+    text-align: end;
+
+    .username {
+      font-weight: bold;
+    }
+  }
+
   .Arrow {
     text-align: right;
-    align-self: center;
     color: #3d6d8b;
     opacity: 0;
+
     @media @phone {
       opacity: 1;
     }
@@ -193,6 +221,8 @@
 }
 
 .terminalPost {
+  position: absolute;
+  bottom: 0.3rem;
   padding: 0 1rem 0 1rem;
   margin-top: 0.3rem;
   font-size: 11px;
@@ -243,14 +273,14 @@
   overflow: hidden;
   overflow-x: auto;
   scrollbar-width: none;
-  -webkit-mask-image: linear-gradient(to right, #000 90%, rgba(0,0,0,0) 100%);
+  -webkit-mask-image: linear-gradient(to right, #000 90%, rgba(0, 0, 0, 0) 100%);
 
   &::-webkit-scrollbar {
     display: none;
   }
 
   @media tablet {
-    overflow-x:unset;
+    overflow-x: unset;
   }
 
   &.overflowing {
@@ -265,6 +295,7 @@
     0% {
       transform: translateX(0);
     }
+
     100% {
       transform: translateX(-100%);
     }
@@ -296,7 +327,8 @@
   z-index: 1011;
 }
 
-.Card, .List {
+.Card,
+.List {
   .wrapImg {
     background-color: #EDEEF0;
     position: relative;
@@ -366,7 +398,8 @@
     margin-bottom: 15px;
     border-bottom: 1px solid fade(@primary-color, 15%);
 
-    .previewCardImg, .wrapImg {
+    .previewCardImg,
+    .wrapImg {
       height: 14rem;
     }
 
@@ -386,9 +419,11 @@
     @media @desktop-up {
       width: @desktop-card-width;
     }
+
     @media @tablet {
       width: @tablet-card-width;
     }
+
     @media @phone {
       width: 100%;
     }
@@ -412,7 +447,8 @@
     width: -moz-available;
     width: fill-available;
 
-    img, .imgStub {
+    img,
+    .imgStub {
       transition: 1s;
       -webkit-transition: 1s;
     }
@@ -455,7 +491,7 @@
       display: block;
       width: calc(~'100% - 30px');
       font-size: 12px;
-      -webkit-mask-image: linear-gradient(to right, #000 90%, rgba(0,0,0,0) 100%);
+      -webkit-mask-image: linear-gradient(to right, #000 90%, rgba(0, 0, 0, 0) 100%);
 
       &.overflowing {
         &:hover {
@@ -466,11 +502,12 @@
       }
 
     }
-    
+
     @keyframes scroll {
       0% {
         transform: translateX(0);
       }
+
       100% {
         transform: translateX(-100%);
       }
@@ -505,12 +542,14 @@
       }
 
       -webkit-box-shadow: 0 6px 18px rgba(14, 21, 47, 0.2),
-        0 -2px 6px rgba(14, 21, 47, 0.02);
+      0 -2px 6px rgba(14, 21, 47, 0.02);
       box-shadow: 0 6px 18px rgba(14, 21, 47, 0.2),
-        0 -2px 6px rgba(14, 21, 47, 0.02);
+      0 -2px 6px rgba(14, 21, 47, 0.02);
 
       & .wrapImg {
-        img, .imgStub {
+
+        img,
+        .imgStub {
           display: block;
           transform: scale(1.1);
         }
@@ -607,7 +646,8 @@ body {
         background: hsl(@primary-hue, min(20%, @primary-sat), 30%);
       }
 
-      .Repcount, .Arrow {
+      .Repcount,
+      .Arrow {
         color: @muted-color;
       }
 

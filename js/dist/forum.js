@@ -123,10 +123,6 @@ var CardItem = /*#__PURE__*/function (_BaseItem) {
     })), m(_common_DiscussionPreview__WEBPACK_IMPORTED_MODULE_11__["default"], {
       discussion: discussion,
       settings: settings
-    }), m(_common_DiscussionLastPost__WEBPACK_IMPORTED_MODULE_10__["default"], {
-      discussion: discussion,
-      settings: settings,
-      layout: "card"
     }), m(_common_DiscussionReplies__WEBPACK_IMPORTED_MODULE_9__["default"], {
       discussion: discussion,
       settings: settings,
@@ -226,11 +222,11 @@ var ListItem = /*#__PURE__*/function (_BaseItem) {
     })), m(_common_DiscussionPreview__WEBPACK_IMPORTED_MODULE_11__["default"], {
       discussion: discussion,
       settings: settings
-    }), m(_common_DiscussionLastPost__WEBPACK_IMPORTED_MODULE_10__["default"], {
+    }), app.screen() !== "phone" ? m(_common_DiscussionLastPost__WEBPACK_IMPORTED_MODULE_10__["default"], {
       discussion: discussion,
       settings: settings,
       layout: "list"
-    }), app.screen() === "phone" ? m(_common_DiscussionReplies__WEBPACK_IMPORTED_MODULE_9__["default"], {
+    }) : "", app.screen() === "phone" ? m(_common_DiscussionReplies__WEBPACK_IMPORTED_MODULE_9__["default"], {
       discussion: discussion,
       settings: settings,
       layout: "mobile"
@@ -549,10 +545,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _utils_craftRepliesAvatars__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../utils/craftRepliesAvatars */ "./src/forum/utils/craftRepliesAvatars.js");
 /* harmony import */ var flarum_common_utils_abbreviateNumber__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! flarum/common/utils/abbreviateNumber */ "flarum/common/utils/abbreviateNumber");
 /* harmony import */ var flarum_common_utils_abbreviateNumber__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(flarum_common_utils_abbreviateNumber__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _DiscussionLastPost__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./DiscussionLastPost */ "./src/forum/components/common/DiscussionLastPost.js");
 
 /*
 * Component that displays the number of replies on discussion cards (optional)
 */
+
 
 
 
@@ -591,8 +589,14 @@ var DiscussionReplies = /*#__PURE__*/function (_Component) {
       }, (0,_utils_craftRepliesAvatars__WEBPACK_IMPORTED_MODULE_4__["default"])(discussion)), m("div", {
         className: "Repcount"
       }, replyText)), m("div", {
+        className: "Right"
+      }, m(_DiscussionLastPost__WEBPACK_IMPORTED_MODULE_6__["default"], {
+        discussion: discussion,
+        settings: settings,
+        layout: "card"
+      }), m("div", {
         className: "Arrow"
-      }, flarum_common_helpers_icon__WEBPACK_IMPORTED_MODULE_3___default()("fas fa-angle-right"))));
+      }, flarum_common_helpers_icon__WEBPACK_IMPORTED_MODULE_3___default()("fas fa-angle-right")))));
     }
 
     // For List cards layout (icon via css + number on the right)

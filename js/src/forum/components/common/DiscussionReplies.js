@@ -6,6 +6,7 @@ import Link from "flarum/common/components/Link";
 import icon from "flarum/common/helpers/icon";
 import craftRepliesAvatars from "../../utils/craftRepliesAvatars";
 import abbreviateNumber from "flarum/common/utils/abbreviateNumber";
+import DiscussionLastPost from "./DiscussionLastPost";
 
 export default class DiscussionReplies extends Component {
     view(vnode) {
@@ -34,7 +35,11 @@ export default class DiscussionReplies extends Component {
                             <div className="Avatars">{craftRepliesAvatars(discussion)}</div>
                             <div className="Repcount">{replyText}</div>
                         </div>
-                        <div className="Arrow">{icon("fas fa-angle-right")}</div>
+                        <div className="Right">
+                            {/* Optional: Last post (reply) info component */}
+                            <DiscussionLastPost discussion={discussion} settings={settings} layout="card" />
+                            <div className="Arrow">{icon("fas fa-angle-right")}</div>
+                        </div>
                     </Link>
                 </div>
             );

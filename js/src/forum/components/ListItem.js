@@ -63,7 +63,9 @@ export default class ListItem extends BaseItem {
 							<DiscussionPreview discussion={discussion} settings={settings} />
 			
 							{/* Optional: Last post (reply) info component */}
-							<DiscussionLastPost discussion={discussion} settings={settings} layout="list" />
+							{app.screen() !== "phone" ? (<DiscussionLastPost discussion={discussion} settings={settings} layout="list" />)
+								: ("")
+							}
 
 							{/* Optional: When on Mobile screen, use the mobile layout of the Replies components or show number & icon on the right  */}
 							{app.screen() === "phone" ? (

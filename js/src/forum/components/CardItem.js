@@ -55,7 +55,7 @@ export default class CardItem extends BaseItem {
                     <DiscussionPreview discussion={discussion} settings={settings} />
 
                     {/* Optional: Last post (reply) info component */}
-                    <DiscussionLastPost discussion={discussion} settings={settings} layout="card" />
+                    {/*<DiscussionLastPost discussion={discussion} settings={settings} layout="card" />*/}
 
                     {/* Optional: Replies component*/}
                     <DiscussionReplies discussion={discussion} settings={settings} layout="card" />

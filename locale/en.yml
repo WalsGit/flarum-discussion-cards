@@ -32,7 +32,7 @@ walsgit_discussion_cards:
         showRepliesOnRight_label: "Show the number of replies (or unread replies with * if any) on the right side of the card's title"
         showRepliesOnRight_help: "If option is enabled, it places the number of replies (or unread replies with * if any) on the right side of the (non primary) cards' title on large screens (instead of the default bottom-left side of the image)."
         showLastPostInfo_label: "Show last post info"
-        showLastPostInfo_help: "If option is enabled, it will display on the card under the preview text (or under the tags if preview text is not activated) the username of the last poster of the discussion and its date."
+        showLastPostInfo_help: "If option is enabled, it will display the username of the last poster of the discussion and its date at the bottom of the cards."
         showBadges_label: "Show badges"
         showBadges_help: "If activated, shows badges at the top left corner of the cards."
         markReadCards_label: "Differentiate cards of read/unread discussions"
