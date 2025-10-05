@@ -1007,7 +1007,10 @@ function craftTags(tags) {
         href: app.route('tag', {
           tags: tag.slug()
         })
-      }, tag.name())];
+      }, tag.icon() ? m("i", {
+        className: 'TagLabel-icon icon ' + tag.icon(),
+        "aria-hidden": "true"
+      }) : "", tag.name())];
     })];
   }
 }
