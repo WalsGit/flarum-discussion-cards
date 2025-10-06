@@ -65,10 +65,73 @@ class CardImageResolver
             }
         }
 
-        // 5. Fallback on the post's priority tag's default image
-        $tag = $this->getPrimaryTag($discussion);
-        if ($tag && !empty($tag->walsgit_discussion_cards_tag_default_image)) {
-            return $this->buildAssetUrl((string) $tag->walsgit_discussion_cards_tag_default_image);
+        // 5. Use the tag's default image (if set), and if multiple tags : check the post's priority tag's default image (if any) using the following priority order (tags with no default image set are skipped):
+        /*
+        * 1. The image of the highest positioned child primary tag of the highest positioned parent primary tag (or next highest positioned child etc.)
+        * 2. The image of the highest positioned parent primary tag (or the next highest primary tag etc.)
+        * 3. The image of the secondary tag with the lowest id (because they don't have positions)
+        * 4. The general default image (Go to Step 6. below)
+        */
+        try {
+            $tags = $discussion->tags ?? $discussion->tags()->get();
+        } catch (\Throwable $e) {
+            $tags = collect();
+        }
+
+        if ($tags && $tags instanceof \Illuminate\Support\Collection) {
+
+            // Primary Tags have position != null (-> 0+)
+            // Secondary Tags have position == null && parent_id == null
+
+            $primaryTags = $tags->filter(function ($t) {
+                return $t->position !== null;
+            });
+
+            $primaryParents = $primaryTags
+                ->filter(function ($t) {
+                    return $t->parent_id === null;
+                })
+                ->sortBy(function ($t) {
+                    return $t->position === null ? PHP_INT_MAX : $t->position;
+                });
+
+            // First priority: highest positioned (lowest number) primary child tag (of highest parent) with a default image set
+            foreach ($primaryParents as $parent) {
+                $children = $primaryTags
+                    ->filter(function ($c) use ($parent) {
+                        return $c->parent_id !== null && $c->parent_id == $parent->id;
+                    })
+                    ->sortBy(function ($t) {
+                        return $t->position === null ? PHP_INT_MAX : $t->position;
+                    });
+
+                foreach ($children as $child) {
+                    if (!empty($child->walsgit_discussion_cards_tag_default_image)) {
+                        return $this->buildAssetUrl((string) $child->walsgit_discussion_cards_tag_default_image);
+                    }
+                }
+            }
+
+            // Second priority: highest positioned (lowest number) primary parent with a default image set
+            foreach ($primaryParents as $parent) {
+                if (!empty($parent->walsgit_discussion_cards_tag_default_image)) {
+                    return $this->buildAssetUrl((string) $parent->walsgit_discussion_cards_tag_default_image);
+                }
+            }
+
+            // Third priority: lowest id of secondary tag with a default image set
+            $secondary = $tags
+                ->filter(function ($t) {
+                    return $t->position === null && $t->parent_id === null;
+                })
+                ->sortBy('id');
+
+            foreach ($secondary as $tag) {
+                if (!empty($tag->walsgit_discussion_cards_tag_default_image)) {
+                    return $this->buildAssetUrl((string) $tag->walsgit_discussion_cards_tag_default_image);
+                }
+            }
+
         }
 
         // 6. Fallback on the global default image set in discussion cards' settings
@@ -129,12 +192,4 @@ class CardImageResolver
         return rtrim($this->config['url'], '/') . '/assets/extensions/walsgit-discussion-cards/' . ltrim($filename, '/');
     }
 
-    protected function getPrimaryTag(Discussion $discussion)
-    {
-        try {
-            return $discussion->tags()->orderBy('position')->first();
-        } catch (\Throwable $e) {
-            return null;
-        }
-    }
 }
