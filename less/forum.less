@@ -202,6 +202,32 @@
   }
 }
 
+/* Long titles will be truncated on list cards (on tablet-up screens)
+*  and full titles will show up and scroll on hover
+*/
+.CardsListItem.List .cardTitle {
+
+  @media @tablet-up {
+    overflow: hidden;
+  
+  
+    h2.title {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      display: inline-block;
+      transition: transform 0.3s ease;
+      
+      &.overflowing:hover {
+        text-overflow: clip;
+        animation: scroll 10s linear infinite;
+        will-change: transform;
+        min-width: max-content;
+      }
+    }
+  }
+}
+
 .previewPost {
   padding: 0 1rem 0 1rem;
   color: gray;
@@ -288,6 +314,7 @@
       -webkit-mask-image: none;
       min-width: max-content;
       animation: scroll 10s linear infinite;
+      will-change: transform;
     }
   }
 
