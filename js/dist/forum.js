@@ -72,9 +72,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _common_DiscussionBadges__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./common/DiscussionBadges */ "./src/forum/components/common/DiscussionBadges.js");
 /* harmony import */ var _common_DiscussionTags__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./common/DiscussionTags */ "./src/forum/components/common/DiscussionTags.js");
 /* harmony import */ var _common_DiscussionReplies__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./common/DiscussionReplies */ "./src/forum/components/common/DiscussionReplies.js");
-/* harmony import */ var _common_DiscussionLastPost__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./common/DiscussionLastPost */ "./src/forum/components/common/DiscussionLastPost.js");
-/* harmony import */ var _common_DiscussionPreview__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./common/DiscussionPreview */ "./src/forum/components/common/DiscussionPreview.js");
-
+/* harmony import */ var _common_DiscussionPreview__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./common/DiscussionPreview */ "./src/forum/components/common/DiscussionPreview.js");
 
 
 
@@ -120,7 +118,7 @@ var CardItem = /*#__PURE__*/function (_BaseItem) {
     }, m(_common_DiscussionTitle__WEBPACK_IMPORTED_MODULE_6__["default"], {
       discussion: discussion,
       settings: settings
-    })), m(_common_DiscussionPreview__WEBPACK_IMPORTED_MODULE_11__["default"], {
+    })), m(_common_DiscussionPreview__WEBPACK_IMPORTED_MODULE_10__["default"], {
       discussion: discussion,
       settings: settings
     }), m(_common_DiscussionReplies__WEBPACK_IMPORTED_MODULE_9__["default"], {

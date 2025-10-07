@@ -7,7 +7,6 @@ import DiscussionTitle from "./common/DiscussionTitle";
 import DiscussionBadges from "./common/DiscussionBadges";
 import DiscussionTags from "./common/DiscussionTags";
 import DiscussionReplies from "./common/DiscussionReplies";
-import DiscussionLastPost from "./common/DiscussionLastPost";
 import DiscussionPreview from "./common/DiscussionPreview";
 
 
@@ -53,9 +52,6 @@ export default class CardItem extends BaseItem {
 
                     {/* Optional: Preview text */}
                     <DiscussionPreview discussion={discussion} settings={settings} />
-
-                    {/* Optional: Last post (reply) info component */}
-                    {/*<DiscussionLastPost discussion={discussion} settings={settings} layout="card" />*/}
 
                     {/* Optional: Replies component*/}
                     <DiscussionReplies discussion={discussion} settings={settings} layout="card" />
