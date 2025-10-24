@@ -25,7 +25,6 @@ class CardImageResolver
      */
     public function resolve(Discussion $discussion): ?string
     {
-        
         // --- In case of a blog post (when third party blog extension is active) ---
         // and when useBlogImages is activated for discussion cards
         $useBlogImages = (int) $this->settings->get('walsgit_discussion_cards_useBlogImages');
@@ -154,26 +153,67 @@ class CardImageResolver
     {
         $html = html_entity_decode($html, ENT_QUOTES | ENT_HTML5);
 
-        $pattern = '/<img(?![^>]*class=["\']emoji["\'])[^>]*?src=["\']([^"\']+)["\'][^>]*>|url\(([^)]+)\)/i';
+        $candidates = [];
 
-        if (preg_match_all($pattern, $html, $matches, PREG_SET_ORDER)) {
-            $all = [];
+        // A - Look for <img...> or url(...) & ignore .emoji
+        $patternImg = '/<img(?![^>]*class=["\']emoji["\'])[^>]*?src=["\']([^"\']+)["\'][^>]*>|url\(([^)]+)\)/i';
+        if (preg_match_all($patternImg, $html, $matches, PREG_OFFSET_CAPTURE)) {
             foreach ($matches as $match) {
-                $candidate = null;
-                if (!empty($match[1])) {
-                    $candidate = trim($match[1], '\'"');
-                } elseif (!empty($match[2])) {
-                    $candidate = trim($match[2], '\'"');
-                }
-
-                if ($candidate) {
-                    $all[] = $candidate;
+                foreach ($match as $sub) {
+                    if (is_array($sub) && !empty($sub[0]) && filter_var($sub[0], FILTER_VALIDATE_URL)) {
+                        $candidates[$sub[1]] = $sub[0];
+                    }
                 }
             }
+        }
+        
+        // Extractor looking for service specific patterns (imgur, dailymotion etc.) to get the thumbnail url
+        $extractors = [
+            [
+                'name' => 'Imgur',
+                'pattern' => '/src=["\']([^"\']*imgur\.min\.html[^"\']*)["\']/i',
+                'callback' => function ($match, $pos) {
+                    if (preg_match('/#(?!.*\/)(.+)/', $match, $m2)) {
+                        $id = $m2[1];
+                        $url = "https://i.imgur.com/{$id}.jpg";
+                        
+                        return $url;
+                    }
+                    
+                    return null;
+                },
+            ],
+            [
+                'name' => 'Dailymotion',
+                'pattern' => '/<iframe[^>]+src=["\'](?:https?:)?\/\/www\.dailymotion\.com\/embed\/video\/([a-zA-Z0-9]+)["\']/i',
+                'callback' => function ($match, $pos) {
+                    $id = $match;
+                    $url = "https://www.dailymotion.com/thumbnail/video/{$id}";
+                    
+                    return $url;
+                },
+            ],
+        ];
 
-            if (!empty($all)) {
-                return $all[0];
+        foreach ($extractors as $ext) {
+            if (preg_match_all($ext['pattern'], $html, $matches, PREG_OFFSET_CAPTURE)) {
+                foreach ($matches[1] as $sub) {
+                    $match = $sub[0];
+                    $pos = $sub[1];
+                    $thumbUrl = $ext['callback']($match, $pos);
+                    if ($thumbUrl) {
+                        $candidates[$pos] = $thumbUrl;
+                    }
+                }
             }
+        }
+
+        // Sort image urls by order of appearance in html and return the first one
+        if (!empty($candidates)) {
+            ksort($candidates, SORT_NUMERIC);
+            $first = reset($candidates);
+
+            return $first;
         }
 
         return null;
