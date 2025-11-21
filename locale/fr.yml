@@ -30,7 +30,7 @@ walsgit_discussion_cards:
         showReplies_label: "Affichez le nombre de réponses (ou de réponses non lues avec un * si applicable)"
         showReplies_help: "Si activé, cela affichera le nombre de réponses (ou de réponses non lues avec un * si applicable) sur les cartes (et les avatars des quelques participants à la discussion sur les cartes primaires)."
         showRepliesOnRight_label: "Affichez le nombre de réponses (ou de réponses non lues avec un * si applicable) à droite du titre de la carte"
-        showRepliesOnRight_help: "Si l'option est activée, cela placera le nombre de réponses (ou de réponses non lues avec un * si applicable) à droite du titre des cartes (non primaires) sur les écrans larges (au lieu d'en bas à gauche de l'image comme c'est le cas par défaut)."
+        showRepliesOnRight_help: "Si l'option est activée, cela placera le nombre de réponses (ou de réponses non lues, si applicable) à droite du titre des cartes (non primaires) sur les écrans larges (au lieu d'en bas à gauche de l'image comme c'est le cas par défaut)."
         showLastPostInfo_label: "Affichez les infos du dernier post"
         showLastPostInfo_help: "Si l'option est activée, cela affichera en bas de chaque carte, le nom d'utilisateur de l'auteur de la dernière réponse de la discussion ainsi que sa date de publication."
         showBadges_label: "Affichez les badges"

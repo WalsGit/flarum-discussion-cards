@@ -23,7 +23,7 @@ export default class DiscussionReplies extends Component {
             });
 
         const postCount = discussion.unreadCount()
-        ? discussion.unreadCount() + "*"
+        ? discussion.unreadCount()
         : discussion.replyCount();
 
         // For Primary Cards layout (shows avatars & number of unread replies or total replies) and list cards layout on mobile

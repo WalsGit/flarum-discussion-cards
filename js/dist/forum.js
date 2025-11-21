@@ -571,7 +571,7 @@ var DiscussionReplies = /*#__PURE__*/function (_Component) {
     }) : app.translator.trans("walsgit_discussion_cards.forum.replies", {
       count: discussion.replyCount() || "0"
     });
-    var postCount = discussion.unreadCount() ? discussion.unreadCount() + "*" : discussion.replyCount();
+    var postCount = discussion.unreadCount() ? discussion.unreadCount() : discussion.replyCount();
 
     // For Primary Cards layout (shows avatars & number of unread replies or total replies) and list cards layout on mobile
     if (layout === "card" || layout === "mobile") {
