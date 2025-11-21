@@ -9,16 +9,16 @@ use Flarum\Discussion\Discussion;
 use Flarum\Tags\Api\Serializer\TagSerializer;
 use Flarum\Api\Serializer\PostSerializer;
 
-use Walsgit\Discussion\Cards\Api\Controllers\UploadImageController;
-use Walsgit\Discussion\Cards\Api\Controllers\DeleteImageController;
-use Walsgit\Discussion\Cards\Api\Controllers\UploadTagImageController;
-use Walsgit\Discussion\Cards\Api\Controllers\DeleteTagImageController;
+use Walsgit\Discussion\Cards\Api\Controllers\AdminImageController;
+use Walsgit\Discussion\Cards\Api\Controllers\TagImageController;
 use Walsgit\Discussion\Cards\Api\Controllers\UpdateAllowedTagsController;
 use Walsgit\Discussion\Cards\Api\Controllers\UpdateTagSettingsController;
-
 use Walsgit\Discussion\Cards\Validator\TagSettingsValidator;
 use Walsgit\Discussion\Cards\Validator\ImageUploadValidator;
 use Walsgit\Discussion\Cards\Image\CardImageResolver;
+use Walsgit\Discussion\Cards\Providers\ImageProcessingProvider;
+use Walsgit\Discussion\Cards\Providers\HtmlImageExtractorProvider;
+use Walsgit\Discussion\Cards\Providers\TagImageSelectorProvider;
 
 return [
     (new Extend\Frontend('forum'))
@@ -72,7 +72,7 @@ return [
     
     (new Extend\ApiSerializer(TagSerializer::class))
         ->attribute('walsgitDiscussionCardsTagDefaultImage', function ($serializer, $model) {
-            return $model->walsgit_discussion_cards_tag_default_image;
+            return $model->walsgit_discussion_cards_tag_default_image ?: null;
         })
         ->attribute('walsgitDiscussionCardsTagSettings', function ($serializer, $model) {
             return $model->walsgit_discussion_cards_tag_settings;
@@ -81,11 +81,15 @@ return [
     (new Extend\Validator(TagsettingsValidator::class)),
     (new Extend\Validator(ImageUploadValidator::class)),
 
+    new Extend\ServiceProvider(ImageProcessingProvider::class),
+    new Extend\ServiceProvider(HtmlImageExtractorProvider::class),
+    new Extend\ServiceProvider(TagImageSelectorProvider::class),
+
     (new Extend\Routes('api'))
-        ->post('/walsgit_discussion_cards_default_image', 'walsgit_discussion_cards_default_image', UploadImageController::class)
-        ->delete('/walsgit_discussion_cards_default_image', 'walsgit_discussion_cards_default_image.delete', DeleteImageController::class)
-        ->post('/walsgit_discussion_cards_tag_default_image', 'walsgit_discussion_cards_tag_default_image', UploadTagImageController::class)
-        ->delete('/walsgit_discussion_cards_tag_default_image', 'walsgit_discussion_cards_tag_default_image.delete', DeleteTagImageController::class)
+        ->post('/walsgit_discussion_cards_default_image', 'walsgit_discussion_cards_default_image.upload', AdminImageController::class)
+        ->delete('/walsgit_discussion_cards_default_image', 'walsgit_discussion_cards_default_image.delete', AdminImageController::class)
+        ->post('/walsgit_discussion_cards_tag_default_image', 'walsgit_discussion_cards_tag_default_image.upload', TagImageController::class)
+        ->delete('/walsgit_discussion_cards_tag_default_image', 'walsgit_discussion_cards_tag_default_image.delete', TagImageController::class)
         ->post('/walsgit_discussion_cards_tag_update_allowedTags', 'walsgit_discussion_cards_updateAllowedTags', UpdateAllowedTagsController::class)
         ->patch('/tags/{id}/tagSettings', 'walsgit_discussion_cards_updateTagSettings', UpdateTagSettingsController::class),
 ];

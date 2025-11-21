@@ -388,9 +388,11 @@ var UploadTagImageButton = /*#__PURE__*/function (_Button) {
   _proto.success = function success(response) {
     var tag = flarum_admin_app__WEBPACK_IMPORTED_MODULE_2___default().store.getById('tags', this.tagId);
     if (tag) {
-      if (response && response.data && response.data.attributes) {
+      var _response$data$attrib, _response$data;
+      var newValue = (_response$data$attrib = response == null || (_response$data = response.data) == null || (_response$data = _response$data.attributes) == null ? void 0 : _response$data.walsgitDiscussionCardsTagDefaultImage) != null ? _response$data$attrib : null;
+      if (newValue) {
         tag.pushAttributes({
-          walsgitDiscussionCardsTagDefaultImage: response.data.attributes.walsgitDiscussionCardsTagDefaultImage + '?v=' + Date.now()
+          walsgitDiscussionCardsTagDefaultImage: newValue + '?v=' + Date.now()
         });
       } else {
         tag.pushAttributes({
