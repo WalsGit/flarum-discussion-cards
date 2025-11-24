@@ -35,6 +35,7 @@ export default class Settings extends ExtensionPage {
 			<div className="DiscussionCardsSettings">
 				<div className="container">
 					<div className="DiscussionCardsSettings--content">
+						{/* ============== WHERE? SECTION ============== */}
 						<h3>{app.translator.trans("walsgit_discussion_cards.admin.settings.general.where_title")}</h3>
 						<p className="helpText">
 							{app.translator.trans("walsgit_discussion_cards.admin.settings.general.where_info")}
@@ -56,6 +57,8 @@ export default class Settings extends ExtensionPage {
 								help: app.translator.trans("walsgit_discussion_cards.admin.settings.general.onIndexPage_help"),
 							})}
 						</div>
+
+						{/* ============== PRIMARY CARDS SECTION ============== */}
 						<h3>{app.translator.trans("walsgit_discussion_cards.admin.settings.general.primaryCardOptions_title")}</h3>
 						<p className="helpText">
 							{app.translator.trans("walsgit_discussion_cards.admin.settings.general.primaryCardOptions_info")}
@@ -94,6 +97,8 @@ export default class Settings extends ExtensionPage {
 								placeholder: 49,
 							})}
 						</div>
+
+						{/* ============== CARD OPTIONS SECTION ============== */}
 						<h3>{app.translator.trans("walsgit_discussion_cards.admin.settings.general.cardOptions_title")}</h3>
 						<p className="helpText">
 							{app.translator.trans("walsgit_discussion_cards.admin.settings.general.cardOptions_info")}
@@ -153,7 +158,8 @@ export default class Settings extends ExtensionPage {
 								help: app.translator.trans("walsgit_discussion_cards.admin.settings.general.markReadCards_help"),
 							})}							
 						</div>
-						{/* 3rd party extensions options */}
+						
+						{/* ============== 3RD PARTY EXTENSIONS SECTION ============== */}
 						<h3>{app.translator.trans("walsgit_discussion_cards.admin.settings.general.otherOptions_title")}</h3>
 						<p className="helpText">
 							{app.translator.trans("walsgit_discussion_cards.admin.settings.general.otherOptions_info")}
