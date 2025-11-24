@@ -98,6 +98,20 @@ export default class Settings extends ExtensionPage {
 							})}
 						</div>
 
+						{/* ============== LIST CARDS SECTION ============== */}
+						<h3>{app.translator.trans("walsgit_discussion_cards.admin.settings.general.listCardOptions_title")}</h3>
+						<p className="helpText">
+							{app.translator.trans("walsgit_discussion_cards.admin.settings.general.listCardOptions_info")}
+						</p>
+						<div className="Section">
+							{this.buildSettingComponent({
+								type: "switch",
+								setting: "walsgit_discussion_cards_useListCards",
+								label: app.translator.trans("walsgit_discussion_cards.admin.settings.general.listCards_label"),
+								help: app.translator.trans("walsgit_discussion_cards.admin.settings.general.listCards_help"),
+							})}
+						</div>
+
 						{/* ============== CARD OPTIONS SECTION ============== */}
 						<h3>{app.translator.trans("walsgit_discussion_cards.admin.settings.general.cardOptions_title")}</h3>
 						<p className="helpText">

@@ -2,6 +2,7 @@ import app from 'flarum/app';
 import {extend, override} from 'flarum/extend';
 import DiscussionList from 'flarum/forum/components/DiscussionList';
 import DiscussionListState from 'flarum/forum/states/DiscussionListState';
+import DiscussionListItem from 'flarum/forum/components/DiscussionListItem';
 import IndexPage from 'flarum/forum/components/IndexPage';
 import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
 import Placeholder from 'flarum/common/components/Placeholder';
@@ -60,16 +61,36 @@ app.initializers.add('walsgit/discussion/cards', () => {
       }
     }
     if (app.current.matches(IndexPage) && ((settings.allowedTags.length && settings.allowedTags.includes(tag)) || (!params.tags && Number(settings.onIndexPage) === 1))) {
+
+      const useListCards = Number(settings.useListCards) === 1;
+
       return (
         <div className={'DiscussionList' + (state.isSearchResults() ? ' DiscussionList--searchResults' : '')}>
+          {/* Card Items (primary card) */}
           <div class="DiscussionList-discussions flexCard">
-            {state.getPages().map((pg, o) => {
-              return pg.items.map((discussion, i) => {
-                return (i < Number(settings.primaryCards) && o === 0)
-                  ? m(CardItem, {discussion: discussion})
-                  : m(ListItem, {discussion: discussion})
-              });
-            })}
+            {state.getPages().map((pg, o) =>
+              pg.items
+                .filter((d, i) => o === 0 && i < Number(settings.primaryCards))
+                .map((discussion) =>
+                  m(CardItem, { discussion })
+                )
+            )}
+          </div>
+
+          {/* List Items */}
+          <div class="DiscussionList-discussions">
+            {state.getPages().map((pg, o) =>
+              pg.items
+                .filter((d, i) => !(o === 0 && i < Number(settings.primaryCards)))
+                .map((discussion) =>
+                  useListCards
+                    ? m(ListItem, { discussion })
+                    : m(DiscussionListItem, {
+                        discussion,
+                        params: app.search?.params() ?? {}
+                      })
+                )
+            )}
           </div>
           <div className="DiscussionList-loadMore">{loading}</div>
         </div>

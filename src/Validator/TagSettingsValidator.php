@@ -19,6 +19,7 @@ class TagSettingsValidator extends AbstractValidator
         'primaryCards'     => 'nullable|numeric|min:0',
         'desktopCardWidth' => 'nullable|numeric|min:10|max:100',
         'tabletCardWidth'  => 'nullable|numeric|min:10|max:100',
+        'useListCards'  => 'nullable|numeric|min:0|max:1',
     ];
 
     protected $messages = [
@@ -27,6 +28,7 @@ class TagSettingsValidator extends AbstractValidator
         'desktopCardWidth.max'  => 'walsgit_discussion_cards.admin.errors.desktopCardWidth',
         'tabletCardWidth.min'   => 'walsgit_discussion_cards.admin.errors.tabletCardWidth',
         'tabletCardWidth.max'   => 'walsgit_discussion_cards.admin.errors.tabletCardWidth',
+        'useListCards'   => 'walsgit_discussion_cards.admin.errors.useListCards',
     ];
 
     protected function makeValidator(array $attributes)

@@ -1,6 +1,7 @@
 import Button from "flarum/common/components/Button";
 import Modal from "flarum/common/components/Modal";
 import Stream from "flarum/common/utils/Stream";
+import Switch from 'flarum/common/components/Switch';
 
 let defaultSettings = {};
 
@@ -14,6 +15,7 @@ export default class WdcTagSettingsModal extends Modal {
 			primaryCards: app.forum.data.attributes.walsgitDiscussionCardsPrimaryCards,
 			desktopCardWidth: app.forum.data.attributes.walsgitDiscussionCardsDesktopCardWidth,
 			tabletCardWidth: app.forum.data.attributes.walsgitDiscussionCardsTabletCardWidth,
+			useListCards: app.forum.data.attributes.walsgitDiscussionCardsUseListCards,
 		}
 		
 		if (!this.tagSettings.hasOwnProperty('primaryCards') || this.tagSettings.primaryCards === null) {
@@ -25,10 +27,14 @@ export default class WdcTagSettingsModal extends Modal {
 		if (!this.tagSettings.hasOwnProperty('tabletCardWidth') || this.tagSettings.tabletCardWidth === null) {
 			this.tagSettings.tabletCardWidth = defaultSettings.tabletCardWidth;
 		}
+		if (!this.tagSettings.hasOwnProperty('useListCards') || this.tagSettings.useListCards === null) {
+			this.tagSettings.useListCards = defaultSettings.useListCards;
+		}
 
 		this.tagSettings.primaryCards = Stream(this.tagSettings.primaryCards);
 		this.tagSettings.desktopCardWidth = Stream(this.tagSettings.desktopCardWidth);
 		this.tagSettings.tabletCardWidth = Stream(this.tagSettings.tabletCardWidth);
+		this.tagSettings.useListCards = Stream(this.tagSettings.useListCards);
 		
 	}
 	className() {
@@ -86,6 +92,22 @@ export default class WdcTagSettingsModal extends Modal {
 							className="FormControl DC-Number"
 							bidi={this.tagSettings.tabletCardWidth}
 						/>
+					</div>
+					{/* LIST CARDS OPTIONS */}
+					<div className="Form-group">
+						<label>{app.translator.trans("walsgit_discussion_cards.admin.tag_modal.useListCards_title")}</label>
+
+						{Switch.component({
+							state: this.tagSettings.useListCards() == 1,
+							onchange: (value) => {
+								this.tagSettings.useListCards(value ? 1 : 0);
+							}
+						}, app.translator.trans("walsgit_discussion_cards.admin.tag_modal.useListCards_label")
+						)}
+
+						<div className="helpText">
+							{app.translator.trans("walsgit_discussion_cards.admin.tag_modal.useListCards_help")}
+						</div>
 					</div>
 					<Button
 						type="submit"

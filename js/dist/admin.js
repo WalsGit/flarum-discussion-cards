@@ -116,6 +116,15 @@ var Settings = /*#__PURE__*/function (_ExtensionPage) {
       max: 100,
       step: 1,
       placeholder: 49
+    })), m("h3", null, flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().translator.trans("walsgit_discussion_cards.admin.settings.general.listCardOptions_title")), m("p", {
+      className: "helpText"
+    }, flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().translator.trans("walsgit_discussion_cards.admin.settings.general.listCardOptions_info")), m("div", {
+      className: "Section"
+    }, this.buildSettingComponent({
+      type: "switch",
+      setting: "walsgit_discussion_cards_useListCards",
+      label: flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().translator.trans("walsgit_discussion_cards.admin.settings.general.listCards_label"),
+      help: flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().translator.trans("walsgit_discussion_cards.admin.settings.general.listCards_help")
     })), m("h3", null, flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().translator.trans("walsgit_discussion_cards.admin.settings.general.cardOptions_title")), m("p", {
       className: "helpText"
     }, flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().translator.trans("walsgit_discussion_cards.admin.settings.general.cardOptions_info")), m("div", {
@@ -435,6 +444,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var flarum_common_components_Modal__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(flarum_common_components_Modal__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var flarum_common_utils_Stream__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! flarum/common/utils/Stream */ "flarum/common/utils/Stream");
 /* harmony import */ var flarum_common_utils_Stream__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(flarum_common_utils_Stream__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var flarum_common_components_Switch__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! flarum/common/components/Switch */ "flarum/common/components/Switch");
+/* harmony import */ var flarum_common_components_Switch__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(flarum_common_components_Switch__WEBPACK_IMPORTED_MODULE_4__);
+
 
 
 
@@ -452,7 +464,8 @@ var WdcTagSettingsModal = /*#__PURE__*/function (_Modal) {
     defaultSettings = {
       primaryCards: app.forum.data.attributes.walsgitDiscussionCardsPrimaryCards,
       desktopCardWidth: app.forum.data.attributes.walsgitDiscussionCardsDesktopCardWidth,
-      tabletCardWidth: app.forum.data.attributes.walsgitDiscussionCardsTabletCardWidth
+      tabletCardWidth: app.forum.data.attributes.walsgitDiscussionCardsTabletCardWidth,
+      useListCards: app.forum.data.attributes.walsgitDiscussionCardsUseListCards
     };
     if (!this.tagSettings.hasOwnProperty('primaryCards') || this.tagSettings.primaryCards === null) {
       this.tagSettings.primaryCards = defaultSettings.primaryCards;
@@ -463,9 +476,13 @@ var WdcTagSettingsModal = /*#__PURE__*/function (_Modal) {
     if (!this.tagSettings.hasOwnProperty('tabletCardWidth') || this.tagSettings.tabletCardWidth === null) {
       this.tagSettings.tabletCardWidth = defaultSettings.tabletCardWidth;
     }
+    if (!this.tagSettings.hasOwnProperty('useListCards') || this.tagSettings.useListCards === null) {
+      this.tagSettings.useListCards = defaultSettings.useListCards;
+    }
     this.tagSettings.primaryCards = flarum_common_utils_Stream__WEBPACK_IMPORTED_MODULE_3___default()(this.tagSettings.primaryCards);
     this.tagSettings.desktopCardWidth = flarum_common_utils_Stream__WEBPACK_IMPORTED_MODULE_3___default()(this.tagSettings.desktopCardWidth);
     this.tagSettings.tabletCardWidth = flarum_common_utils_Stream__WEBPACK_IMPORTED_MODULE_3___default()(this.tagSettings.tabletCardWidth);
+    this.tagSettings.useListCards = flarum_common_utils_Stream__WEBPACK_IMPORTED_MODULE_3___default()(this.tagSettings.useListCards);
   };
   _proto.className = function className() {
     return "WdcTagSettingsModal Modal--large";
@@ -481,6 +498,7 @@ var WdcTagSettingsModal = /*#__PURE__*/function (_Modal) {
     }, this.attrs.model.data.attributes.name)))];
   };
   _proto.content = function content() {
+    var _this = this;
     return [m("div", {
       className: "Modal-body"
     }, m("div", {
@@ -524,7 +542,16 @@ var WdcTagSettingsModal = /*#__PURE__*/function (_Modal) {
       name: "tabletCardWidth",
       className: "FormControl DC-Number",
       bidi: this.tagSettings.tabletCardWidth
-    })), m((flarum_common_components_Button__WEBPACK_IMPORTED_MODULE_1___default()), {
+    })), m("div", {
+      className: "Form-group"
+    }, m("label", null, app.translator.trans("walsgit_discussion_cards.admin.tag_modal.useListCards_title")), flarum_common_components_Switch__WEBPACK_IMPORTED_MODULE_4___default().component({
+      state: this.tagSettings.useListCards() == 1,
+      onchange: function onchange(value) {
+        _this.tagSettings.useListCards(value ? 1 : 0);
+      }
+    }, app.translator.trans("walsgit_discussion_cards.admin.tag_modal.useListCards_label")), m("div", {
+      className: "helpText"
+    }, app.translator.trans("walsgit_discussion_cards.admin.tag_modal.useListCards_help"))), m((flarum_common_components_Button__WEBPACK_IMPORTED_MODULE_1___default()), {
       type: "submit",
       className: "Button Button--primary",
       loading: this.loading,
@@ -820,6 +847,17 @@ module.exports = flarum.core.compat['common/components/Button'];
 
 "use strict";
 module.exports = flarum.core.compat['common/components/Modal'];
+
+/***/ }),
+
+/***/ "flarum/common/components/Switch":
+/*!*****************************************************************!*\
+  !*** external "flarum.core.compat['common/components/Switch']" ***!
+  \*****************************************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = flarum.core.compat['common/components/Switch'];
 
 /***/ }),
 
