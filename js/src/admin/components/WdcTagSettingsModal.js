@@ -16,6 +16,7 @@ export default class WdcTagSettingsModal extends Modal {
 			desktopCardWidth: app.forum.data.attributes.walsgitDiscussionCardsDesktopCardWidth,
 			tabletCardWidth: app.forum.data.attributes.walsgitDiscussionCardsTabletCardWidth,
 			useListCards: app.forum.data.attributes.walsgitDiscussionCardsUseListCards,
+			listCardsCount: app.forum.data.attributes.walsgitDiscussionCardsListCardsCount,
 		}
 		
 		if (!this.tagSettings.hasOwnProperty('primaryCards') || this.tagSettings.primaryCards === null) {
@@ -30,11 +31,15 @@ export default class WdcTagSettingsModal extends Modal {
 		if (!this.tagSettings.hasOwnProperty('useListCards') || this.tagSettings.useListCards === null) {
 			this.tagSettings.useListCards = defaultSettings.useListCards;
 		}
+		if (!this.tagSettings.hasOwnProperty('listCardsCount') || this.tagSettings.listCardsCount === null) {
+			this.tagSettings.listCardsCount = defaultSettings.listCardsCount;
+		}
 
 		this.tagSettings.primaryCards = Stream(this.tagSettings.primaryCards);
 		this.tagSettings.desktopCardWidth = Stream(this.tagSettings.desktopCardWidth);
 		this.tagSettings.tabletCardWidth = Stream(this.tagSettings.tabletCardWidth);
 		this.tagSettings.useListCards = Stream(this.tagSettings.useListCards);
+		this.tagSettings.listCardsCount = Stream(this.tagSettings.listCardsCount);
 		
 	}
 	className() {
@@ -109,6 +114,16 @@ export default class WdcTagSettingsModal extends Modal {
 							{app.translator.trans("walsgit_discussion_cards.admin.tag_modal.useListCards_help")}
 						</div>
 					</div>
+					<div className="Form-group">
+						<label htmlFor="listCardsCount">{app.translator.trans("walsgit_discussion_cards.admin.tag_modal.listCardsCount_label")}</label>
+						<div className="helpText">{app.translator.trans("walsgit_discussion_cards.admin.tag_modal.listCardsCount_help", {default: defaultSettings.listCardsCount})}</div>
+						<input
+							type="number"
+							name="listCardsCount"
+							className="FormControl DC-Number"
+							bidi={this.tagSettings.listCardsCount}
+						/>
+					</div>
 					<Button
 						type="submit"
 						className="Button Button--primary"
@@ -178,12 +193,19 @@ export default class WdcTagSettingsModal extends Modal {
 			return;
 		}
 
+		const listCardsCount = parseInt(this.tagSettings.listCardsCount());
+		if (isNaN(listCardsCount) || listCardsCount < 0 || listCardsCount > 20) {
+			app.alerts.show({ type: 'error' }, app.translator.trans('walsgit_discussion_cards.admin.errors.listCardsCount'));
+			return;
+		}
+
 		const tag = this.attrs.model;
 
 		this.tagSettings.primaryCards(primaryCards);
 		this.tagSettings.desktopCardWidth(desktopWidth);
 		this.tagSettings.tabletCardWidth(tabletWidth);
 		this.tagSettings.useListCards(useListCards);
+		this.tagSettings.listCardsCount(listCardsCount);
 
 		const tagSettings = JSON.stringify(this.tagSettings);
 

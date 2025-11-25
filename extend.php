@@ -69,7 +69,8 @@ return [
         ->serializeToForum('walsgitDiscussionCardsShowRepliesOnRight', 'walsgit_discussion_cards_showRepliesOnRight')
         ->serializeToForum('walsgitDiscussionCardsShowLastPostInfo', 'walsgit_discussion_cards_showLastPostInfo')
         ->serializeToForum('walsgitDiscussionCardsAllowRepostLinks', 'walsgit_discussion_cards_allowRepostLinks')
-        ->serializeToForum('walsgitDiscussionCardsUseListCards', 'walsgit_discussion_cards_useListCards'),
+        ->serializeToForum('walsgitDiscussionCardsUseListCards', 'walsgit_discussion_cards_useListCards')
+        ->serializeToForum('walsgitDiscussionCardsListCardsCount', 'walsgit_discussion_cards_listCardsCount'),
     
     (new Extend\ApiSerializer(TagSerializer::class))
         ->attribute('walsgitDiscussionCardsTagDefaultImage', function ($serializer, $model) {

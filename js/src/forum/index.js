@@ -63,6 +63,7 @@ app.initializers.add('walsgit/discussion/cards', () => {
     if (app.current.matches(IndexPage) && ((settings.allowedTags.length && settings.allowedTags.includes(tag)) || (!params.tags && Number(settings.onIndexPage) === 1))) {
 
       const useListCards = Number(settings.useListCards) === 1;
+      const listCardsCount = Number(settings.listCardsCount);
 
       return (
         <div className={'DiscussionList' + (state.isSearchResults() ? ' DiscussionList--searchResults' : '')}>
@@ -79,18 +80,27 @@ app.initializers.add('walsgit/discussion/cards', () => {
 
           {/* List Items */}
           <div class="DiscussionList-discussions">
-            {state.getPages().map((pg, o) =>
-              pg.items
-                .filter((d, i) => !(o === 0 && i < Number(settings.primaryCards)))
-                .map((discussion) =>
-                  useListCards
-                    ? m(ListItem, { discussion })
-                    : m(DiscussionListItem, {
-                        discussion,
-                        params: app.search?.params() ?? {}
-                      })
-                )
-            )}
+            {state.getPages().map((pg, o) => {
+
+              // Skip primary cards
+              const secondaryItems = pg.items.filter(
+                (d, i) => !(o === 0 && i < Number(settings.primaryCards))
+              );
+
+              return secondaryItems.map((discussion, idx) => {
+                // Only if useListCards === 1 && (idx < listCardsCount OR listCardsCount = 0)
+                const showCard =
+                  useListCards &&
+                  (listCardsCount === 0 || idx < listCardsCount);
+
+                return showCard
+                  ? m(ListItem, { discussion })
+                  : m(DiscussionListItem, {
+                      discussion,
+                      params: app.search?.params() ?? {}
+                    });
+              });
+            })}
           </div>
           <div className="DiscussionList-loadMore">{loading}</div>
         </div>

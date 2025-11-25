@@ -897,6 +897,7 @@ flarum_app__WEBPACK_IMPORTED_MODULE_0___default().initializers.add('walsgit/disc
     }
     if (flarum_app__WEBPACK_IMPORTED_MODULE_0___default().current.matches((flarum_forum_components_IndexPage__WEBPACK_IMPORTED_MODULE_5___default())) && (settings.allowedTags.length && settings.allowedTags.includes(tag) || !params.tags && Number(settings.onIndexPage) === 1)) {
       var useListCards = Number(settings.useListCards) === 1;
+      var listCardsCount = Number(settings.listCardsCount);
       return m("div", {
         className: 'DiscussionList' + (state.isSearchResults() ? ' DiscussionList--searchResults' : '')
       }, m("div", {
@@ -912,11 +913,15 @@ flarum_app__WEBPACK_IMPORTED_MODULE_0___default().initializers.add('walsgit/disc
       })), m("div", {
         "class": "DiscussionList-discussions"
       }, state.getPages().map(function (pg, o) {
-        return pg.items.filter(function (d, i) {
+        // Skip primary cards
+        var secondaryItems = pg.items.filter(function (d, i) {
           return !(o === 0 && i < Number(settings.primaryCards));
-        }).map(function (discussion) {
+        });
+        return secondaryItems.map(function (discussion, idx) {
           var _app$search$params, _app$search;
-          return useListCards ? m(_components_ListItem__WEBPACK_IMPORTED_MODULE_10__["default"], {
+          // Only if useListCards === 1 && (idx < listCardsCount OR listCardsCount = 0)
+          var showCard = useListCards && (listCardsCount === 0 || idx < listCardsCount);
+          return showCard ? m(_components_ListItem__WEBPACK_IMPORTED_MODULE_10__["default"], {
             discussion: discussion
           }) : m((flarum_forum_components_DiscussionListItem__WEBPACK_IMPORTED_MODULE_4___default()), {
             discussion: discussion,

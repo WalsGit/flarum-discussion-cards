@@ -125,6 +125,16 @@ var Settings = /*#__PURE__*/function (_ExtensionPage) {
       setting: "walsgit_discussion_cards_useListCards",
       label: flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().translator.trans("walsgit_discussion_cards.admin.settings.general.listCards_label"),
       help: flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().translator.trans("walsgit_discussion_cards.admin.settings.general.listCards_help")
+    }), this.buildSettingComponent({
+      type: "number",
+      className: 'DC-Number',
+      setting: "walsgit_discussion_cards_listCardsCount",
+      label: flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().translator.trans("walsgit_discussion_cards.admin.settings.general.listCardsCount_label"),
+      help: flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().translator.trans("walsgit_discussion_cards.admin.settings.general.listCardsCount_help"),
+      min: 0,
+      max: 20,
+      step: 1,
+      placeholder: 0
     })), m("h3", null, flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().translator.trans("walsgit_discussion_cards.admin.settings.general.cardOptions_title")), m("p", {
       className: "helpText"
     }, flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().translator.trans("walsgit_discussion_cards.admin.settings.general.cardOptions_info")), m("div", {
@@ -244,6 +254,7 @@ var Settings = /*#__PURE__*/function (_ExtensionPage) {
     var primaryCards = Number(this.setting('walsgit_discussion_cards_primaryCards')());
     var desktopCardWidth = Number(this.setting('walsgit_discussion_cards_desktopCardWidth')());
     var tabletCardWidth = Number(this.setting('walsgit_discussion_cards_tabletCardWidth')());
+    var listCardsCount = Number(this.setting('walsgit_discussion_cards_listCardsCount')());
     if (primaryCards < 0 || isNaN(primaryCards)) {
       flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().alerts.show({
         type: 'error'
@@ -260,6 +271,12 @@ var Settings = /*#__PURE__*/function (_ExtensionPage) {
       flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().alerts.show({
         type: 'error'
       }, flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().translator.trans('walsgit_discussion_cards.admin.errors.tabletCardWidth'));
+      return false;
+    }
+    if (listCardsCount < 0 || listCardsCount > 20 || isNaN(listCardsCount)) {
+      flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().alerts.show({
+        type: 'error'
+      }, flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().translator.trans('walsgit_discussion_cards.admin.errors.listCardsCount'));
       return false;
     }
     return true;
@@ -465,7 +482,8 @@ var WdcTagSettingsModal = /*#__PURE__*/function (_Modal) {
       primaryCards: app.forum.data.attributes.walsgitDiscussionCardsPrimaryCards,
       desktopCardWidth: app.forum.data.attributes.walsgitDiscussionCardsDesktopCardWidth,
       tabletCardWidth: app.forum.data.attributes.walsgitDiscussionCardsTabletCardWidth,
-      useListCards: app.forum.data.attributes.walsgitDiscussionCardsUseListCards
+      useListCards: app.forum.data.attributes.walsgitDiscussionCardsUseListCards,
+      listCardsCount: app.forum.data.attributes.walsgitDiscussionCardsListCardsCount
     };
     if (!this.tagSettings.hasOwnProperty('primaryCards') || this.tagSettings.primaryCards === null) {
       this.tagSettings.primaryCards = defaultSettings.primaryCards;
@@ -479,10 +497,14 @@ var WdcTagSettingsModal = /*#__PURE__*/function (_Modal) {
     if (!this.tagSettings.hasOwnProperty('useListCards') || this.tagSettings.useListCards === null) {
       this.tagSettings.useListCards = defaultSettings.useListCards;
     }
+    if (!this.tagSettings.hasOwnProperty('listCardsCount') || this.tagSettings.listCardsCount === null) {
+      this.tagSettings.listCardsCount = defaultSettings.listCardsCount;
+    }
     this.tagSettings.primaryCards = flarum_common_utils_Stream__WEBPACK_IMPORTED_MODULE_3___default()(this.tagSettings.primaryCards);
     this.tagSettings.desktopCardWidth = flarum_common_utils_Stream__WEBPACK_IMPORTED_MODULE_3___default()(this.tagSettings.desktopCardWidth);
     this.tagSettings.tabletCardWidth = flarum_common_utils_Stream__WEBPACK_IMPORTED_MODULE_3___default()(this.tagSettings.tabletCardWidth);
     this.tagSettings.useListCards = flarum_common_utils_Stream__WEBPACK_IMPORTED_MODULE_3___default()(this.tagSettings.useListCards);
+    this.tagSettings.listCardsCount = flarum_common_utils_Stream__WEBPACK_IMPORTED_MODULE_3___default()(this.tagSettings.listCardsCount);
   };
   _proto.className = function className() {
     return "WdcTagSettingsModal Modal--large";
@@ -551,7 +573,20 @@ var WdcTagSettingsModal = /*#__PURE__*/function (_Modal) {
       }
     }, app.translator.trans("walsgit_discussion_cards.admin.tag_modal.useListCards_label")), m("div", {
       className: "helpText"
-    }, app.translator.trans("walsgit_discussion_cards.admin.tag_modal.useListCards_help"))), m((flarum_common_components_Button__WEBPACK_IMPORTED_MODULE_1___default()), {
+    }, app.translator.trans("walsgit_discussion_cards.admin.tag_modal.useListCards_help"))), m("div", {
+      className: "Form-group"
+    }, m("label", {
+      htmlFor: "listCardsCount"
+    }, app.translator.trans("walsgit_discussion_cards.admin.tag_modal.listCardsCount_label")), m("div", {
+      className: "helpText"
+    }, app.translator.trans("walsgit_discussion_cards.admin.tag_modal.listCardsCount_help", {
+      "default": defaultSettings.listCardsCount
+    })), m("input", {
+      type: "number",
+      name: "listCardsCount",
+      className: "FormControl DC-Number",
+      bidi: this.tagSettings.listCardsCount
+    })), m((flarum_common_components_Button__WEBPACK_IMPORTED_MODULE_1___default()), {
       type: "submit",
       className: "Button Button--primary",
       loading: this.loading,
@@ -612,11 +647,19 @@ var WdcTagSettingsModal = /*#__PURE__*/function (_Modal) {
       }, app.translator.trans('walsgit_discussion_cards.admin.errors.useListCards'));
       return;
     }
+    var listCardsCount = parseInt(this.tagSettings.listCardsCount());
+    if (isNaN(listCardsCount) || listCardsCount < 0 || listCardsCount > 20) {
+      app.alerts.show({
+        type: 'error'
+      }, app.translator.trans('walsgit_discussion_cards.admin.errors.listCardsCount'));
+      return;
+    }
     var tag = this.attrs.model;
     this.tagSettings.primaryCards(primaryCards);
     this.tagSettings.desktopCardWidth(desktopWidth);
     this.tagSettings.tabletCardWidth(tabletWidth);
     this.tagSettings.useListCards(useListCards);
+    this.tagSettings.listCardsCount(listCardsCount);
     var tagSettings = JSON.stringify(this.tagSettings);
     this.loading = true;
     app.request({

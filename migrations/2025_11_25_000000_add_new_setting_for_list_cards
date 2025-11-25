@@ -15,4 +15,5 @@ $allowedTags = [];
 
 return Migration::addSettings([
     'walsgit_discussion_cards_useListCards' => 1,
+    'walsgit_discussion_cards_listCardsCount' => 0,
 ]);

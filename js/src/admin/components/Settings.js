@@ -110,6 +110,17 @@ export default class Settings extends ExtensionPage {
 								label: app.translator.trans("walsgit_discussion_cards.admin.settings.general.listCards_label"),
 								help: app.translator.trans("walsgit_discussion_cards.admin.settings.general.listCards_help"),
 							})}
+							{this.buildSettingComponent({
+								type: "number",
+								className: 'DC-Number',
+								setting: "walsgit_discussion_cards_listCardsCount",
+								label: app.translator.trans("walsgit_discussion_cards.admin.settings.general.listCardsCount_label"),
+								help: app.translator.trans("walsgit_discussion_cards.admin.settings.general.listCardsCount_help"),
+								min: 0,
+								max: 20,
+								step: 1,
+								placeholder: 0,
+							})}
 						</div>
 
 						{/* ============== CARD OPTIONS SECTION ============== */}
@@ -268,6 +279,7 @@ export default class Settings extends ExtensionPage {
 		const primaryCards = Number(this.setting('walsgit_discussion_cards_primaryCards')());
 		const desktopCardWidth = Number(this.setting('walsgit_discussion_cards_desktopCardWidth')());
 		const tabletCardWidth = Number(this.setting('walsgit_discussion_cards_tabletCardWidth')());
+		const listCardsCount = Number(this.setting('walsgit_discussion_cards_listCardsCount')());
 
         if (primaryCards < 0 || isNaN(primaryCards)) {
             app.alerts.show({ type: 'error' }, app.translator.trans('walsgit_discussion_cards.admin.errors.primaryCards'));
@@ -279,6 +291,10 @@ export default class Settings extends ExtensionPage {
         }
         if (tabletCardWidth < 10 || tabletCardWidth > 100 || isNaN(tabletCardWidth)) {
             app.alerts.show({ type: 'error' }, app.translator.trans('walsgit_discussion_cards.admin.errors.tabletCardWidth'));
+            return false;
+        }
+		if (listCardsCount < 0 || listCardsCount > 20 || isNaN(listCardsCount)) {
+            app.alerts.show({ type: 'error' }, app.translator.trans('walsgit_discussion_cards.admin.errors.listCardsCount'));
             return false;
         }
 
