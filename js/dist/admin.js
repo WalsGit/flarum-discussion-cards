@@ -605,10 +605,18 @@ var WdcTagSettingsModal = /*#__PURE__*/function (_Modal) {
       }, app.translator.trans('walsgit_discussion_cards.admin.errors.tabletCardWidth'));
       return;
     }
+    var useListCards = parseInt(this.tagSettings.useListCards());
+    if (isNaN(useListCards) || useListCards < 0 || useListCards > 1) {
+      app.alerts.show({
+        type: 'error'
+      }, app.translator.trans('walsgit_discussion_cards.admin.errors.useListCards'));
+      return;
+    }
     var tag = this.attrs.model;
     this.tagSettings.primaryCards(primaryCards);
     this.tagSettings.desktopCardWidth(desktopWidth);
     this.tagSettings.tabletCardWidth(tabletWidth);
+    this.tagSettings.useListCards(useListCards);
     var tagSettings = JSON.stringify(this.tagSettings);
     this.loading = true;
     app.request({

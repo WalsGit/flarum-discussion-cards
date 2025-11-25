@@ -172,11 +172,18 @@ export default class WdcTagSettingsModal extends Modal {
 			return;
 		}
 
+		const useListCards = parseInt(this.tagSettings.useListCards());
+		if (isNaN(useListCards) || useListCards < 0 || useListCards > 1) {
+			app.alerts.show({ type: 'error' }, app.translator.trans('walsgit_discussion_cards.admin.errors.useListCards'));
+			return;
+		}
+
 		const tag = this.attrs.model;
 
 		this.tagSettings.primaryCards(primaryCards);
 		this.tagSettings.desktopCardWidth(desktopWidth);
 		this.tagSettings.tabletCardWidth(tabletWidth);
+		this.tagSettings.useListCards(useListCards);
 
 		const tagSettings = JSON.stringify(this.tagSettings);
 
