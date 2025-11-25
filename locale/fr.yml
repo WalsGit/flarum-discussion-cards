@@ -19,7 +19,7 @@ walsgit_discussion_cards:
         desktopCardWidth_help: "Déterminez la largeur (en %) de chaque carte primaire sur les écrans de bureau. (entre 10 et 100)"
         tabletCardWidth_label: "Largeur des cartes primaires sur les écrans de tablettes"
         tabletCardWidth_help: "Déterminez la largeur (en %) de chaque carte primaire sur les écrans de tablettes. (entre 10 et 100)"
-        listCardOptions_title: "Options pour les liste de cartes"
+        listCardOptions_title: "Options pour les listes de cartes"
         listCardOptions_info: "Déterminez les paramètres des cartes pour les listes de discussions (plus petites)."
         listCards_label: "Utilisez des cartes pour les listes de discussions"
         listCards_help: "Affichez les éléments des listes de discussions avec des cartes (plus petites que les cartes primaires). Si non activé, les listes de discussions par default de Flarum seront affichés (pas de cartes)"
