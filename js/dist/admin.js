@@ -141,7 +141,9 @@ var Settings = /*#__PURE__*/function (_ExtensionPage) {
       className: "Section"
     }, m("div", {
       className: "DC-DefaultImageSettings"
-    }, m("h4", null, flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().translator.trans("walsgit_discussion_cards.admin.settings.general.defaultImage_title")), m("p", {
+    }, m("label", {
+      className: "DC-DefaultImageTitle"
+    }, flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().translator.trans("walsgit_discussion_cards.admin.settings.general.defaultImage_title")), m("p", {
       className: "helpText"
     }, flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().translator.trans("walsgit_discussion_cards.admin.settings.general.defaultImage_info")), flarum_admin_app__WEBPACK_IMPORTED_MODULE_1___default().forum.attribute("walsgitDiscussionCardsDefaultImage") === null ? m("div", {
       className: "imgStub"

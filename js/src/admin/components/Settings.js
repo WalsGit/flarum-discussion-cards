@@ -130,7 +130,7 @@ export default class Settings extends ExtensionPage {
 						</p>
 						<div className="Section">
 							<div className="DC-DefaultImageSettings">
-								<h4>{app.translator.trans("walsgit_discussion_cards.admin.settings.general.defaultImage_title")}</h4>
+								<label className="DC-DefaultImageTitle">{app.translator.trans("walsgit_discussion_cards.admin.settings.general.defaultImage_title")}</label>
 								<p className="helpText">
 									{app.translator.trans("walsgit_discussion_cards.admin.settings.general.defaultImage_info")}
 								</p>
