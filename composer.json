@@ -37,6 +37,14 @@
             }
         }
     },
+    "scripts": {
+        "post-update-cmd": [
+            "@migrate-discussion-cards"
+        ],
+        "migrate-discussion-cards": [
+            "test -f flarum && php flarum discussion-cards:migrate-images || echo \"(Migration Discussion Cards ignorée : pas dans la racine Flarum)\""
+        ]
+    },
     "support": {
         "issues": "https://github.com/WalsGit/flarum-discussion-cards/issues",
         "forum": "https://discuss.flarum.org/d/36343-flarum-discussion-cards"

@@ -19,6 +19,7 @@ use Walsgit\Discussion\Cards\Image\CardImageResolver;
 use Walsgit\Discussion\Cards\Providers\ImageProcessingProvider;
 use Walsgit\Discussion\Cards\Providers\HtmlImageExtractorProvider;
 use Walsgit\Discussion\Cards\Providers\TagImageSelectorProvider;
+use Walsgit\Discussion\Cards\Console\MigrateImagesCommand;
 
 return [
     (new Extend\Frontend('forum'))
@@ -94,4 +95,7 @@ return [
         ->delete('/walsgit_discussion_cards_tag_default_image', 'walsgit_discussion_cards_tag_default_image.delete', TagImageController::class)
         ->post('/walsgit_discussion_cards_tag_update_allowedTags', 'walsgit_discussion_cards_updateAllowedTags', UpdateAllowedTagsController::class)
         ->patch('/tags/{id}/tagSettings', 'walsgit_discussion_cards_updateTagSettings', UpdateTagSettingsController::class),
+    
+    (new Extend\Console())
+        ->command(MigrateImagesCommand::class),
 ];
