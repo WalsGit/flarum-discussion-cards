@@ -153,11 +153,11 @@ class ImageProcessingService
      */
     public function generateFilename(string $origin, $context = null): string
     {
-        // Special case for 3rd party BLOG Extension: blog-default-{hash}.png will generate blog-default-{hash}.webp
+        // Special case for 3rd party BLOG Extension: blog-default-{hash}.png will generate blog-default-card-image.webp
         if ($origin === 'discussion' && $context && $context->getParsedBody()['filename'] ?? null) { 
             $filename = $context->getParsedBody()['filename'];
             if (preg_match('/^blog\-default\-[a-z0-9]+\.png$/i', $filename)) {
-                return preg_replace('/\.png$/i', '.webp', $filename);
+                return 'blog-default-card-image.webp';
             }
         }
 
@@ -359,7 +359,7 @@ class ImageProcessingService
 
     /**
      * 3rd party Blog Extension support:
-     * Optimize the "blog-default-{hash}.{ext}" image provided by the blog extension.
+     * Optimize the "blog-default-{hash}.png" image provided by the blog extension.
      * Returns the optimized WebP filename, or null if the URL is not a blog-default image.
      */
     public function optimizeBlogDefaultImage(string $imageUrl, string $baseUrl): ?string
@@ -369,8 +369,7 @@ class ImageProcessingService
             return null; // Not a blog-default image
         }
 
-        $hash = $m[1];
-        $filename = "blog-default-{$hash}.webp";
+        $filename = "blog-default-card-image.webp";
 
         $assetsPath = $this->paths->public . '/assets/extensions/walsgit-discussion-cards';
         if (!is_dir($assetsPath)) {
@@ -379,7 +378,7 @@ class ImageProcessingService
 
         $filepath = $assetsPath . '/' . $filename;
 
-        // If already optimized → return filename
+        // If already optimized return filename
         if (file_exists($filepath)) {
             return $filename;
         }
@@ -390,9 +389,6 @@ class ImageProcessingService
             return null; // fallback to original
         }
 
-        // Cleanup old blog-default images
-        $this->cleanupOldBlogDefaultImages($assetsPath);
-
         try {
             @ini_set('memory_limit', '256M');
             $this->processImage($localPath, $filepath, $this->getDefaultsFor('discussion'));
@@ -401,19 +397,6 @@ class ImageProcessingService
         }
 
         return $filename;
-    }
-
-    /*
-    * For 3rd party extension support: Remove old Blog Extension optimized default images
-    */
-    public function cleanupOldBlogDefaultImages(): void
-    {
-        $path = $this->paths->public . '/assets/extensions/walsgit-discussion-cards';
-        $pattern = $path . '/blog-default-*.webp';
-
-        foreach (glob($pattern) as $old) {
-            @unlink($old);
-        }
     }
 
 }

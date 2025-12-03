@@ -112,7 +112,7 @@ class CardImageResolver
         }
 
         // 3. Fallback to third-party blog default image (if configured)
-        $blogDefault = $this->settings->get('blog_default_image_path'); // stored filename 'blog-default-{hash}.{ext}'
+        $blogDefault = $this->settings->get('blog_default_image_path'); // stored filename 'blog-default-{hash}.png'
         if ($blogDefault) {
             $blogDefaultImageUrl = $this->absoluteUrl((string) 'assets/' . $blogDefault);
             $baseUrl = (string) ($this->config->url() ?? '');
