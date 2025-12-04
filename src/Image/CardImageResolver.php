@@ -53,24 +53,24 @@ class CardImageResolver
     /**
      * Main resolver: returns an optimized image URL (absolute) or null.
      */
-    public function resolve(Discussion $discussion): ?string
+    public function resolve(Discussion $discussion, ?string $firstPostHtml = null): ?string
     {
-        // 1) 3rd party Blog Extension support
-        if ($image = $this->resolveBlogImage($discussion)) {
+        // 1. Support for 3rd party Blog Extension
+        if ($image = $this->resolveBlogImage($discussion, $firstPostHtml)) {
             return $this->getOptimizedCardImage($discussion, $image);
         }
 
-        // 2) First image in first post
-        if ($image = $this->resolveFirstPostImage($discussion)) {
+        // 2. First image in first post
+        if ($image = $this->resolveFirstPostImage($discussion, $firstPostHtml)) {
             return $this->getOptimizedCardImage($discussion, $image);
         }
 
-        // 3) Tag default image based on tag priority
+        // 3. Tag default image based on tag priority
         if ($image = $this->resolveTagImage($discussion)) {
             return $image; // already a buildAssetUrl() result
         }
 
-        // 4) Fallback to global default image
+        // 4. Fallback to global default image
         if ($image = $this->resolveGlobalDefault()) {
             return $this->buildAssetUrl($image);
         }
@@ -85,7 +85,7 @@ class CardImageResolver
      * Priority: featured image > first image in blog post > blog-default image
      * Returns an absolute image URL or null.
      */
-    protected function resolveBlogImage(Discussion $discussion): ?string
+    protected function resolveBlogImage(Discussion $discussion, ?string $firstPostHtml = null): ?string
     {
         // 0. Only if installed and activated and useBlogImages setting activated too.
         $useBlogImages = (int) $this->settings->get('walsgit_discussion_cards_useBlogImages');
@@ -102,6 +102,14 @@ class CardImageResolver
         }
 
         // 2. First image in the first post
+        // use provided HTML if available (on blog post/discussion creation)
+        if (!empty($firstPostHtml)) {
+            $imageUrl = $this->htmlImageExtractor->extract($firstPostHtml);
+            if ($imageUrl && $this->isImageAccessible($imageUrl)) {
+                return $imageUrl;
+            }
+        }
+
         $firstPost = $discussion->firstPost;
         if ($firstPost && method_exists($firstPost, 'formatContent')) {
             $rendered = $firstPost->formatContent();
@@ -292,4 +300,19 @@ class CardImageResolver
             str_contains($headers[0], '500')
         );
     }
+
+    /**
+     * Resolve first image using the provided formatted HTML on Discussion creation.
+     */
+    protected function resolveFirstPostHtmlOnDiscussionCreate(Discussion $discussion, string $html): ?string
+    {
+        $imageUrl = $this->htmlImageExtractor->extract($html);
+
+        if ($imageUrl && $this->isImageAccessible($imageUrl)) {
+            return $imageUrl;
+        }
+
+        return null;
+    }
+
 }

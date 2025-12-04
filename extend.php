@@ -15,7 +15,6 @@ use Walsgit\Discussion\Cards\Api\Controllers\UpdateAllowedTagsController;
 use Walsgit\Discussion\Cards\Api\Controllers\UpdateTagSettingsController;
 use Walsgit\Discussion\Cards\Validator\TagSettingsValidator;
 use Walsgit\Discussion\Cards\Validator\ImageUploadValidator;
-use Walsgit\Discussion\Cards\Image\CardImageResolver;
 use Walsgit\Discussion\Cards\Providers\ImageProcessingProvider;
 use Walsgit\Discussion\Cards\Providers\HtmlImageExtractorProvider;
 use Walsgit\Discussion\Cards\Providers\TagImageSelectorProvider;
@@ -32,6 +31,8 @@ return [
 
     (new Extend\Locales(__DIR__ . '/locale')),
 
+    new Extenders\RegisterLessVariables(),
+
     (new Extend\ApiController(ListDiscussionsController::class))
         ->addInclude(['firstPost', 'posts', 'posts.user', 'tags']),
     
@@ -44,13 +45,12 @@ return [
         }),
     
     (new Extend\ApiSerializer(DiscussionSerializer::class))
-        ->attribute('cardImageUrl', function (DiscussionSerializer $serializer, Discussion $discussion) {
-            /** @var CardImageResolver $resolver */
-            $resolver = resolve(CardImageResolver::class);
-            return $resolver->resolve($discussion);
+        ->attribute('cardImageUrl', function ($serializer, Discussion $discussion) {
+            return $discussion->walsgit_card_image_url ?: null;
         }),
-    
-    new Extenders\RegisterLessVariables(),
+
+    (new Extend\Event)
+        ->listen(\Flarum\Post\Event\Posted::class, \Walsgit\Discussion\Cards\Listeners\GenerateCardImageOnDiscussionCreate::class),
 
     (new Extend\Settings())
         ->serializeToForum('walsgitDiscussionCardsAllowedTags', 'walsgit_discussion_cards_allowedTags')
