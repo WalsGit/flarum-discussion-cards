@@ -8,6 +8,9 @@ use Flarum\Api\Serializer\DiscussionSerializer;
 use Flarum\Discussion\Discussion;
 use Flarum\Tags\Api\Serializer\TagSerializer;
 use Flarum\Api\Serializer\PostSerializer;
+use Flarum\Post\Event\Revised;
+use Flarum\Tags\Event\DiscussionWasTagged;
+use V17Development\FlarumBlog\Event\BlogMetaSaving;
 
 use Walsgit\Discussion\Cards\Api\Controllers\AdminImageController;
 use Walsgit\Discussion\Cards\Api\Controllers\TagImageController;
@@ -19,6 +22,7 @@ use Walsgit\Discussion\Cards\Providers\ImageProcessingProvider;
 use Walsgit\Discussion\Cards\Providers\HtmlImageExtractorProvider;
 use Walsgit\Discussion\Cards\Providers\TagImageSelectorProvider;
 use Walsgit\Discussion\Cards\Console\MigrateImagesCommand;
+use Walsgit\Discussion\Cards\Listeners\UpdateCardImageOnDiscussionUpdate;
 
 return [
     (new Extend\Frontend('forum'))
@@ -49,8 +53,13 @@ return [
             return $discussion->walsgit_card_image_url ?: null;
         }),
 
-    (new Extend\Event)
-        ->listen(\Flarum\Post\Event\Posted::class, \Walsgit\Discussion\Cards\Listeners\GenerateCardImageOnDiscussionCreate::class),
+    (new Extend\Event())
+        ->listen(\Flarum\Post\Event\Posted::class, \Walsgit\Discussion\Cards\Listeners\GenerateCardImageOnDiscussionCreate::class)
+        ->listen(Revised::class, [UpdateCardImageOnDiscussionUpdate::class, 'onPostRevised'])
+        //->listen(Saving::class, [UpdateCardImageOnDiscussionUpdate::class, 'onDiscussionSaving'])
+        ->listen(DiscussionWasTagged::class, [UpdateCardImageOnDiscussionUpdate::class, 'onDiscussionTagged'])
+        ->listen(BlogMetaSaving::class, [UpdateCardImageOnDiscussionUpdate::class, 'onBlogMetaSaving']),
+
 
     (new Extend\Settings())
         ->serializeToForum('walsgitDiscussionCardsAllowedTags', 'walsgit_discussion_cards_allowedTags')

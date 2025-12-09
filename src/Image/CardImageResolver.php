@@ -26,7 +26,6 @@ class CardImageResolver
     protected SettingsRepositoryInterface $settings;
     protected Config $config;
     protected Formatter $formatter;
-    protected static array $headCache = [];
     protected Paths $paths;
     protected ImageProcessingService $imageService;
     protected HtmlImageExtractor $htmlImageExtractor;
@@ -74,7 +73,6 @@ class CardImageResolver
         if ($image = $this->resolveGlobalDefault()) {
             return $this->buildAssetUrl($image);
         }
-
         return null;
     }
 
@@ -87,42 +85,55 @@ class CardImageResolver
      */
     protected function resolveBlogImage(Discussion $discussion, ?string $firstPostHtml = null): ?string
     {
-        // 0. Only if installed and activated and useBlogImages setting activated too.
         $useBlogImages = (int) $this->settings->get('walsgit_discussion_cards_useBlogImages');
 
-        if (empty($discussion->blogMeta) || !is_object($discussion->blogMeta) || $useBlogImages !== 1) {
+        if ($useBlogImages !== 1) {
+            return null;
+        }
+
+        // For blog post creation & edition : use the injected relation if it exists.
+        $blogMeta = $discussion->relationLoaded('blogMeta')
+            ? $discussion->getRelation('blogMeta')
+            : null;
+
+        // if not, load the old one
+        if (!$blogMeta) {
+            $blogMeta = $discussion->blogMeta;
+        }
+
+        if (!$blogMeta || !is_object($blogMeta)) {
             return null;
         }
 
         // 1. Featured image
-        $featuredImage = $discussion->blogMeta->getAttribute('featured_image');
+        $featuredImage = $blogMeta->getAttribute('featured_image');
         if (!empty($featuredImage)) {
-            $val = (string) $featuredImage;
-            return $this->absoluteUrl($val);
+            return $this->absoluteUrl((string) $featuredImage);
         }
 
-        // 2. First image in the first post
-        // use provided HTML if available (on blog post/discussion creation)
+        // 2. First post image
         if (!empty($firstPostHtml)) {
+            // 2-1. use provided first post HTML (only for create/update)
             $imageUrl = $this->htmlImageExtractor->extract($firstPostHtml);
             if ($imageUrl && $this->isImageAccessible($imageUrl)) {
                 return $imageUrl;
             }
-        }
-
-        $firstPost = $discussion->firstPost;
-        if ($firstPost && method_exists($firstPost, 'formatContent')) {
-            $rendered = $firstPost->formatContent();
-            $imageUrl = $this->htmlImageExtractor->extract($rendered);
-            if ($imageUrl && $this->isImageAccessible($imageUrl)) {
-                return $imageUrl;
+        } else {
+            // 2-2. Use the saved post in other cases
+            $firstPost = $discussion->firstPost;
+            if ($firstPost && method_exists($firstPost, 'formatContent')) {
+                $rendered = $firstPost->formatContent();
+                $imageUrl = $this->htmlImageExtractor->extract($rendered);
+                if ($imageUrl && $this->isImageAccessible($imageUrl)) {
+                    return $imageUrl;
+                }
             }
         }
 
-        // 3. Fallback to third-party blog default image (if configured)
-        $blogDefault = $this->settings->get('blog_default_image_path'); // stored filename 'blog-default-{hash}.png'
+        // 4. Blog default image
+        $blogDefault = $this->settings->get('blog_default_image_path');
         if ($blogDefault) {
-            $blogDefaultImageUrl = $this->absoluteUrl((string) 'assets/' . $blogDefault);
+            $blogDefaultImageUrl = $this->absoluteUrl('assets/' . $blogDefault);
             $baseUrl = (string) ($this->config->url() ?? '');
             $localPath = str_replace($baseUrl, $this->paths->public, $blogDefaultImageUrl);
 
@@ -138,11 +149,22 @@ class CardImageResolver
      * Resolve the first image found in the discussion's first post
      * Returns absolute URL or null.
      */
-    protected function resolveFirstPostImage(Discussion $discussion): ?string
+    protected function resolveFirstPostImage(Discussion $discussion, ?string $firstPostHtml = null): ?string
     {
         $firstPost = $discussion->firstPost;
-        if (! $firstPost || ! method_exists($firstPost, 'formatContent')) {
+        
+        if (!empty($firstPostHtml)) {
+            // Use provided first post HTML (only for create/update)
+            $imageUrl = $this->htmlImageExtractor->extract($firstPostHtml);
+            if ($imageUrl && $this->isImageAccessible($imageUrl)) {
+                return $imageUrl;
+            }
             return null;
+        // Use the saved post in other cases
+        } else {
+            if (! $firstPost || ! method_exists($firstPost, 'formatContent')) {
+                return null;
+            }
         }
 
         $rendered = $firstPost->formatContent();
@@ -162,9 +184,9 @@ class CardImageResolver
     protected function resolveTagImage(Discussion $discussion): ?string
     {
         try {
-            $tags = $discussion->tags ?? $discussion->tags()
-                ->select('id', 'position', 'parent_id', 'walsgit_discussion_cards_tag_default_image')
-                ->get();
+            $tags = $discussion->tags()
+            ->select('id', 'position', 'parent_id', 'walsgit_discussion_cards_tag_default_image')
+            ->get();
         } catch (\Throwable $e) {
             $tags = collect();
         }
@@ -216,14 +238,8 @@ class CardImageResolver
         $discussionId = $discussion->id;
         $urlHash = substr(sha1($imageUrl), 0, 10);
 
-        
         // Compute ETag-like fingerprint via service (10 chars)
-        if (!isset(self::$headCache[$imageUrl])) {
-            $etagHash = $this->imageService->computeEtagHash($imageUrl, $baseUrl);
-            self::$headCache[$imageUrl] = $etagHash;
-        } else {
-            $etagHash = self::$headCache[$imageUrl];
-        }
+        $etagHash = $this->imageService->computeEtagHash($imageUrl, $baseUrl);
 
         $filename = "discussion-{$discussionId}-{$urlHash}-{$etagHash}.webp";
         $filepath = $assetsPath . '/' . $filename;
@@ -299,20 +315,6 @@ class CardImageResolver
             str_contains($headers[0], '403') ||
             str_contains($headers[0], '500')
         );
-    }
-
-    /**
-     * Resolve first image using the provided formatted HTML on Discussion creation.
-     */
-    protected function resolveFirstPostHtmlOnDiscussionCreate(Discussion $discussion, string $html): ?string
-    {
-        $imageUrl = $this->htmlImageExtractor->extract($html);
-
-        if ($imageUrl && $this->isImageAccessible($imageUrl)) {
-            return $imageUrl;
-        }
-
-        return null;
     }
 
 }
