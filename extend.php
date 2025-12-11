@@ -5,10 +5,12 @@ namespace Walsgit\Discussion\Cards;
 use Flarum\Extend;
 use Flarum\Api\Controller\ListDiscussionsController;
 use Flarum\Api\Serializer\DiscussionSerializer;
-use Flarum\Discussion\Discussion;
-use Flarum\Tags\Api\Serializer\TagSerializer;
 use Flarum\Api\Serializer\PostSerializer;
+use Flarum\Discussion\Discussion;
+use Flarum\Discussion\Event\Deleting;
+use Flarum\Tags\Api\Serializer\TagSerializer;
 use Flarum\Post\Event\Revised;
+use Flarum\Post\Event\Deleting as PostDeleting;
 use Flarum\Tags\Event\DiscussionWasTagged;
 use V17Development\FlarumBlog\Event\BlogMetaSaving;
 
@@ -23,6 +25,7 @@ use Walsgit\Discussion\Cards\Providers\HtmlImageExtractorProvider;
 use Walsgit\Discussion\Cards\Providers\TagImageSelectorProvider;
 use Walsgit\Discussion\Cards\Console\MigrateImagesCommand;
 use Walsgit\Discussion\Cards\Listeners\UpdateCardImageOnDiscussionUpdate;
+use Walsgit\Discussion\Cards\Listeners\DeleteCardImageOnDiscussionDelete;
 
 return [
     (new Extend\Frontend('forum'))
@@ -58,7 +61,9 @@ return [
         ->listen(Revised::class, [UpdateCardImageOnDiscussionUpdate::class, 'onPostRevised'])
         //->listen(Saving::class, [UpdateCardImageOnDiscussionUpdate::class, 'onDiscussionSaving'])
         ->listen(DiscussionWasTagged::class, [UpdateCardImageOnDiscussionUpdate::class, 'onDiscussionTagged'])
-        ->listen(BlogMetaSaving::class, [UpdateCardImageOnDiscussionUpdate::class, 'onBlogMetaSaving']),
+        ->listen(BlogMetaSaving::class, [UpdateCardImageOnDiscussionUpdate::class, 'onBlogMetaSaving'])
+        ->Listen(Deleting::class, [DeleteCardImageOnDiscussionDelete::class, 'onDiscussionDeleting'])
+        ->Listen(PostDeleting::class, [DeleteCardImageOnDiscussionDelete::class, 'onFirstPostDeleting']),
 
 
     (new Extend\Settings())
