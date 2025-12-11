@@ -2,6 +2,8 @@ walsgit_discussion_cards:
   forum:
     replies: "Replies: {count}"
     unreadReplies: "Unread replies: {count}"
+    console:
+      postUpdateCardImageError: "Discussion Cards> Error while refreshing updated card image for this discussion: "
   admin:
     settings:
       general:

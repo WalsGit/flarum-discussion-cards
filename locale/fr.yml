@@ -2,6 +2,8 @@ walsgit_discussion_cards:
   forum:
     replies: "Réponses : {count}"
     unreadReplies: "Réponses non lues : {count}"
+    console:
+      postUpdateCardImageError: "Discussion Cards> Erreur lors du refraichissement de l'image de la carte mise à jour pour cette discussion : "
   admin:
     settings:
       general:

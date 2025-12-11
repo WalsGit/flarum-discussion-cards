@@ -10,6 +10,8 @@ import Button from 'flarum/common/components/Button';
 import CardItem from './components/CardItem';
 import ListItem from './components/ListItem';
 import checkOverflowingContent from './helpers/checkOverflowingContent';
+import Post from 'flarum/common/models/Post';
+import Discussion from 'flarum/common/models/Discussion';
 
 app.initializers.add('walsgit/discussion/cards', () => {
 
@@ -111,6 +113,38 @@ app.initializers.add('walsgit/discussion/cards', () => {
     }
   })
 }, -1);
+
+/**
+ * Refresh card image after first post edition
+ */
+extend(Post.prototype, 'save', function (promise) {
+  promise.then((updatedPost) => {
+    // first post only
+    if (updatedPost.number() !== 1) {
+      return;
+    }
+
+    /** @type {Discussion} */
+    const discussion = updatedPost.discussion();
+    
+    if (discussion && discussion.id()) {
+      app.store.find('discussions', discussion.id(), {}).then((newDiscussionModel) => {
+        
+        const newImageUrl = newDiscussionModel.attribute('cardImageUrl');
+        
+        if (newImageUrl) {
+            discussion.pushAttributes({
+                'cardImageUrl': newImageUrl
+            });            
+            m.redraw();
+        }
+
+      }).catch(error => {
+          console.error(app.translator.trans("walsgit_discussion_cards.forum.console.postUpdateCardImageError"), error);
+      });
+    }
+  });
+}, 100);
 
 
 // Expose compat API
