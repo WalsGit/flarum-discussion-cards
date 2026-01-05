@@ -14,13 +14,19 @@ use Illuminate\Database\Schema\Builder;
 
 return [
     'up' => function (Builder $schema) {
+        if ($schema->hasColumn('discussions', 'walsgit_card_image_url')) {
+            return;
+        }
 
         $schema->table('discussions', function (Blueprint $table) {
-                $table->string('walsgit_card_image_url')->nullable();
+            $table->string('walsgit_card_image_url')->nullable();
         });
     },
 
     'down' => function (Builder $schema) {
+        if (! $schema->hasColumn('discussions', 'walsgit_card_image_url')) {
+            return;
+        }
         $schema->table('discussions', function (Blueprint $table) {
             $table->dropColumn('walsgit_card_image_url');
         });
