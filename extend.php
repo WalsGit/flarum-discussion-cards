@@ -24,6 +24,8 @@ use Walsgit\Discussion\Cards\Providers\ImageProcessingProvider;
 use Walsgit\Discussion\Cards\Providers\HtmlImageExtractorProvider;
 use Walsgit\Discussion\Cards\Providers\TagImageSelectorProvider;
 use Walsgit\Discussion\Cards\Console\MigrateImagesCommand;
+use Walsgit\Discussion\Cards\Console\PurgeImagesCommand;
+use Walsgit\Discussion\Cards\Console\RegenerateImagesCommand;
 use Walsgit\Discussion\Cards\Listeners\UpdateCardImageOnDiscussionUpdate;
 use Walsgit\Discussion\Cards\Listeners\DeleteCardImageOnDiscussionDelete;
 
@@ -110,5 +112,7 @@ return [
         ->patch('/tags/{id}/tagSettings', 'walsgit_discussion_cards_updateTagSettings', UpdateTagSettingsController::class),
     
     (new Extend\Console())
-        ->command(MigrateImagesCommand::class),
+        ->command(MigrateImagesCommand::class)
+        ->command(PurgeImagesCommand::class)
+        ->command(RegenerateImagesCommand::class),
 ];
