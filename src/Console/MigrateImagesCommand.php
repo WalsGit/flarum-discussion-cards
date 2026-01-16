@@ -33,7 +33,7 @@ class MigrateImagesCommand extends AbstractCommand
     /**
      * Version 1.4.0 changes how and where default card images are processed and stored;
      * This adds a CLI command discussion-cards:migrate-images to help migrate the old default card images
-     * The command will run on updates or on demand and will make irreversable changes like deleting old card images.
+     * The command will run on updates or on demand and will make irreversible changes like deleting old card images.
      */
 
     protected function configure()
