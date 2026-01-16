@@ -28,7 +28,9 @@
      *      > will regenerate card images of specific discussion ids (comma separated)
      * discussion-cards:regenerate-images --tag [tag.id OR tag.slug] 
      *      > will regenerate card images of specific tag ids or slug (comma separated) only for tags that have discussion cards activated for them
-     * discussion-cards:purge-images --dry-run
+     * discussion-cards:regenerate-images -b | --batch-size [number of discussions]
+     *      > will set a custom batch size for the number of discussions to be processed at once (default is 100)
+     * discussion-cards:regenerate-images --dry-run
      *      > will simulate without regenarting anything
      * 
      * ======== 3rd party extensions support ========
