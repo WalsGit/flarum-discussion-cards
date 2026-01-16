@@ -42,7 +42,7 @@
             "@migrate-discussion-cards"
         ],
         "migrate-discussion-cards": [
-            "test -f flarum && php flarum discussion-cards:migrate-images || echo \"(Migration Discussion Cards ignorée : pas dans la racine Flarum)\""
+            "test -f flarum && php flarum discussion-cards:migrate-images || echo \"(Discussion Cards image migration ignored: Not in Flarum folder)\""
         ]
     },
     "support": {
