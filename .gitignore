@@ -2,3 +2,4 @@ TODO.md
 vendor/
 .docs/
 src/Debug
+.vscode/
