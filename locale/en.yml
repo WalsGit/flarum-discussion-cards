@@ -6,6 +6,8 @@ walsgit_discussion_cards:
       postUpdateCardImageError: "Discussion Cards> Error while refreshing updated card image for this discussion: "
   admin:
     settings:
+      statsToolsBanner:
+        refreshStats: "Image statistics have been updated successfully"
       general:
         where_title: "Where?"
         where_info: "Set where you want to use discussion cards."

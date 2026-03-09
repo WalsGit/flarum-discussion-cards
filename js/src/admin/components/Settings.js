@@ -4,6 +4,7 @@ import UploadImageButton from 'flarum/admin/components/UploadImageButton';
 import isExtensionInstalled from "../helpers/isExtensionInstalled";
 import isExtensionActive from "../helpers/isExtensionActive";
 import icon from "flarum/common/helpers/icon";
+import StatsToolsBanner from './StatsToolsBanner';
 
 export default class Settings extends ExtensionPage {
 	content() {
@@ -34,6 +35,9 @@ export default class Settings extends ExtensionPage {
 		return (
 			<div className="DiscussionCardsSettings">
 				<div className="container">
+					
+					<StatsToolsBanner />
+					
 					<div className="DiscussionCardsSettings--content">
 						{/* ============== WHERE? SECTION ============== */}
 						<h3>{app.translator.trans("walsgit_discussion_cards.admin.settings.general.where_title")}</h3>

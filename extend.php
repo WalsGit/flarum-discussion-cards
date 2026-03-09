@@ -18,6 +18,8 @@ use Walsgit\Discussion\Cards\Api\Controllers\AdminImageController;
 use Walsgit\Discussion\Cards\Api\Controllers\TagImageController;
 use Walsgit\Discussion\Cards\Api\Controllers\UpdateAllowedTagsController;
 use Walsgit\Discussion\Cards\Api\Controllers\UpdateTagSettingsController;
+use Walsgit\Discussion\Cards\Api\Controllers\StatisticsController;
+use Walsgit\Discussion\Cards\Api\Controllers\RefreshStatsController;
 use Walsgit\Discussion\Cards\Validator\TagSettingsValidator;
 use Walsgit\Discussion\Cards\Validator\ImageUploadValidator;
 use Walsgit\Discussion\Cards\Providers\ImageProcessingProvider;
@@ -96,7 +98,7 @@ return [
             return $model->walsgit_discussion_cards_tag_settings;
         }),
 
-    (new Extend\Validator(TagsettingsValidator::class)),
+    (new Extend\Validator(TagSettingsValidator::class)),
     (new Extend\Validator(ImageUploadValidator::class)),
 
     new Extend\ServiceProvider(ImageProcessingProvider::class),
@@ -109,7 +111,9 @@ return [
         ->post('/walsgit_discussion_cards_tag_default_image', 'walsgit_discussion_cards_tag_default_image.upload', TagImageController::class)
         ->delete('/walsgit_discussion_cards_tag_default_image', 'walsgit_discussion_cards_tag_default_image.delete', TagImageController::class)
         ->post('/walsgit_discussion_cards_tag_update_allowedTags', 'walsgit_discussion_cards_updateAllowedTags', UpdateAllowedTagsController::class)
-        ->patch('/tags/{id}/tagSettings', 'walsgit_discussion_cards_updateTagSettings', UpdateTagSettingsController::class),
+        ->patch('/tags/{id}/tagSettings', 'walsgit_discussion_cards_updateTagSettings', UpdateTagSettingsController::class)
+        ->get('/walsgit/discussion-cards/image-stats', 'walsgit.discussion-cards.image-stats', StatisticsController::class)
+        ->post('/walsgit/discussion-cards/image-stats/refresh', 'walsgit.discussion-cards.image-stats.refresh', RefreshStatsController::class),
     
     (new Extend\Console())
         ->command(MigrateImagesCommand::class)
