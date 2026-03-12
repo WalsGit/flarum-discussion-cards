@@ -2,6 +2,133 @@
 /******/ 	// runtime can't be in strict mode because a global variable is assign and maybe created.
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./src/admin/components/PurgeImagesModal.js":
+/*!**************************************************!*\
+  !*** ./src/admin/components/PurgeImagesModal.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ PurgeImagesModal)
+/* harmony export */ });
+/* harmony import */ var _babel_runtime_helpers_esm_inheritsLoose__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/esm/inheritsLoose */ "./node_modules/@babel/runtime/helpers/esm/inheritsLoose.js");
+/* harmony import */ var flarum_common_components_Modal__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! flarum/common/components/Modal */ "flarum/common/components/Modal");
+/* harmony import */ var flarum_common_components_Modal__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(flarum_common_components_Modal__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var flarum_common_components_Button__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! flarum/common/components/Button */ "flarum/common/components/Button");
+/* harmony import */ var flarum_common_components_Button__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(flarum_common_components_Button__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var flarum_app__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! flarum/app */ "flarum/app");
+/* harmony import */ var flarum_app__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(flarum_app__WEBPACK_IMPORTED_MODULE_3__);
+
+
+
+
+var PurgeImagesModal = /*#__PURE__*/function (_Modal) {
+  function PurgeImagesModal() {
+    return _Modal.apply(this, arguments) || this;
+  }
+  (0,_babel_runtime_helpers_esm_inheritsLoose__WEBPACK_IMPORTED_MODULE_0__["default"])(PurgeImagesModal, _Modal);
+  var _proto = PurgeImagesModal.prototype;
+  _proto.oninit = function oninit(vnode) {
+    _Modal.prototype.oninit.call(this, vnode);
+    this.loading = false;
+    this.output = "";
+    this.commandOutput = [];
+  };
+  _proto.className = function className() {
+    return "PurgeImagesModal Modal--medium";
+  };
+  _proto.title = function title() {
+    return flarum_app__WEBPACK_IMPORTED_MODULE_3___default().translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_title");
+  };
+  _proto.content = function content() {
+    var _this = this;
+    return m("div", {
+      className: "Modal-body"
+    }, m("div", {
+      className: "Form"
+    }, m("p", {
+      className: "helpText"
+    }, flarum_app__WEBPACK_IMPORTED_MODULE_3___default().translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_helpText")), m("div", {
+      className: "Form-group"
+    }, m("label", null, flarum_app__WEBPACK_IMPORTED_MODULE_3___default().translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteUnusedLabel")), m("div", {
+      className: "helpText"
+    }, flarum_app__WEBPACK_IMPORTED_MODULE_3___default().translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteUnusedHelp")), m((flarum_common_components_Button__WEBPACK_IMPORTED_MODULE_2___default()), {
+      className: "Button Button--primary",
+      icon: "fas fa-trash",
+      loading: this.loading && this.purgeType === 'unused',
+      disabled: this.loading,
+      onclick: function onclick() {
+        return _this.purgeImages('unused');
+      }
+    }, flarum_app__WEBPACK_IMPORTED_MODULE_3___default().translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteUnusedBtnText"))), m("div", {
+      className: "Form-group"
+    }, m("label", null, flarum_app__WEBPACK_IMPORTED_MODULE_3___default().translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteAllLabel")), m("div", {
+      className: "helpText"
+    }, flarum_app__WEBPACK_IMPORTED_MODULE_3___default().translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteAllHelp")), m((flarum_common_components_Button__WEBPACK_IMPORTED_MODULE_2___default()), {
+      className: "Button Button--danger",
+      icon: "fas fa-trash",
+      loading: this.loading && this.purgeType === 'all',
+      disabled: this.loading,
+      onclick: function onclick() {
+        return _this.purgeImages('all');
+      }
+    }, flarum_app__WEBPACK_IMPORTED_MODULE_3___default().translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteAllBtnText"))), this.output && m("div", {
+      className: "Form-group"
+    }, m("div", {
+      className: "PurgeImages-output"
+    }, m("pre", null, this.output))), this.commandOutput.length > 0 && m("div", {
+      className: "Form-group"
+    }, m("div", {
+      className: "PurgeImages-summary"
+    }, this.commandOutput.map(function (line, index) {
+      return m("div", {
+        key: index
+      }, line);
+    })))));
+  };
+  _proto.purgeImages = function purgeImages(type) {
+    var _this2 = this;
+    this.purgeType = type;
+    this.loading = true;
+    this.output = flarum_app__WEBPACK_IMPORTED_MODULE_3___default().translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_runningCommand");
+    this.commandOutput = [];
+    m.redraw.sync(); // Force immediate redraw
+
+    setTimeout(function () {
+      flarum_app__WEBPACK_IMPORTED_MODULE_3___default().request({
+        method: 'POST',
+        url: flarum_app__WEBPACK_IMPORTED_MODULE_3___default().forum.attribute('apiUrl') + '/walsgit/discussion-cards/purge-images' + (type === 'all' ? '?all=true' : '')
+      }).then(function (result) {
+        _this2.loading = false;
+        _this2.output = result.command + "\n";
+        _this2.commandOutput = result.output;
+        m.redraw();
+
+        // Show success message
+        flarum_app__WEBPACK_IMPORTED_MODULE_3___default().alerts.show({
+          type: 'success'
+        }, flarum_app__WEBPACK_IMPORTED_MODULE_3___default().translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_success"));
+      })["catch"](function (err) {
+        _this2.loading = false;
+        _this2.output = "Error occurred while executing command.";
+        _this2.commandOutput = [err.message || "Unknown error"];
+        m.redraw();
+
+        // Show error message
+        flarum_app__WEBPACK_IMPORTED_MODULE_3___default().alerts.show({
+          type: 'error'
+        }, flarum_app__WEBPACK_IMPORTED_MODULE_3___default().translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_error"));
+      });
+    }, 500); // 500ms delay to see the running message
+  };
+  return PurgeImagesModal;
+}((flarum_common_components_Modal__WEBPACK_IMPORTED_MODULE_1___default()));
+
+
+/***/ }),
+
 /***/ "./src/admin/components/Settings.js":
 /*!******************************************!*\
   !*** ./src/admin/components/Settings.js ***!
@@ -329,6 +456,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var flarum_common_components_Button__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(flarum_common_components_Button__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var flarum_app__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! flarum/app */ "flarum/app");
 /* harmony import */ var flarum_app__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(flarum_app__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _PurgeImagesModal__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./PurgeImagesModal */ "./src/admin/components/PurgeImagesModal.js");
+
 
 
 
@@ -411,7 +540,11 @@ var StatsToolsBanner = /*#__PURE__*/function (_Component) {
       onclick: function onclick() {
         return _this3.refreshStats();
       }
-    }, "Update stats")))));
+    }, "Update stats"), m((flarum_common_components_Button__WEBPACK_IMPORTED_MODULE_3___default()), {
+      onclick: function onclick() {
+        return flarum_app__WEBPACK_IMPORTED_MODULE_4___default().modal.show(_PurgeImagesModal__WEBPACK_IMPORTED_MODULE_5__["default"]);
+      }
+    }, "Purge images")))));
   };
   return StatsToolsBanner;
 }((flarum_common_Component__WEBPACK_IMPORTED_MODULE_1___default()));

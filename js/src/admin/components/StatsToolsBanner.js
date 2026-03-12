@@ -2,6 +2,7 @@ import Component from 'flarum/common/Component';
 import Dropdown from 'flarum/common/components/Dropdown';
 import Button from 'flarum/common/components/Button';
 import app from 'flarum/app';
+import PurgeImagesModal from './PurgeImagesModal';
 
 export default class StatsToolsBanner extends Component {
 	oninit() {
@@ -73,6 +74,7 @@ export default class StatsToolsBanner extends Component {
 				</strong>
 				</li>
 
+				{/* ==== Tools menu ==== */}
 				<li className="item-tools">
 				<Dropdown
 					label="Tools"
@@ -82,6 +84,10 @@ export default class StatsToolsBanner extends Component {
 				>
 					<Button onclick={() => this.refreshStats()}>
 					Update stats
+					</Button>
+					
+					<Button onclick={() => app.modal.show(PurgeImagesModal)}>
+					Purge images
 					</Button>
 				</Dropdown>
 				</li>

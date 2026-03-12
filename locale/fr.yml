@@ -8,6 +8,17 @@ walsgit_discussion_cards:
     settings:
       statsToolsBanner:
         refreshStats: "Les statistiques des images ont bien été mises à jour"
+        purgeImagesModal_title: "Purger les images"
+        purgeImagesModal_helpText: "Ces options vous permettront de supprimer du serveur les images des cartes de discussion. Vous pouvez trouver plus d'options de purge avec la commande CLI : <code>php flarum discussion-cards:purge-images --help</code>\n<strong>ATTENTION : Ces actions sont irréversibles !</strong> Aussi, notez que les images par défaut (générale ou des tags) ne seront pas effacée ici (pour les supprimer, utilisez le bouton de suppression de la section dédiée, respectivement, dans paramètres de l'extension ou ceux de chaque tag (étiquette)"
+        purgeImagesModal_deleteUnusedLabel: "Purger les images de cartes de discussion inutilisées"
+        purgeImagesModal_deleteUnusedHelp: "Cela va supprimer toutes les images inutilisées de votre disque (serveur). Ces images ne sont utilisées par aucune carte de discussion et peuvent donc être supprimées sans risque. En cliquant sur le bouton suivant vous allez lancer la commande CLI : <code>php flarum discussion-cards:purge-images</code>"
+        purgeImagesModal_deleteUnusedBtnText: "Supprimer les images inutilisées"
+        purgeImagesModal_deleteAllLabel: "Purger toutes les images des cartes de discussion"
+        purgeImagesModal_deleteAllHelp: "Cela va supprimer toutes les images des cartes de discussion de votre disque (serveur). En cliquant sur le bouton suivant vous allez lancer la commande CLI : <code>php flarum discussion-cards:purge-images --all</code>"
+        purgeImagesModal_deleteAllBtnText: "Supprimer toutes les images"
+        purgeImagesModal_success: "Images purgées avec succès"
+        purgeImagesModal_runningCommand: "Commande de purge en cours d'exécution...\n"
+        purgeImagesModal_error: "Une erreur est survenue lors de la purge des images."
       general:
         where_title: "Où ?"
         where_info: "Choisissez où vous voulez utiliser des cartes de discussions"

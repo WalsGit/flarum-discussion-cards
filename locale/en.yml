@@ -8,6 +8,17 @@ walsgit_discussion_cards:
     settings:
       statsToolsBanner:
         refreshStats: "Image statistics have been updated successfully"
+        purgeImagesModal_title: "Purge images"
+        purgeImagesModal_helpText: "These options will let you delete discussion card images from your server. You can find more purge options with the CLI command: <code>php flarum discussion-cards:purge-images --help</code>\n<strong>WARNING: these actions are irreversible!</strong> Also, note that default images (general or tag) will not be delete here (to delete them, use the remove button in the dedicated section of the extension settings or tag settings respectively"
+        purgeImagesModal_deleteUnusedLabel: "Purge unused discussion card images"
+        purgeImagesModal_deleteUnusedHelp: "This will delete all unused images from your disk (server). These images are no longer in use by any discussion card and are therefore safe to delete. Clicking the following button will run this CLI command: <code>php flarum discussion-cards:purge-images</code>"
+        purgeImagesModal_deleteUnusedBtnText: "Delete unused images"
+        purgeImagesModal_deleteAllLabel: "Purge all discussion card images"
+        purgeImagesModal_deleteAllHelp: "This will delete all discussion card images from your disk (server). Clicking the following button will run this CLI command: <code>php flarum discussion-cards:purge-images --all</code>"
+        purgeImagesModal_deleteAllBtnText: "Delete all images"
+        purgeImagesModal_success: "Images purged successfully"
+        purgeImagesModal_runningCommand: "Running command...\n"
+        purgeImagesModal_error: "An error occurred while purging images."
       general:
         where_title: "Where?"
         where_info: "Set where you want to use discussion cards."
