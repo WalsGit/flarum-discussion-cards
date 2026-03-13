@@ -13,9 +13,9 @@
      * This adds a CLI command discussion-cards:regenerate-images to re-analyse discussions' first posts and re-generate their card images.
      * 
      * discussion-cards:regenerate-images 
-     *      > will regenerate card images for the "Lastest" 20 discussions (default)
+     *      > will regenerate card images for the "Latest" 20 discussions (default)
      * discussion-cards:regenerate-images -l | --latest [number of discussions]
-     *      > will regenerate card images for the [number] "Lastest" discussions (lastest active discussion aka with the latest replies, default number is 20)
+     *      > will regenerate card images for the [number] "Latest" discussions (latest active discussions aka with the latest replies, default number is 20)
      * discussion-cards:regenerate-images -t | --top [number of discussions]
      *      > will regenerate card images for the [number] "Top" discussions (discussions with the most replies, default number is 20)
      * discussion-cards:regenerate-images -N | --newest [number of discussions]
@@ -31,7 +31,7 @@
      * discussion-cards:regenerate-images -b | --batch-size [number of discussions]
      *      > will set a custom batch size for the number of discussions to be processed at once (default is 100)
      * discussion-cards:regenerate-images --dry-run
-     *      > will simulate without regenarting anything
+     *      > will simulate without regenerating anything
      * 
      * ======== 3rd party extensions support ========
      * > If flarumite/simple-discussion-views or michaelbelgium/flarum-discussion-views is installed and activated:
