@@ -416,7 +416,7 @@ class RegenerateImagesCommand extends AbstractCommand
             throw new \RuntimeException('first post not found');
         }
 
-        $html = $discussion->firstPost->content;
+        $html = $discussion->firstPost->formatContent();
 
         $this->regenerator->regenerate($discussion, $html, true);
     }
