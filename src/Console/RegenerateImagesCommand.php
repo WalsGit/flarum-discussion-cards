@@ -156,12 +156,19 @@ class RegenerateImagesCommand extends AbstractCommand
         }
 
         // Sorting-based selection (cumulative)
+        $hasSortingFlag = false;
         foreach (['latest', 'top', 'newest', 'oldest', 'popular', 'unpopular'] as $type) {
             if ($this->hasSelectionFlag($type)) {
                 $raw   = $this->input->getOption($type);
                 $limit = is_numeric($raw) ? max(1, (int) $raw) : self::DEFAULT_LIMIT;
                 $ids   = array_merge($ids, $this->getDiscussions($type, $limit));
+                $hasSortingFlag = true;
             }
+        }
+
+        // Default behavior: if no sorting flag is specified, process latest discussions
+        if (!$hasSortingFlag && empty($ids)) {
+            $ids = array_merge($ids, $this->getDiscussions('latest', self::DEFAULT_LIMIT));
         }
 
         return array_values(array_unique($ids));
