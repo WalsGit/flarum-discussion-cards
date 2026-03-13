@@ -40,7 +40,7 @@ class HtmlImageExtractor
         }
 
         // B — Additional extractors (Imgur, Dailymotion…)
-        // Imgur detection only works for single image (galleries & videos can't be detected with this methode)
+        // Imgur detection only works for single image (galleries & videos can't be detected with this method)
         $extractors = [
             [
                 'pattern' => '/src=["\']([^"\']*imgur\.min\.html[^"\']*)["\']/i',
