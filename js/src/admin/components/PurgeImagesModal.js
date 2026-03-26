@@ -101,8 +101,8 @@ export default class PurgeImagesModal extends Modal {
                 );
             }).catch(err => {
                 this.loading = false;
-                this.output = "Error occurred while executing command.";
-                this.commandOutput = [err.message || "Unknown error"];
+                this.output = app.translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_error");
+                this.commandOutput = [err.message || app.translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_unknownError")];
                 m.redraw();
 
                 // Show error message

@@ -19,6 +19,7 @@ walsgit_discussion_cards:
         purgeImagesModal_success: "Images purged successfully"
         purgeImagesModal_runningCommand: "Running command...\n"
         purgeImagesModal_error: "An error occurred while purging images."
+        purgeImagesModal_unknownError: "Unknown error"
         regenerateImagesModal_title: "Regenerate images"
         regenerateImagesModal_helpText: "These options will let you regenerate your discussion card images. To regenerate a different number of discussion cards images or ALL of them, use the dedicated CLI command; you can find more details about it by "
         regenerateImagesModal_helpTextUrlTitle: "<strong>reading the Wiki</strong>"
