@@ -21,6 +21,7 @@ use Walsgit\Discussion\Cards\Api\Controllers\UpdateTagSettingsController;
 use Walsgit\Discussion\Cards\Api\Controllers\StatisticsController;
 use Walsgit\Discussion\Cards\Api\Controllers\RefreshStatsController;
 use Walsgit\Discussion\Cards\Api\Controllers\PurgeImagesController;
+use Walsgit\Discussion\Cards\Api\Controllers\RegenerateImagesController;
 use Walsgit\Discussion\Cards\Validator\TagSettingsValidator;
 use Walsgit\Discussion\Cards\Validator\ImageUploadValidator;
 use Walsgit\Discussion\Cards\Providers\ImageProcessingProvider;
@@ -115,7 +116,8 @@ return [
         ->patch('/tags/{id}/tagSettings', 'walsgit_discussion_cards_updateTagSettings', UpdateTagSettingsController::class)
         ->get('/walsgit/discussion-cards/image-stats', 'walsgit.discussion-cards.image-stats', StatisticsController::class)
         ->post('/walsgit/discussion-cards/image-stats/refresh', 'walsgit.discussion-cards.image-stats.refresh', RefreshStatsController::class)
-        ->post('/walsgit/discussion-cards/purge-images', 'walsgit.discussion-cards.purge-images', PurgeImagesController::class),
+        ->post('/walsgit/discussion-cards/purge-images', 'walsgit.discussion-cards.purge-images', PurgeImagesController::class)
+        ->post('/walsgit/discussion-cards/regenerate-images', 'walsgit.discussion-cards.regenerate-images', RegenerateImagesController::class),
     
     (new Extend\Console())
         ->command(MigrateImagesCommand::class)

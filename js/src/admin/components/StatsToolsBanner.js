@@ -3,6 +3,7 @@ import Dropdown from 'flarum/common/components/Dropdown';
 import Button from 'flarum/common/components/Button';
 import app from 'flarum/app';
 import PurgeImagesModal from './PurgeImagesModal';
+import RegenerateImagesModal from './RegenerateImagesModal';
 
 export default class StatsToolsBanner extends Component {
 	oninit() {
@@ -88,6 +89,10 @@ export default class StatsToolsBanner extends Component {
 					
 					<Button onclick={() => app.modal.show(PurgeImagesModal)}>
 					Purge images
+					</Button>
+
+					<Button onclick={() => app.modal.show(RegenerateImagesModal)}>
+					Regenerate images
 					</Button>
 				</Dropdown>
 				</li>
