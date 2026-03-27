@@ -171,4 +171,5 @@ walsgit_discussion_cards:
       regenerateImagesStart: "➡ Démarrage du traitement de(s) {count} discussion(s)..."
       regenerateImagesError: "❌ Erreur lors du traitement de la discussion #{id}: {message}"
       regenerateImagesStartAll: "➡ Démarrage du traitement de TOUTES les [{count}] discussions..."
+      regenerateImagesStartAllWithout: "➡ Démarrage du traitement de [{count}] discussions sans images..."
       regenerateImagesSummary: "➡ Résumé des régénérations{mode}: {total} traitées, {success} réussies & {errors} erreurs."

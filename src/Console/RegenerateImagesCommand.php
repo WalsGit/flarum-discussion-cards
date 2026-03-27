@@ -12,7 +12,7 @@
     /**
      * This adds a CLI command discussion-cards:regenerate-images to re-analyse discussions' first posts and re-generate their card images.
      * 
-     * discussion-cards:regenerate-images 
+     * discussion-cards:regenerate-images
      *      > will regenerate card images for the "Latest" 20 discussions (default)
      * discussion-cards:regenerate-images -l | --latest [number of discussions]
      *      > will regenerate card images for the [number] "Latest" discussions (latest active discussions aka with the latest replies, default number is 20)
@@ -22,11 +22,17 @@
      *      > will regenerate card images for the [number] "Newest" discussions (newest created discussions, default number is 20)
      * discussion-cards:regenerate-images -o | --oldest [number of discussions]
      *      > will regenerate card images for the [number] "Oldest" discussions (oldest created discussions, default number is 20)
-     * discussion-cards:regenerate-images -a | --all 
-     *      > will regenerate card images for ALL discussions (ignores any other --flag option except --dry-run)
-     * discussion-cards:regenerate-images -d | --discussion [discussion.id] 
+     * discussion-cards:regenerate-images -a | --all
+     *      > will regenerate card images for ALL discussions (ignores any other --flag option except --dry-run & --without)
+     * discussion-cards:regenerate-images -w | --without [number of discussions without images to process]
+     *      > will regenerate card images only for discussions without images (walsgit_card_image_url is NULL)
+     *      > when used alone, processes latest 20 discussions without images
+     *      > when combined with other flags, filters those discussions to only include those without images
+     *      > when used with --all, regenerates images for ALL discussions without images
+     *      > if a number is specified, limits processing to that many discussions without images
+     * discussion-cards:regenerate-images -d | --discussion [discussion.id]
      *      > will regenerate card images of specific discussion ids (comma separated)
-     * discussion-cards:regenerate-images --tag [tag.id OR tag.slug] 
+     * discussion-cards:regenerate-images --tag [tag.id OR tag.slug]
      *      > will regenerate card images of specific tag ids or slug (comma separated) only for tags that have discussion cards activated for them
      * discussion-cards:regenerate-images -b | --batch-size [number of discussions]
      *      > will set a custom batch size for the number of discussions to be processed at once (default is 100)
@@ -86,6 +92,7 @@ class RegenerateImagesCommand extends AbstractCommand
             ->addOption('unpopular', 'u', InputOption::VALUE_OPTIONAL, 'Regenerate card images for the N number of unpopular discussions (default is 20)')
             ->addOption('discussion', 'd', InputOption::VALUE_OPTIONAL, 'Regenerate card images for specified discussion id(s) (comma separated)')
             ->addOption('all', 'a', InputOption::VALUE_NONE, 'Regenerate card images for all discussions')
+            ->addOption('without', 'w', InputOption::VALUE_OPTIONAL, 'Regenerate card images only for discussions without images (walsgit_card_image_url is NULL)')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Simulate without changing or saving anything')
             ->addOption('batch-size', 'b', InputOption::VALUE_OPTIONAL, 'Set a custom batch size for the number of discussions to process at a time', self::DEFAULT_BATCH_SIZE)
             ->addOption('tag', null, InputOption::VALUE_OPTIONAL, 'Regenerate card images for all discussions of specified tag id(s) and/or quoted tag slug(s) (comma separated)');
@@ -97,7 +104,14 @@ class RegenerateImagesCommand extends AbstractCommand
 
         $dryRun    = (bool) $this->input->getOption('dry-run');
         $all       = (bool) $this->input->getOption('all');
+        $without   = $this->input->getOption('without');
         $batchSize = max(1, (int) $this->input->getOption('batch-size'));
+
+        // Handle --without option with --all
+        if ($all && $without !== false) {
+            $limit = is_numeric($without) ? max(1, (int) $without) : null;
+            return $this->processAllWithoutImages($limit, $batchSize, $dryRun);
+        }
 
         // --all
         if ($all && !$dryRun) {
@@ -123,6 +137,26 @@ class RegenerateImagesCommand extends AbstractCommand
         }
 
         $discussionIds = $this->collectDiscussionIds();
+
+        // Special case: if --without is used alone and we have no discussions from collectDiscussionIds,
+        // we need to get discussions without images directly
+        $without = $this->input->getOption('without');
+        if ($without !== false && empty($discussionIds) && !$this->hasAnySortingFlag()) {
+            // Get latest discussions without images directly
+            $limit = is_numeric($without) ? max(1, (int) $without) : self::DEFAULT_LIMIT;
+            $discussionIds = $this->getDiscussionsWithoutImages($limit);
+        }
+
+        // Apply --without filter if specified and we have discussions from collectDiscussionIds
+        if ($without !== false && !empty($discussionIds) && $this->hasAnySortingFlag()) {
+            $discussionIds = $this->filterDiscussionsWithoutImages($discussionIds);
+
+            // Limit the number of discussions if a limit is specified with --without
+            if (is_numeric($without)) {
+                $limit = max(1, (int) $without);
+                $discussionIds = array_slice($discussionIds, 0, $limit);
+            }
+        }
 
         if (empty($discussionIds)) {
             $this->info($this->trans('NothingToDo'));
@@ -167,7 +201,9 @@ class RegenerateImagesCommand extends AbstractCommand
         }
 
         // Default behavior: if no sorting flag is specified, process latest discussions
-        if (!$hasSortingFlag && empty($ids)) {
+        // Exception: if --without is specified alone, we still want to process latest discussions
+        $without = $this->input->getOption('without');
+        if (!$hasSortingFlag && empty($ids) && $without !== false) {
             $ids = array_merge($ids, $this->getDiscussions('latest', self::DEFAULT_LIMIT));
         }
 
@@ -301,6 +337,40 @@ class RegenerateImagesCommand extends AbstractCommand
             ->all();
     }
 
+    private function filterDiscussionsWithoutImages(array $discussionIds): array
+    {
+        if (empty($discussionIds)) {
+            return [];
+        }
+
+        // Get discussions that have walsgit_card_image_url as NULL
+        return Discussion::query()
+            ->whereIn('id', $discussionIds)
+            ->whereNull('walsgit_card_image_url')
+            ->pluck('id')
+            ->all();
+    }
+
+    private function getDiscussionsWithoutImages(int $limit): array
+    {
+        return Discussion::query()
+            ->whereNull('walsgit_card_image_url')
+            ->orderByDesc('last_posted_at')
+            ->limit($limit)
+            ->pluck('id')
+            ->all();
+    }
+
+    private function hasAnySortingFlag(): bool
+    {
+        foreach (['latest', 'top', 'newest', 'oldest', 'popular', 'unpopular'] as $type) {
+            if ($this->hasSelectionFlag($type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     /**
      * =====================
@@ -398,6 +468,84 @@ class RegenerateImagesCommand extends AbstractCommand
         $this->output->writeln('');
 
         $this->printSummary($total, $success, $errors, $dryRun);
+
+        return Command::SUCCESS;
+    }
+
+    private function processAllWithoutImages(?int $limit, int $batchSize, bool $dryRun): int
+    {
+        // Get count of discussions without images
+        $query = Discussion::query()->whereNull('walsgit_card_image_url');
+        $total = $limit ? min($limit, $query->count()) : $query->count();
+
+        if ($total === 0) {
+            $this->info($this->trans('NothingToDo'));
+            return Command::SUCCESS;
+        }
+
+        $success = 0;
+        $errors  = 0;
+        $offset  = 0;
+        $processed = 0;
+
+        $this->info($this->trans('StartAllWithout', ['count' => $total]));
+
+        $bar = new ProgressBar($this->output, $total);
+        $bar->start();
+
+        do {
+            $query = Discussion::query()
+                ->whereNull('walsgit_card_image_url')
+                ->orderBy('id')
+                ->offset($offset)
+                ->limit($batchSize);
+
+            // Apply limit if specified
+            if ($limit !== null && ($processed + $batchSize) > $limit) {
+                $remaining = $limit - $processed;
+                if ($remaining <= 0) {
+                    break;
+                }
+                $query->limit($remaining);
+            }
+
+            $ids = $query->pluck('id')->all();
+
+            if (empty($ids)) {
+                break;
+            }
+
+            foreach ($ids as $id) {
+                if ($limit !== null && $processed >= $limit) {
+                    break 2;
+                }
+
+                try {
+                    if (!$dryRun) {
+                        $this->regenerateDiscussion($id);
+                    }
+                    $success++;
+                    $processed++;
+                } catch (\Throwable $e) {
+                    $errors++;
+                    $this->error(
+                        $this->trans('Error', [
+                            'id'      => $id,
+                            'message' => $e->getMessage(),
+                        ])
+                    );
+                }
+
+                $bar->advance();
+            }
+
+            $offset += $batchSize;
+        } while (($limit === null || $processed < $limit) && !empty($ids));
+
+        $bar->finish();
+        $this->output->writeln('');
+
+        $this->printSummary($processed, $success, $errors, $dryRun);
 
         return Command::SUCCESS;
     }
