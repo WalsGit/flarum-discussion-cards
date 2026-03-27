@@ -48,6 +48,7 @@
     "support": {
         "issues": "https://github.com/WalsGit/flarum-discussion-cards/issues",
         "forum": "https://discuss.flarum.org/d/36343-flarum-discussion-cards",
-        "docs": "https://github.com/WalsGit/flarum-discussion-cards/wiki"
+        "docs": "https://github.com/WalsGit/flarum-discussion-cards/wiki",
+        "source": "https://github.com/WalsGit/flarum-discussion-cards"
     }
 }
