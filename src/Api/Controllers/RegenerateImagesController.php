@@ -37,6 +37,7 @@ class RegenerateImagesController implements RequestHandlerInterface
         $queryParams = $request->getQueryParams();
         //$all = isset($queryParams['all']) && $queryParams['all'] === 'true';
         $ltno = isset($queryParams['ltno']) && $queryParams['ltno'] === 'true';
+        $without = isset($queryParams['without']) && $queryParams['without'] === 'true';
 
         // Setting the command to use
         $command = ['php', 'flarum', 'discussion-cards:regenerate-images'];
@@ -48,6 +49,12 @@ class RegenerateImagesController implements RequestHandlerInterface
             $command[] = '-t';
             $command[] = '-N';
             $command[] = '-o';
+        }
+
+        if ($without) {
+            $command[] = '-a';
+            $command[] = '-w';
+            $command[] = '20';
         }
 
         // Executing the command

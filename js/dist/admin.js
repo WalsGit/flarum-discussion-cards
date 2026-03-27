@@ -204,7 +204,18 @@ var RegenerateImagesModal = /*#__PURE__*/function (_Modal) {
       onclick: function onclick() {
         return _this.regenerateImages('ltno');
       }
-    }, flarum_app__WEBPACK_IMPORTED_MODULE_3___default().translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_regenerateLTNOBtnText"))), this.output && m("div", {
+    }, flarum_app__WEBPACK_IMPORTED_MODULE_3___default().translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_regenerateLTNOBtnText"))), m("div", {
+      className: "Form-group"
+    }, m("label", null, flarum_app__WEBPACK_IMPORTED_MODULE_3___default().translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_regenerateWithoutLabel")), m("div", {
+      className: "helpText"
+    }, flarum_app__WEBPACK_IMPORTED_MODULE_3___default().translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_regenerateWithoutHelp")), m((flarum_common_components_Button__WEBPACK_IMPORTED_MODULE_2___default()), {
+      className: "Button Button--primary",
+      loading: this.loading && this.regenerateType === 'without',
+      disabled: this.loading,
+      onclick: function onclick() {
+        return _this.regenerateImages('without');
+      }
+    }, flarum_app__WEBPACK_IMPORTED_MODULE_3___default().translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_regenerateWithoutBtnText"))), this.output && m("div", {
       className: "Form-group"
     }, m("div", {
       className: "RegenerateImages-output"
@@ -213,7 +224,7 @@ var RegenerateImagesModal = /*#__PURE__*/function (_Modal) {
     }, m("div", {
       className: "RegenerateImages-summary"
     }, this.commandOutput.filter(function (line) {
-      return line && line.startsWith("➡ Regeneration summary:");
+      return line && (line.startsWith("➡ Regeneration summary:") || line[0]);
     }).map(function (line, index) {
       return m("div", {
         key: index
@@ -235,7 +246,7 @@ var RegenerateImagesModal = /*#__PURE__*/function (_Modal) {
     setTimeout(function () {
       flarum_app__WEBPACK_IMPORTED_MODULE_3___default().request({
         method: 'POST',
-        url: flarum_app__WEBPACK_IMPORTED_MODULE_3___default().forum.attribute('apiUrl') + '/walsgit/discussion-cards/regenerate-images' + (type === 'ltno' ? '?ltno=true' : '')
+        url: flarum_app__WEBPACK_IMPORTED_MODULE_3___default().forum.attribute('apiUrl') + '/walsgit/discussion-cards/regenerate-images' + (type === 'ltno' ? '?ltno=true' : type === 'without' ? '?without=true' : '')
       }).then(function (result) {
         _this2.loading = false;
         _this2.output = result.command + "\n";

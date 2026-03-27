@@ -60,6 +60,20 @@ export default class RegenerateImagesModal extends Modal {
                         </Button>
                     </div>
 
+                    {/* Generate card images for 20 discussions without one */}
+                    <div className="Form-group">
+                        <label>{app.translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_regenerateWithoutLabel")}</label>
+						<div className="helpText">{app.translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_regenerateWithoutHelp")}</div>
+                        <Button
+                            className="Button Button--primary"
+                            loading={this.loading && this.regenerateType === 'without'}
+                            disabled={this.loading}
+                            onclick={() => this.regenerateImages('without')}
+                        >
+                            {app.translator.trans("walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_regenerateWithoutBtnText")}
+                        </Button>
+                    </div>
+
                     {/* ==== OUTPUT ==== */}
                     {this.output && (
                         <div className="Form-group">
@@ -73,7 +87,7 @@ export default class RegenerateImagesModal extends Modal {
                         <div className="Form-group">
                             <div className="RegenerateImages-summary">
                                 {this.commandOutput
-                                    .filter(line => line && line.startsWith("➡ Regeneration summary:"))
+                                    .filter(line => line && (line.startsWith("➡ Regeneration summary:") || line[0]))
                                     .map((line, index) => (
                                         <div key={index}>{line}</div>
                                     ))
@@ -104,7 +118,10 @@ export default class RegenerateImagesModal extends Modal {
         setTimeout(() => {
             app.request({
                 method: 'POST',
-                url: app.forum.attribute('apiUrl') + '/walsgit/discussion-cards/regenerate-images' + (type === 'ltno' ? '?ltno=true' : ''),
+                url: app.forum.attribute('apiUrl') + '/walsgit/discussion-cards/regenerate-images' + (
+                    type === 'ltno' ? '?ltno=true' 
+                    : type === 'without' ? '?without=true'
+                    : ''),
             }).then(result => {
                 this.loading = false;
                 this.output = result.command + "\n";
