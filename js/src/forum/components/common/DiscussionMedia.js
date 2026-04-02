@@ -17,7 +17,7 @@ export default class DiscussionMedia extends Component {
         };
 
         // 3rd party "views" extensions support
-        const viewsActivated = "flarumite-simple-discussion-views" in flarum.extensions;
+        const viewsActivated = "fof-discussion-views" in flarum.extensions;
         const isViewsSet = discussion.data.attributes.hasOwnProperty("views");
 
         const mbViewsActivated = "michaelbelgium-discussion-views" in flarum.extensions;

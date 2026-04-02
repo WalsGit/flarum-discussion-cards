@@ -320,9 +320,9 @@ var Settings = /*#__PURE__*/function (_ExtensionPage) {
   _proto.content = function content() {
     /* Supported third party extensions' info */
     var viewsExtension = {
-      id: 'flarumite-simple-discussion-views',
-      name: 'Flarumite Simple Discussion Views',
-      url: 'https://flarum.org/extension/flarumite/simple-discussion-views'
+      id: 'fof-discussion-views',
+      name: 'fof/discussion-views',
+      url: 'https://discuss.flarum.org/d/38394-friendsofflarum-discussion-views'
     };
     var mbViewsExtension = {
       id: 'michaelbelgium-discussion-views',

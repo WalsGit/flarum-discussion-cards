@@ -444,7 +444,7 @@ var DiscussionMedia = /*#__PURE__*/function (_Component) {
     };
 
     // 3rd party "views" extensions support
-    var viewsActivated = "flarumite-simple-discussion-views" in flarum.extensions;
+    var viewsActivated = "fof-discussion-views" in flarum.extensions;
     var isViewsSet = discussion.data.attributes.hasOwnProperty("views");
     var mbViewsActivated = "michaelbelgium-discussion-views" in flarum.extensions;
     var isViewCountSet = discussion.data.attributes.hasOwnProperty("viewCount");

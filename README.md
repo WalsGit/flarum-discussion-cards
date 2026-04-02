@@ -15,10 +15,11 @@ On the ``index page`` (all discussions), if a discussion has multiple tags with 
 Also it changes how the setting to distinguish between read & unread discussion cards work: now the read discussions are filtred with a grayscale instead of the unread ones. As of `1.2.0` read discussion cards a no longer filtered with a grayscale but have just a lighter title and text.
 
 ### 3rd party extension support
-- `flarumite/simple-discussion-views` : show discussion view count on cards
+- Until version `1.3.0` `flarumite/simple-discussion-views` was supported to show discussion views count on cards (see replacement below)
 - As of version `1.1.0` added support for the `v17development/flarum-blog` extension. If activated, you can set to use the blog's extension images for blog posts' cards and/or their article summary as preview text on the cards.
 - As of version `1.2.0` added support for the `shebaoting/repost` extension. If activated, you can set it so that when you click on the card `title` of a discussion starting with a url, it will open that url, and clicking anywhere else on the card will open the discussion as usual.
 - As of version `1.3.0` added support for the `michaelbelgium/flarum-discussion-views` extension.
+- As of version `1.4.0` added support for the `fof/discussion-views` extension (replacing the abandoned flarumite/simple-discussion-views)
 
 ![Discussion Cards](https://i.postimg.cc/FsxNPWYk/flarum-ext-discussioncards-1.png)
 

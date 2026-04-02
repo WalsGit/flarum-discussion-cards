@@ -10,9 +10,9 @@ export default class Settings extends ExtensionPage {
 	content() {
 		/* Supported third party extensions' info */
 		const viewsExtension = {
-			id: 'flarumite-simple-discussion-views',
-			name: 'Flarumite Simple Discussion Views',
-			url: 'https://flarum.org/extension/flarumite/simple-discussion-views',
+			id: 'fof-discussion-views',
+			name: 'fof/discussion-views',
+			url: 'https://discuss.flarum.org/d/38394-friendsofflarum-discussion-views',
 		};
 		const mbViewsExtension = {
 			id: 'michaelbelgium-discussion-views',
@@ -193,7 +193,7 @@ export default class Settings extends ExtensionPage {
 						<p className="helpText">
 							{app.translator.trans("walsgit_discussion_cards.admin.settings.general.otherOptions_info")}
 						</p>
-						{/* flarumite/simple-discussion-views OR michaelbelgium/flarum-ext-discussion-views */}
+						{/* fof/discussion-views OR michaelbelgium/flarum-ext-discussion-views */}
 						<div className="Section">
 							<h4>
 								{app.translator.trans("walsgit_discussion_cards.admin.settings.general.showViews_title_start")}

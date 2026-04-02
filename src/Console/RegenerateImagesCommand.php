@@ -40,7 +40,7 @@
      *      > will simulate without regenerating anything
      * 
      * ======== 3rd party extensions support ========
-     * > If flarumite/simple-discussion-views or michaelbelgium/flarum-discussion-views is installed and activated:
+     * > If fof/discussion-views or michaelbelgium/flarum-discussion-views is installed and activated:
      * discussion-cards:regenerate-images -p | --popular [number of discussions]
      *      > will regenerate card images for the [number] "Popular" discussions (most viewed discussions if Discussion Views is activated, default number is 20)
      * discussion-cards:regenerate-images -u | --unpopular [number of discussions]
@@ -251,8 +251,8 @@ class RegenerateImagesCommand extends AbstractCommand
 
     private function applyViewsOrder(Builder $query, string $direction): void
     {
-        // 3rd party extension support for flarumite/simple-discussion-views
-        if ($this->extensionManager->isEnabled('flarumite-simple-discussion-views')) {
+        // 3rd party extension support for fof/discussion-views
+        if ($this->extensionManager->isEnabled('fof-discussion-views')) {
             $query->orderBy('view_count', $direction);
             return;
         }
