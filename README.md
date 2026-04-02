@@ -12,7 +12,7 @@ On the ``index page`` (all discussions), if a discussion has multiple tags with 
 3. The image of the secondary tag with the lowest id
 4. The general default image
 ```
-Also it changes how the setting to distinguish between read & unread discussion cards work: now the read discussions are filtred with a grayscale instead of the unread ones. As of `1.2.0` read discussion cards a no longer filtered with a grayscale but have just a lighter title and text.
+Also it changes how the setting to distinguish between read & unread discussion cards work: now the read discussions are filtered with a grayscale instead of the unread ones. As of `1.2.0` read discussion cards a no longer filtered with a grayscale but have just a lighter title and text.
 
 ### 3rd party extension support
 - Until version `1.3.0` `flarumite/simple-discussion-views` was supported to show discussion views count on cards (see replacement below)
@@ -28,7 +28,7 @@ Also it changes how the setting to distinguish between read & unread discussion 
 - Thanks to whomever suggested on Discord to use the tags selection component (sorry, we can no longer access the messages on Discord to mention them properly).
 - New settings page inspired by ``Friends of Flarum``'s [Best Answer](https://github.com/FriendsOfFlarum/best-answer) Extension.
 - Additional tags settings based on ``@askvortsov``'s [Discussion Templates](https://github.com/askvortsov1/flarum-discussion-templates) Extension.
-- Developped this with the help of AI (mainly ChatGPT, Cody & Gemini).
+- Developed this with the help of AI (mainly ChatGPT, Cody & Gemini).
 
 ## Installation
 
