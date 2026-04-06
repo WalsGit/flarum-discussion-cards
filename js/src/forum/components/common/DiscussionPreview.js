@@ -9,7 +9,7 @@ export default class DiscussionPreview extends Component {
         const { discussion, settings, maxLength = 150 } = this.attrs;
 
         if (Number(settings.previewText) !== 1) return null;
-        if (!discussion.firstPost()) return null;
+        if (!discussion.firstPost || typeof discussion.firstPost !== 'function' || !discussion.firstPost()) return null;
 
         return (
             <div className="previewPost">

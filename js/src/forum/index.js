@@ -1,7 +1,6 @@
 import app from 'flarum/app';
 import {extend, override} from 'flarum/extend';
 import DiscussionList from 'flarum/forum/components/DiscussionList';
-import DiscussionListState from 'flarum/forum/states/DiscussionListState';
 import DiscussionListItem from 'flarum/forum/components/DiscussionListItem';
 import IndexPage from 'flarum/forum/components/IndexPage';
 import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
@@ -17,12 +16,6 @@ app.initializers.add('walsgit/discussion/cards', () => {
 
   extend(DiscussionList.prototype, 'oncreate', checkOverflowingContent);
   extend(DiscussionList.prototype, 'onupdate', checkOverflowingContent);
-
-  extend(DiscussionListState.prototype, 'requestParams', function (params) {
-    if (app.current.matches(IndexPage)) {
-      params.include.push(['firstPost', 'posts', 'posts.user']);
-    }
-  });
 
   override(DiscussionList.prototype, 'view', function (original) {
     const settings = {};
@@ -126,16 +119,16 @@ extend(Post.prototype, 'save', function (promise) {
 
     /** @type {Discussion} */
     const discussion = updatedPost.discussion();
-    
+
     if (discussion && discussion.id()) {
       app.store.find('discussions', discussion.id(), {}).then((newDiscussionModel) => {
-        
+
         const newImageUrl = newDiscussionModel.attribute('cardImageUrl');
-        
+
         if (newImageUrl) {
             discussion.pushAttributes({
                 'cardImageUrl': newImageUrl
-            });            
+            });
             m.redraw();
         }
 

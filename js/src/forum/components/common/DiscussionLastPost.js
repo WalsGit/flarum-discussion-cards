@@ -10,7 +10,6 @@ export default class DiscussionLastPost extends Component {
         const { discussion, settings, layout } = this.attrs;
 
         if (Number(settings.showLastPostInfo) !== 1) return null;
-        if (!discussion.firstPost()) return null;
 
         if (layout === "card") {
             return (

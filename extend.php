@@ -47,7 +47,7 @@ return [
     new Extenders\RegisterLessVariables(),
 
     (new Extend\ApiController(ListDiscussionsController::class))
-        ->addInclude(['firstPost', 'posts', 'posts.user', 'tags']),
+        ->addInclude(['firstPost', 'tags']),
     
     (new Extend\ApiSerializer(PostSerializer::class))
         ->attribute('contentHtml', function (PostSerializer $serializer, $post) {
