@@ -2,7 +2,7 @@
 
 ## [1.4.1] - 2026-04-08
 ### Fixed
-- DB index creation would work on Flarum DBs with table prefixes.
+- DB index creation wouldn't work on Flarum DBs with table prefixes.
 
 ## [1.4.0] - 2026-04-07
 ### Added
