@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.1] - 2026-04-08
+### Fixed
+- DB index creation would work on Flarum DBs with table prefixes.
+
 ## [1.4.0] - 2026-04-07
 ### Added
 - Gif & bmp are now accepted image file extensions to upload (as default card images).
