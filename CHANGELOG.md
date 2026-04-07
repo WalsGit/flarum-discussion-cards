@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.4.0] - 2026-04-07
+### Added
+- Gif & bmp are now accepted image file extensions to upload (as default card images).
+- Tag icons are now shown with their tag name on cards
+- NEW OPTION to deactivate (totally or partially) cards for discussion list items (non primary cards) and show the original Flarum discussion list instead for the remaining discussions. Can be set globally or per tag and limited to a # of discussions.
+- NEW FEATURE: CLI command to migrate old default card images to new structure `discussion-cards:migrate-images`. Changed composer.json to auto run it on extension update.
+- NEW FEATURE: CLI commands to purge and regenerate images `discussion-cards:purge-images` & `discussion-cards:regenerate-images`
+- NEW FEATURE: a toolbar to the Admin Settings Page with stats on images and a tools menu to refresh stats, purge and regenerate images (limited).
+- a Documentation link to the extension's Wiki in the Admin Settings Page.
+- When a discussion is deleted, so is its discussion card image from the server.
+- New components added to compat.js
+- DB indexes on new `walsgit_card_image_url` column
+
+### Changed
+- Requires Flarum minimum version of 1.8.0.
+- How and where images are stored (now in `/assets/extensions/walsgit-discussion-cards/`).
+- Better validation for uploaded images.
+- New default images filenames.
+- All Images are now converted to webp format.
+- Card images are no longer resolved in the frontend but server side (some trade-offs). They are resolved and created when a discussion is created or modified.
+- Supported embeds in new server side image detection : YouTube & Dailymotion thumbnails, Imgur (partial - single image embeds only) & Postimage embeds.
+- Card images are now downloaded and converted to a small webp version and saved on the server with a filename like `discussion-{id}-*.webp` in the folder `/assets/extensions/walsgit-discussion-cards/`.
+- For the 3rd party Blog Extension support: default blog image will now be converted and saved as `blog-default-card-image.webp`
+- 3rd party views extension support change: abandoned `flarumite/simple-discussion-views` replaced by `fof/discussion-views`.
+- Avatars on cards now only show the first post user and, if different, the last post user, as those data points are already included in flarum's payload (for better performance).
+- Last poster info on cards is now anchored at the bottom of the cards (instead of after the preview text).
+- An asterisk `*` is no longer shown next to the number of unread replies.
+- Some Text descriptions in Admin Settings Page.
+- A lot of code refactoring.
+
+### Fixed
+- No more loading unnecessary posts data to payload
+- Tag Settings Modal: uploading or removing a Tag default card image doesn't need to reload the page anymore to see the changes.
+- Title will remain on one line on list cards (tablet & desktop screens only) and overflowing long titles will now be truncated and scroll on hover to read the full text.
+- Some typos & style issues.
+
 ## [1.3.0] - 2025-05-29
 ### Added
 - Added support for the `michaelbelgium/flarum-discussion-views` extension. To display views count on cards you can now use either michaelbelgium's or flarumite's extension.
