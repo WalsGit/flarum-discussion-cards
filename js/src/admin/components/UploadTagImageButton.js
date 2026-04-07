@@ -1,7 +1,6 @@
 import app from "flarum/admin/app";
 import Button from "flarum/common/components/Button";
 import classList from "flarum/common/utils/classList";
-import EditTagModal from "flarum/tags/components/EditTagModal";
 
 
 export default class UploadTagImageButton extends Button {
@@ -24,7 +23,7 @@ export default class UploadTagImageButton extends Button {
 					<p>
 						<img
 							className="DC-TagDefaultImage"
-							src={"assets/" + app.store.data.tags[this.tagId].data.attributes.walsgitDiscussionCardsTagDefaultImage}
+							src={"assets/extensions/walsgit-discussion-cards/" + app.store.data.tags[this.tagId].data.attributes.walsgitDiscussionCardsTagDefaultImage}
 							alt=""
 							width="200px"
 						/>
@@ -108,7 +107,24 @@ export default class UploadTagImageButton extends Button {
 	 * @protected
 	 */
 	success(response) {
-		window.location.reload();
+		const tag = app.store.getById('tags', this.tagId);
+
+		if (tag) {
+			const newValue = response?.data?.attributes?.walsgitDiscussionCardsTagDefaultImage ?? null;
+
+			if (newValue) {
+				tag.pushAttributes({
+					walsgitDiscussionCardsTagDefaultImage: newValue + '?v=' + Date.now()
+				});
+			} else {
+				tag.pushAttributes({
+					walsgitDiscussionCardsTagDefaultImage: null
+				});
+			}
+		}
+
+		this.loading = false;
+		m.redraw();
 	}
 
 	/**

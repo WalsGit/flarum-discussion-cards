@@ -1,25 +1,21 @@
 import app from 'flarum/app';
 import {extend, override} from 'flarum/extend';
 import DiscussionList from 'flarum/forum/components/DiscussionList';
-import DiscussionListState from 'flarum/forum/states/DiscussionListState';
+import DiscussionListItem from 'flarum/forum/components/DiscussionListItem';
 import IndexPage from 'flarum/forum/components/IndexPage';
 import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
 import Placeholder from 'flarum/common/components/Placeholder';
 import Button from 'flarum/common/components/Button';
 import CardItem from './components/CardItem';
 import ListItem from './components/ListItem';
-import checkOverflowingTags from './helpers/checkOverflowingTags';
+import checkOverflowingContent from './helpers/checkOverflowingContent';
+import Post from 'flarum/common/models/Post';
+import Discussion from 'flarum/common/models/Discussion';
 
 app.initializers.add('walsgit/discussion/cards', () => {
 
-  extend(DiscussionList.prototype, 'oncreate', checkOverflowingTags);
-  extend(DiscussionList.prototype, 'onupdate', checkOverflowingTags);
-
-  extend(DiscussionListState.prototype, 'requestParams', function (params) {
-    if (app.current.matches(IndexPage)) {
-      params.include.push(['firstPost', 'posts', 'posts.user']);
-    }
-  });
+  extend(DiscussionList.prototype, 'oncreate', checkOverflowingContent);
+  extend(DiscussionList.prototype, 'onupdate', checkOverflowingContent);
 
   override(DiscussionList.prototype, 'view', function (original) {
     const settings = {};
@@ -60,14 +56,44 @@ app.initializers.add('walsgit/discussion/cards', () => {
       }
     }
     if (app.current.matches(IndexPage) && ((settings.allowedTags.length && settings.allowedTags.includes(tag)) || (!params.tags && Number(settings.onIndexPage) === 1))) {
+
+      const useListCards = Number(settings.useListCards) === 1;
+      const listCardsCount = Number(settings.listCardsCount);
+
       return (
         <div className={'DiscussionList' + (state.isSearchResults() ? ' DiscussionList--searchResults' : '')}>
+          {/* Card Items (primary card) */}
           <div class="DiscussionList-discussions flexCard">
+            {state.getPages().map((pg, o) =>
+              pg.items
+                .filter((d, i) => o === 0 && i < Number(settings.primaryCards))
+                .map((discussion) =>
+                  m(CardItem, { discussion })
+                )
+            )}
+          </div>
+
+          {/* List Items */}
+          <div class="DiscussionList-discussions">
             {state.getPages().map((pg, o) => {
-              return pg.items.map((discussion, i) => {
-                return (i < Number(settings.primaryCards) && o === 0)
-                  ? m(CardItem, {discussion: discussion})
-                  : m(ListItem, {discussion: discussion})
+
+              // Skip primary cards
+              const secondaryItems = pg.items.filter(
+                (d, i) => !(o === 0 && i < Number(settings.primaryCards))
+              );
+
+              return secondaryItems.map((discussion, idx) => {
+                // Only if useListCards === 1 && (idx < listCardsCount OR listCardsCount = 0)
+                const showCard =
+                  useListCards &&
+                  (listCardsCount === 0 || idx < listCardsCount);
+
+                return showCard
+                  ? m(ListItem, { discussion })
+                  : m(DiscussionListItem, {
+                      discussion,
+                      params: app.search?.params() ?? {}
+                    });
               });
             })}
           </div>
@@ -80,6 +106,38 @@ app.initializers.add('walsgit/discussion/cards', () => {
     }
   })
 }, -1);
+
+/**
+ * Refresh card image after first post edition
+ */
+extend(Post.prototype, 'save', function (promise) {
+  promise.then((updatedPost) => {
+    // first post only
+    if (updatedPost.number() !== 1) {
+      return;
+    }
+
+    /** @type {Discussion} */
+    const discussion = updatedPost.discussion();
+
+    if (discussion && discussion.id()) {
+      app.store.find('discussions', discussion.id(), {}).then((newDiscussionModel) => {
+
+        const newImageUrl = newDiscussionModel.attribute('cardImageUrl');
+
+        if (newImageUrl) {
+            discussion.pushAttributes({
+                'cardImageUrl': newImageUrl
+            });
+            m.redraw();
+        }
+
+      }).catch(error => {
+          console.error(app.translator.trans("walsgit_discussion_cards.forum.console.postUpdateCardImageError"), error);
+      });
+    }
+  });
+}, 100);
 
 
 // Expose compat API

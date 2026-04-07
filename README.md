@@ -12,22 +12,33 @@ On the ``index page`` (all discussions), if a discussion has multiple tags with 
 3. The image of the secondary tag with the lowest id
 4. The general default image
 ```
-Also it changes how the setting to distinguish between read & unread discussion cards work: now the read discussions are filtred with a grayscale instead of the unread ones. As of `1.2.0` read discussion cards a no longer filtered with a grayscale but have just a lighter title and text.
+Also it changes how the setting to distinguish between read & unread discussion cards work: now the read discussions are filtered with a grayscale instead of the unread ones. As of `1.2.0` read discussion cards a no longer filtered with a grayscale but have just a lighter title and text.
+
+🆕 As of `1.4.0` (biggest update to date) for better performance purposes, all card images are now resolved and created server side, some CLI commands are introduced (see below) as well as some new features like the possibility to show some of the discussion in the discussion list without cards (Flarum default discussion list).
 
 ### 3rd party extension support
-- `flarumite/simple-discussion-views` : show discussion view count on cards
+- Until version `1.3.0` `flarumite/simple-discussion-views` was supported to show discussion views count on cards (see replacement below)
 - As of version `1.1.0` added support for the `v17development/flarum-blog` extension. If activated, you can set to use the blog's extension images for blog posts' cards and/or their article summary as preview text on the cards.
 - As of version `1.2.0` added support for the `shebaoting/repost` extension. If activated, you can set it so that when you click on the card `title` of a discussion starting with a url, it will open that url, and clicking anywhere else on the card will open the discussion as usual.
 - As of version `1.3.0` added support for the `michaelbelgium/flarum-discussion-views` extension.
+- As of version `1.4.0` added support for the `fof/discussion-views` extension (replacing the abandoned flarumite/simple-discussion-views)
+
+### CLI Commands
+As of version `1.4.0` new CLI commands have been added to manage card images:
+- `php flarum discussion-cards:migrate-images` (runs automatically on update).
+- `php flarum discussion-cards:purge-images` to delete unused or all card images from server.
+- `php flarum discussion-cards:regenerate-images` to regenerate card images or generate missing card images.
+All details on how to use them can be found in the extension's wiki on github (See Documentation in the Links section below or in the Admin Settings Page). You can also add the `--help` flag to each command to list options.
 
 ![Discussion Cards](https://i.postimg.cc/FsxNPWYk/flarum-ext-discussioncards-1.png)
 
 ### Notes
-- Developed and tested on Flarum 1.8.7 then tested on 1.8.8.
+- Developed and tested on Flarum 1.8.7 (first version released `1.0.0`) and last version `1.4.0` was developed and tested on Flarum 1.8.14.
+- As of version `1.4.0` it requires a Flarum minimum version of 1.8.0.
 - Thanks to whomever suggested on Discord to use the tags selection component (sorry, we can no longer access the messages on Discord to mention them properly).
 - New settings page inspired by ``Friends of Flarum``'s [Best Answer](https://github.com/FriendsOfFlarum/best-answer) Extension.
 - Additional tags settings based on ``@askvortsov``'s [Discussion Templates](https://github.com/askvortsov1/flarum-discussion-templates) Extension.
-- Developped this with the help of AI (mainly ChatGPT, Cody & Gemini).
+- Developed this with the help of AI (mainly ChatGPT, Cody & Gemini).
 
 ## Installation
 
@@ -38,6 +49,7 @@ composer require walsgit/flarum-discussion-cards
 ```
 
 ## Updating
+💡 If you're updating from version `1.3.0` or earlier TO version `1.4.0` or later not that the `discussion-cards:migrate-images` command will be automatically run to move and convert old images used for cards to new file structure and format (See changelog of version `1.4.0` for more details).
 
 ```sh
 composer update walsgit/flarum-discussion-cards
@@ -49,5 +61,6 @@ php flarum cache:clear
 
 - [Packagist](https://packagist.org/packages/walsgit/flarum-discussion-cards)
 - [GitHub](https://github.com/walsgit/flarum-discussion-cards)
+- [Documentation](https://github.com/WalsGit/flarum-discussion-cards/wiki)
 - [Discuss](https://discuss.flarum.org/d/36343-flarum-discussion-cards)
 - [Donate](https://walsgit.github.io/Donations/)

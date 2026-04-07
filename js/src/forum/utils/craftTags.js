@@ -7,8 +7,14 @@ export default function craftTags(tags) {
       return [
         <Link className="cardTag"
               style={{backgroundColor: tag.color()}}
-              href={app.route('tag', {tags: tag.slug()})}>
+              href={app.route('tag', {tags: tag.slug()})}
+        >
+          {tag.icon() 
+            ? <i className={'TagLabel-icon icon ' + tag.icon()} aria-hidden="true"></i>
+            : ""
+          } 
           {tag.name()}
+
         </Link>
       ]
     })];

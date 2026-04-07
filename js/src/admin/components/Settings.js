@@ -4,14 +4,15 @@ import UploadImageButton from 'flarum/admin/components/UploadImageButton';
 import isExtensionInstalled from "../helpers/isExtensionInstalled";
 import isExtensionActive from "../helpers/isExtensionActive";
 import icon from "flarum/common/helpers/icon";
+import StatsToolsBanner from './StatsToolsBanner';
 
 export default class Settings extends ExtensionPage {
 	content() {
 		/* Supported third party extensions' info */
 		const viewsExtension = {
-			id: 'flarumite-simple-discussion-views',
-			name: 'Flarumite Simple Discussion Views',
-			url: 'https://flarum.org/extension/flarumite/simple-discussion-views',
+			id: 'fof-discussion-views',
+			name: 'fof/discussion-views',
+			url: 'https://discuss.flarum.org/d/38394-friendsofflarum-discussion-views',
 		};
 		const mbViewsExtension = {
 			id: 'michaelbelgium-discussion-views',
@@ -34,7 +35,11 @@ export default class Settings extends ExtensionPage {
 		return (
 			<div className="DiscussionCardsSettings">
 				<div className="container">
+					
+					<StatsToolsBanner />
+					
 					<div className="DiscussionCardsSettings--content">
+						{/* ============== WHERE? SECTION ============== */}
 						<h3>{app.translator.trans("walsgit_discussion_cards.admin.settings.general.where_title")}</h3>
 						<p className="helpText">
 							{app.translator.trans("walsgit_discussion_cards.admin.settings.general.where_info")}
@@ -56,6 +61,8 @@ export default class Settings extends ExtensionPage {
 								help: app.translator.trans("walsgit_discussion_cards.admin.settings.general.onIndexPage_help"),
 							})}
 						</div>
+
+						{/* ============== PRIMARY CARDS SECTION ============== */}
 						<h3>{app.translator.trans("walsgit_discussion_cards.admin.settings.general.primaryCardOptions_title")}</h3>
 						<p className="helpText">
 							{app.translator.trans("walsgit_discussion_cards.admin.settings.general.primaryCardOptions_info")}
@@ -94,19 +101,46 @@ export default class Settings extends ExtensionPage {
 								placeholder: 49,
 							})}
 						</div>
+
+						{/* ============== LIST CARDS SECTION ============== */}
+						<h3>{app.translator.trans("walsgit_discussion_cards.admin.settings.general.listCardOptions_title")}</h3>
+						<p className="helpText">
+							{app.translator.trans("walsgit_discussion_cards.admin.settings.general.listCardOptions_info")}
+						</p>
+						<div className="Section">
+							{this.buildSettingComponent({
+								type: "switch",
+								setting: "walsgit_discussion_cards_useListCards",
+								label: app.translator.trans("walsgit_discussion_cards.admin.settings.general.listCards_label"),
+								help: app.translator.trans("walsgit_discussion_cards.admin.settings.general.listCards_help"),
+							})}
+							{this.buildSettingComponent({
+								type: "number",
+								className: 'DC-Number',
+								setting: "walsgit_discussion_cards_listCardsCount",
+								label: app.translator.trans("walsgit_discussion_cards.admin.settings.general.listCardsCount_label"),
+								help: app.translator.trans("walsgit_discussion_cards.admin.settings.general.listCardsCount_help"),
+								min: 0,
+								max: 20,
+								step: 1,
+								placeholder: 0,
+							})}
+						</div>
+
+						{/* ============== CARD OPTIONS SECTION ============== */}
 						<h3>{app.translator.trans("walsgit_discussion_cards.admin.settings.general.cardOptions_title")}</h3>
 						<p className="helpText">
 							{app.translator.trans("walsgit_discussion_cards.admin.settings.general.cardOptions_info")}
 						</p>
 						<div className="Section">
 							<div className="DC-DefaultImageSettings">
-								<h4>{app.translator.trans("walsgit_discussion_cards.admin.settings.general.defaultImage_title")}</h4>
+								<label className="DC-DefaultImageTitle">{app.translator.trans("walsgit_discussion_cards.admin.settings.general.defaultImage_title")}</label>
 								<p className="helpText">
 									{app.translator.trans("walsgit_discussion_cards.admin.settings.general.defaultImage_info")}
 								</p>
 								{app.forum.attribute("walsgitDiscussionCardsDefaultImage") === null 
 									? <div className="imgStub"></div> 
-									: <img className="DC-UserUploadedImage" src={app.forum.attribute("baseUrl") + "/assets/" + app.forum.attribute("walsgitDiscussionCardsDefaultImage")}/>
+									: <img className="DC-UserUploadedImage" src={app.forum.attribute("baseUrl") + "/assets/extensions/walsgit-discussion-cards/" + app.forum.attribute("walsgitDiscussionCardsDefaultImage")}/>
 								}
 								{m(UploadImageButton, {name: "walsgit_discussion_cards_default_image", class: "DC-UploadImageBtn"})}
 							</div>
@@ -153,12 +187,13 @@ export default class Settings extends ExtensionPage {
 								help: app.translator.trans("walsgit_discussion_cards.admin.settings.general.markReadCards_help"),
 							})}							
 						</div>
-						{/* 3rd party extensions options */}
+						
+						{/* ============== 3RD PARTY EXTENSIONS SECTION ============== */}
 						<h3>{app.translator.trans("walsgit_discussion_cards.admin.settings.general.otherOptions_title")}</h3>
 						<p className="helpText">
 							{app.translator.trans("walsgit_discussion_cards.admin.settings.general.otherOptions_info")}
 						</p>
-						{/* flarumite/simple-discussion-views OR michaelbelgium/flarum-ext-discussion-views */}
+						{/* fof/discussion-views OR michaelbelgium/flarum-ext-discussion-views */}
 						<div className="Section">
 							<h4>
 								{app.translator.trans("walsgit_discussion_cards.admin.settings.general.showViews_title_start")}
@@ -248,6 +283,7 @@ export default class Settings extends ExtensionPage {
 		const primaryCards = Number(this.setting('walsgit_discussion_cards_primaryCards')());
 		const desktopCardWidth = Number(this.setting('walsgit_discussion_cards_desktopCardWidth')());
 		const tabletCardWidth = Number(this.setting('walsgit_discussion_cards_tabletCardWidth')());
+		const listCardsCount = Number(this.setting('walsgit_discussion_cards_listCardsCount')());
 
         if (primaryCards < 0 || isNaN(primaryCards)) {
             app.alerts.show({ type: 'error' }, app.translator.trans('walsgit_discussion_cards.admin.errors.primaryCards'));
@@ -259,6 +295,10 @@ export default class Settings extends ExtensionPage {
         }
         if (tabletCardWidth < 10 || tabletCardWidth > 100 || isNaN(tabletCardWidth)) {
             app.alerts.show({ type: 'error' }, app.translator.trans('walsgit_discussion_cards.admin.errors.tabletCardWidth'));
+            return false;
+        }
+		if (listCardsCount < 0 || listCardsCount > 20 || isNaN(listCardsCount)) {
+            app.alerts.show({ type: 'error' }, app.translator.trans('walsgit_discussion_cards.admin.errors.listCardsCount'));
             return false;
         }
 

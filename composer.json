@@ -17,8 +17,9 @@
         }
     ],
     "require": {
-        "flarum/core": "^1.0",
-        "flarum/tags": "^1.0"
+        "flarum/core": "^1.8.0",
+        "flarum/tags": "^1.8.0",
+        "intervention/image": "^2.7"
     },
     "autoload": {
         "psr-4": {
@@ -36,8 +37,18 @@
             }
         }
     },
+    "scripts": {
+        "post-update-cmd": [
+            "@migrate-discussion-cards"
+        ],
+        "migrate-discussion-cards": [
+            "test -f flarum && php flarum discussion-cards:migrate-images || echo \"(Discussion Cards image migration ignored: Not in Flarum folder)\""
+        ]
+    },
     "support": {
         "issues": "https://github.com/WalsGit/flarum-discussion-cards/issues",
-        "forum": "https://discuss.flarum.org/d/36343-flarum-discussion-cards"
+        "forum": "https://discuss.flarum.org/d/36343-flarum-discussion-cards",
+        "docs": "https://github.com/WalsGit/flarum-discussion-cards/wiki",
+        "source": "https://github.com/WalsGit/flarum-discussion-cards"
     }
 }

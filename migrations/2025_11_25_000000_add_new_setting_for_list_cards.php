@@ -1,0 +1,19 @@
+<?php
+
+/*
+ * This file is part of walsgit/discussion-cards
+ *
+ *  Copyright (c) 2025 Wa!id.
+ *
+ *  For detailed copyright and license information, please view the
+ *  LICENSE file that was distributed with this source code.
+ */
+
+use Flarum\Database\Migration;
+
+$allowedTags = [];
+
+return Migration::addSettings([
+    'walsgit_discussion_cards_useListCards' => 1,
+    'walsgit_discussion_cards_listCardsCount' => 0,
+]);
