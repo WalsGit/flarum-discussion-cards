@@ -216,7 +216,7 @@ class CardImageResolver
      */
     protected function getOptimizedCardImage(Discussion $discussion, string $imageUrl): string
     {
-        // If this is already one of the default images (global or tag) we uploaded (no need to reoptimize)
+        // If this is already one of the default images (global or tag) we uploaded (no need to re-optimize)
         if (Str::endsWith($imageUrl, 'default-card-image.webp')) {
             return $imageUrl;
         }
@@ -226,7 +226,7 @@ class CardImageResolver
             @mkdir($assetsPath, 0775, true);
         }
 
-        // 3rd party Blog Extention Support (returns filename or null)
+        // 3rd party Blog Extension Support (returns filename or null)
         $baseUrl = rtrim((string) $this->config->url(), '/');
         $optimizedBlog = $this->imageService->optimizeBlogDefaultImage($imageUrl, $baseUrl);
         if ($optimizedBlog) {
