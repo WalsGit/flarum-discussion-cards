@@ -114,7 +114,7 @@
 - Image stub (changed it for a more neutral one with the Flarum logo)
 - Migrations (with new settings keys and added new tag settings)
 - Switched read/unread discussions' filter (now read are grayscaled and unread are in full colors)
-- Reamde.md, License.md, namespace...
+- Readme.md, License.md, namespace...
 - Removed Russian translation
 
 ### Fixed
