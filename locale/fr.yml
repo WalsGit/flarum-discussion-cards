@@ -155,6 +155,7 @@ walsgit_discussion_cards:
       imageMigrationServiceCleanupSuccess: "️✅ Nettoyage : {filename} a été trouvé et supprimé"
       imageMigrationServiceUnknownError: "Erreur inconnue"
       imageMigrationServiceCleanupFail: "❌ Nettoyage échoué ! {filename} a été trouvé mais n'a pas pu être supprimé : {error}"
+      imageMigrationServiceNoCleanup: "⏭️ En raison de {failedMigrations} migrations échouées, le nettoyage a été ignoré"
       purgeImagesAlreadyRunning: "Purge Images tourne déjà."
       purgeImagesDirectoryNotFound: "Le dossier {directory} n'a pas été trouvé."
       purgeImagesStart: "➡ Purge des images des cartes de discussions..."

@@ -28,7 +28,7 @@
     },
     "extra": {
         "flarum-extension": {
-            "title": "Flarum Discussion Сards",
+            "title": "Flarum Discussion Cards",
             "category": "feature",
             "icon": {
                 "name": "fas fa-border-all",
