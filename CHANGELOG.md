@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.2] - 2026-04-13
+### Added
+- Logging service to allow creation of logs in `Storage/logs/walsgit-discussion-cards/`.
+- The command `php flarum discussion-cards:migrate-images` will now generate more detailed logs in migration-YYYY-mm-dd.log files when executed.
+### Changed
+- Better checks & validation for the command `php flarum discussion-cards:migrate-images` (do folders exists and have the right permissions, and cleanup shouldn't run if there's any file migration or DB error)
+### Fixed
+- Some typos.
+
 ## [1.4.1] - 2026-04-08
 ### Fixed
 - DB index creation wouldn't work on Flarum DBs with table prefixes.
