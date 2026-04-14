@@ -4,8 +4,8 @@ import { extend } from 'flarum/extend';
 import Model from 'flarum/common/Model';
 import Button from 'flarum/common/components/Button';
 import icon from 'flarum/common/helpers/icon';
-import Tag from 'flarum/tags/models/Tag';
-import EditTagModal from 'flarum/tags/components/EditTagModal';
+import Tag from 'ext:flarum/tags/models/Tag';
+import EditTagModal from 'ext:flarum/tags/components/EditTagModal';
 import WdcTagSettingsModal from './components/WdcTagSettingsModal';
 import UploadTagImageButton from './components/UploadTagImageButton';
 

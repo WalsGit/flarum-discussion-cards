@@ -1,5 +1,5 @@
 import Link from 'flarum/common/components/Link';
-import sortTags from 'flarum/tags/utils/sortTags';
+import sortTags from 'ext:flarum/tags/utils/sortTags';
 
 export default function craftTags(tags) {
   if (tags) {
