@@ -1,227 +1,202 @@
-import Button from "flarum/common/components/Button";
-import Modal from "flarum/common/components/Modal";
-import Stream from "flarum/common/utils/Stream";
+import Button from 'flarum/common/components/Button';
+import Modal from 'flarum/common/components/Modal';
+import Stream from 'flarum/common/utils/Stream';
 import Switch from 'flarum/common/components/Switch';
 
 let defaultSettings = {};
 
 export default class WdcTagSettingsModal extends Modal {
-	oninit(vnode) {
-		super.oninit(vnode);
+  oninit(vnode) {
+    super.oninit(vnode);
 
-		this.tagSettings = JSON.parse(this.attrs.model.data.attributes.walsgitDiscussionCardsTagSettings || null) || {};
+    this.tagSettings = JSON.parse(this.attrs.model.data.attributes.walsgitDiscussionCardsTagSettings || null) || {};
 
-		defaultSettings = {
-			primaryCards: app.forum.data.attributes.walsgitDiscussionCardsPrimaryCards,
-			desktopCardWidth: app.forum.data.attributes.walsgitDiscussionCardsDesktopCardWidth,
-			tabletCardWidth: app.forum.data.attributes.walsgitDiscussionCardsTabletCardWidth,
-			useListCards: app.forum.data.attributes.walsgitDiscussionCardsUseListCards,
-			listCardsCount: app.forum.data.attributes.walsgitDiscussionCardsListCardsCount,
-		}
-		
-		if (!this.tagSettings.hasOwnProperty('primaryCards') || this.tagSettings.primaryCards === null) {
-			this.tagSettings.primaryCards = defaultSettings.primaryCards;
-		}
-		if (!this.tagSettings.hasOwnProperty('desktopCardWidth') || this.tagSettings.desktopCardWidth === null) {
-			this.tagSettings.desktopCardWidth = defaultSettings.desktopCardWidth;
-		}
-		if (!this.tagSettings.hasOwnProperty('tabletCardWidth') || this.tagSettings.tabletCardWidth === null) {
-			this.tagSettings.tabletCardWidth = defaultSettings.tabletCardWidth;
-		}
-		if (!this.tagSettings.hasOwnProperty('useListCards') || this.tagSettings.useListCards === null) {
-			this.tagSettings.useListCards = defaultSettings.useListCards;
-		}
-		if (!this.tagSettings.hasOwnProperty('listCardsCount') || this.tagSettings.listCardsCount === null) {
-			this.tagSettings.listCardsCount = defaultSettings.listCardsCount;
-		}
+    defaultSettings = {
+      primaryCards: app.forum.data.attributes.walsgitDiscussionCardsPrimaryCards,
+      desktopCardWidth: app.forum.data.attributes.walsgitDiscussionCardsDesktopCardWidth,
+      tabletCardWidth: app.forum.data.attributes.walsgitDiscussionCardsTabletCardWidth,
+      useListCards: app.forum.data.attributes.walsgitDiscussionCardsUseListCards,
+      listCardsCount: app.forum.data.attributes.walsgitDiscussionCardsListCardsCount,
+    };
 
-		this.tagSettings.primaryCards = Stream(this.tagSettings.primaryCards);
-		this.tagSettings.desktopCardWidth = Stream(this.tagSettings.desktopCardWidth);
-		this.tagSettings.tabletCardWidth = Stream(this.tagSettings.tabletCardWidth);
-		this.tagSettings.useListCards = Stream(this.tagSettings.useListCards);
-		this.tagSettings.listCardsCount = Stream(this.tagSettings.listCardsCount);
-		
-	}
-	className() {
-		return "WdcTagSettingsModal Modal--large";
-	}
+    if (!this.tagSettings.hasOwnProperty('primaryCards') || this.tagSettings.primaryCards === null) {
+      this.tagSettings.primaryCards = defaultSettings.primaryCards;
+    }
+    if (!this.tagSettings.hasOwnProperty('desktopCardWidth') || this.tagSettings.desktopCardWidth === null) {
+      this.tagSettings.desktopCardWidth = defaultSettings.desktopCardWidth;
+    }
+    if (!this.tagSettings.hasOwnProperty('tabletCardWidth') || this.tagSettings.tabletCardWidth === null) {
+      this.tagSettings.tabletCardWidth = defaultSettings.tabletCardWidth;
+    }
+    if (!this.tagSettings.hasOwnProperty('useListCards') || this.tagSettings.useListCards === null) {
+      this.tagSettings.useListCards = defaultSettings.useListCards;
+    }
+    if (!this.tagSettings.hasOwnProperty('listCardsCount') || this.tagSettings.listCardsCount === null) {
+      this.tagSettings.listCardsCount = defaultSettings.listCardsCount;
+    }
 
-	title() {
-		return [
-			app.translator.trans("walsgit_discussion_cards.admin.tag_modal.title"),
-			<span 
-				className="TagLabel colored"
-				style={"--tag-bg: " + this.attrs.model.data.attributes.color + ";"}
-			>
-				<span className="TagLabel-text">
-					<span className="TagLabel-name">{this.attrs.model.data.attributes.name}</span>
-				</span>
-			</span>
-		]
-	}
+    this.tagSettings.primaryCards = Stream(this.tagSettings.primaryCards);
+    this.tagSettings.desktopCardWidth = Stream(this.tagSettings.desktopCardWidth);
+    this.tagSettings.tabletCardWidth = Stream(this.tagSettings.tabletCardWidth);
+    this.tagSettings.useListCards = Stream(this.tagSettings.useListCards);
+    this.tagSettings.listCardsCount = Stream(this.tagSettings.listCardsCount);
+  }
+  className() {
+    return 'WdcTagSettingsModal Modal--large';
+  }
 
-	content() {
-		return [
-			<div className="Modal-body">
-				<div className="Form">
-					<p>
-						{app.translator.trans("walsgit_discussion_cards.admin.tag_modal.intro_text")}
-					</p>
-                        
-					<div className="Form-group">
-						<label htmlFor="primaryCards">{app.translator.trans("walsgit_discussion_cards.admin.tag_modal.primaryCards_label")}</label>
-						<div className="helpText">{app.translator.trans("walsgit_discussion_cards.admin.tag_modal.primaryCards_help", {default: defaultSettings.primaryCards})}</div>
-						<input
-							type="number"
-							name="primaryCards"
-							className="FormControl DC-Number"
-							bidi={this.tagSettings.primaryCards}
-						/>
-					</div>
-					<div className="Form-group">
-						<label htmlFor="desktopCardWidth">{app.translator.trans("walsgit_discussion_cards.admin.tag_modal.desktopCardWidth_label")}</label>
-						<div className="helpText">{app.translator.trans("walsgit_discussion_cards.admin.tag_modal.desktopCardWidth_help", {default: defaultSettings.desktopCardWidth})}</div>
-						<input
-							type="number"
-							name="desktopCardWidth"
-							className="FormControl DC-Number"
-							bidi={this.tagSettings.desktopCardWidth}
-						/>
-					</div>
-					<div className="Form-group">
-						<label htmlFor="tabletCardWidth">{app.translator.trans("walsgit_discussion_cards.admin.tag_modal.tabletCardWidth_label")}</label>
-						<div className="helpText">{app.translator.trans("walsgit_discussion_cards.admin.tag_modal.tabletCardWidth_help", {default: defaultSettings.tabletCardWidth})}</div>
-						<input
-							type="number"
-							name="tabletCardWidth"
-							className="FormControl DC-Number"
-							bidi={this.tagSettings.tabletCardWidth}
-						/>
-					</div>
-					{/* LIST CARDS OPTIONS */}
-					<div className="Form-group">
-						<label>{app.translator.trans("walsgit_discussion_cards.admin.tag_modal.useListCards_title")}</label>
+  title() {
+    return [
+      app.translator.trans('walsgit_discussion_cards.admin.tag_modal.title'),
+      <span className="TagLabel colored" style={'--tag-bg: ' + this.attrs.model.data.attributes.color + ';'}>
+        <span className="TagLabel-text">
+          <span className="TagLabel-name">{this.attrs.model.data.attributes.name}</span>
+        </span>
+      </span>,
+    ];
+  }
 
-						{Switch.component({
-							state: this.tagSettings.useListCards() == 1,
-							onchange: (value) => {
-								this.tagSettings.useListCards(value ? 1 : 0);
-							}
-						}, app.translator.trans("walsgit_discussion_cards.admin.tag_modal.useListCards_label")
-						)}
+  content() {
+    return [
+      <div className="Modal-body">
+        <div className="Form">
+          <p>{app.translator.trans('walsgit_discussion_cards.admin.tag_modal.intro_text')}</p>
 
-						<div className="helpText">
-							{app.translator.trans("walsgit_discussion_cards.admin.tag_modal.useListCards_help")}
-						</div>
-					</div>
-					<div className="Form-group">
-						<label htmlFor="listCardsCount">{app.translator.trans("walsgit_discussion_cards.admin.tag_modal.listCardsCount_label")}</label>
-						<div className="helpText">{app.translator.trans("walsgit_discussion_cards.admin.tag_modal.listCardsCount_help", {default: defaultSettings.listCardsCount})}</div>
-						<input
-							type="number"
-							name="listCardsCount"
-							className="FormControl DC-Number"
-							bidi={this.tagSettings.listCardsCount}
-						/>
-					</div>
-					<Button
-						type="submit"
-						className="Button Button--primary"
-						loading={this.loading}
-						disabled={this.changed()}
-					>
-						{app.translator.trans("walsgit_discussion_cards.admin.tag_modal.submit_button")}
-					</Button>
-				</div>
-			</div>,
-		];
-	}
-	changed() {
-		let savedSettings = JSON.parse(this.attrs.model.data.attributes.walsgitDiscussionCardsTagSettings || 'null') || {};
+          <div className="Form-group">
+            <label htmlFor="primaryCards">{app.translator.trans('walsgit_discussion_cards.admin.tag_modal.primaryCards_label')}</label>
+            <div className="helpText">
+              {app.translator.trans('walsgit_discussion_cards.admin.tag_modal.primaryCards_help', { default: defaultSettings.primaryCards })}
+            </div>
+            <input type="number" name="primaryCards" className="FormControl DC-Number" bidi={this.tagSettings.primaryCards} />
+          </div>
+          <div className="Form-group">
+            <label htmlFor="desktopCardWidth">{app.translator.trans('walsgit_discussion_cards.admin.tag_modal.desktopCardWidth_label')}</label>
+            <div className="helpText">
+              {app.translator.trans('walsgit_discussion_cards.admin.tag_modal.desktopCardWidth_help', { default: defaultSettings.desktopCardWidth })}
+            </div>
+            <input type="number" name="desktopCardWidth" className="FormControl DC-Number" bidi={this.tagSettings.desktopCardWidth} />
+          </div>
+          <div className="Form-group">
+            <label htmlFor="tabletCardWidth">{app.translator.trans('walsgit_discussion_cards.admin.tag_modal.tabletCardWidth_label')}</label>
+            <div className="helpText">
+              {app.translator.trans('walsgit_discussion_cards.admin.tag_modal.tabletCardWidth_help', { default: defaultSettings.tabletCardWidth })}
+            </div>
+            <input type="number" name="tabletCardWidth" className="FormControl DC-Number" bidi={this.tagSettings.tabletCardWidth} />
+          </div>
+          {/* LIST CARDS OPTIONS */}
+          <div className="Form-group">
+            <label>{app.translator.trans('walsgit_discussion_cards.admin.tag_modal.useListCards_title')}</label>
 
-		function isSameSettings(obj1, obj2) {
-			if(typeof obj1 !== 'object' ||typeof obj2 !== 'object') {
-				return false;
-			}
+            {Switch.component(
+              {
+                state: this.tagSettings.useListCards() == 1,
+                onchange: (value) => {
+                  this.tagSettings.useListCards(value ? 1 : 0);
+                },
+              },
+              app.translator.trans('walsgit_discussion_cards.admin.tag_modal.useListCards_label')
+            )}
 
-			if (Object.keys(obj1).length !== Object.keys(obj2).length) {
-				return false;
-			}
-		
-			for (const key in obj1) {
-				if (obj1.hasOwnProperty(key)) {
-					if (typeof obj1[key] === 'object' && typeof obj2[key] === 'object') {
-						if (!compareObjects(obj1[key], obj2[key])) {
-							return false;
-						}
-					} else if (obj1[key] !== obj2[key]) {
-						return false;
-					}
-				}
-			}
-		
-			return true;
-		}
+            <div className="helpText">{app.translator.trans('walsgit_discussion_cards.admin.tag_modal.useListCards_help')}</div>
+          </div>
+          <div className="Form-group">
+            <label htmlFor="listCardsCount">{app.translator.trans('walsgit_discussion_cards.admin.tag_modal.listCardsCount_label')}</label>
+            <div className="helpText">
+              {app.translator.trans('walsgit_discussion_cards.admin.tag_modal.listCardsCount_help', { default: defaultSettings.listCardsCount })}
+            </div>
+            <input type="number" name="listCardsCount" className="FormControl DC-Number" bidi={this.tagSettings.listCardsCount} />
+          </div>
+          <Button type="submit" className="Button Button--primary" loading={this.loading} disabled={this.changed()}>
+            {app.translator.trans('walsgit_discussion_cards.admin.tag_modal.submit_button')}
+          </Button>
+        </div>
+      </div>,
+    ];
+  }
+  changed() {
+    let savedSettings = JSON.parse(this.attrs.model.data.attributes.walsgitDiscussionCardsTagSettings || 'null') || {};
 
-		return isSameSettings(JSON.parse(JSON.stringify(this.tagSettings)), savedSettings);
-	}
+    function isSameSettings(obj1, obj2) {
+      if (typeof obj1 !== 'object' || typeof obj2 !== 'object') {
+        return false;
+      }
 
-	onsubmit(e) {
-		e.preventDefault();
+      if (Object.keys(obj1).length !== Object.keys(obj2).length) {
+        return false;
+      }
 
-		const primaryCards = parseInt(this.tagSettings.primaryCards());
-		if (isNaN(primaryCards) || primaryCards < 0) {
-			app.alerts.show({ type: 'error' }, app.translator.trans('walsgit_discussion_cards.admin.errors.primaryCards'));
-			return;
-		}
-	
-		const desktopWidth = parseInt(this.tagSettings.desktopCardWidth());
-		if (isNaN(desktopWidth) || desktopWidth < 10 || desktopWidth > 100) {
-			app.alerts.show({ type: 'error' }, app.translator.trans('walsgit_discussion_cards.admin.errors.desktopCardWidth'));
-			return;
-		}
-	
-		const tabletWidth = parseInt(this.tagSettings.tabletCardWidth());
-		if (isNaN(tabletWidth) || tabletWidth < 10 || tabletWidth > 100) {
-			app.alerts.show({ type: 'error' }, app.translator.trans('walsgit_discussion_cards.admin.errors.tabletCardWidth'));
-			return;
-		}
+      for (const key in obj1) {
+        if (obj1.hasOwnProperty(key)) {
+          if (typeof obj1[key] === 'object' && typeof obj2[key] === 'object') {
+            if (!compareObjects(obj1[key], obj2[key])) {
+              return false;
+            }
+          } else if (obj1[key] !== obj2[key]) {
+            return false;
+          }
+        }
+      }
 
-		const useListCards = parseInt(this.tagSettings.useListCards());
-		if (isNaN(useListCards) || useListCards < 0 || useListCards > 1) {
-			app.alerts.show({ type: 'error' }, app.translator.trans('walsgit_discussion_cards.admin.errors.useListCards'));
-			return;
-		}
+      return true;
+    }
 
-		const listCardsCount = parseInt(this.tagSettings.listCardsCount());
-		if (isNaN(listCardsCount) || listCardsCount < 0 || listCardsCount > 20) {
-			app.alerts.show({ type: 'error' }, app.translator.trans('walsgit_discussion_cards.admin.errors.listCardsCount'));
-			return;
-		}
+    return isSameSettings(JSON.parse(JSON.stringify(this.tagSettings)), savedSettings);
+  }
 
-		const tag = this.attrs.model;
+  onsubmit(e) {
+    e.preventDefault();
 
-		this.tagSettings.primaryCards(primaryCards);
-		this.tagSettings.desktopCardWidth(desktopWidth);
-		this.tagSettings.tabletCardWidth(tabletWidth);
-		this.tagSettings.useListCards(useListCards);
-		this.tagSettings.listCardsCount(listCardsCount);
+    const primaryCards = parseInt(this.tagSettings.primaryCards());
+    if (isNaN(primaryCards) || primaryCards < 0) {
+      app.alerts.show({ type: 'error' }, app.translator.trans('walsgit_discussion_cards.admin.errors.primaryCards'));
+      return;
+    }
 
-		const tagSettings = JSON.stringify(this.tagSettings);
+    const desktopWidth = parseInt(this.tagSettings.desktopCardWidth());
+    if (isNaN(desktopWidth) || desktopWidth < 10 || desktopWidth > 100) {
+      app.alerts.show({ type: 'error' }, app.translator.trans('walsgit_discussion_cards.admin.errors.desktopCardWidth'));
+      return;
+    }
 
-		this.loading = true;
+    const tabletWidth = parseInt(this.tagSettings.tabletCardWidth());
+    if (isNaN(tabletWidth) || tabletWidth < 10 || tabletWidth > 100) {
+      app.alerts.show({ type: 'error' }, app.translator.trans('walsgit_discussion_cards.admin.errors.tabletCardWidth'));
+      return;
+    }
 
-		app.request({
-			method: "PATCH",
-			url:
-				app.forum.attribute("apiUrl") +
-				"/tags/" +
-				tag.id() +
-				"/tagSettings",
-			body: { data: { tagSettings } },
-		}).then(function () {
-			tag.data.attributes.walsgitDiscussionCardsTagSettings = tagSettings;
-			app.modal.close();
-		});
-	}
+    const useListCards = parseInt(this.tagSettings.useListCards());
+    if (isNaN(useListCards) || useListCards < 0 || useListCards > 1) {
+      app.alerts.show({ type: 'error' }, app.translator.trans('walsgit_discussion_cards.admin.errors.useListCards'));
+      return;
+    }
+
+    const listCardsCount = parseInt(this.tagSettings.listCardsCount());
+    if (isNaN(listCardsCount) || listCardsCount < 0 || listCardsCount > 20) {
+      app.alerts.show({ type: 'error' }, app.translator.trans('walsgit_discussion_cards.admin.errors.listCardsCount'));
+      return;
+    }
+
+    const tag = this.attrs.model;
+
+    this.tagSettings.primaryCards(primaryCards);
+    this.tagSettings.desktopCardWidth(desktopWidth);
+    this.tagSettings.tabletCardWidth(tabletWidth);
+    this.tagSettings.useListCards(useListCards);
+    this.tagSettings.listCardsCount(listCardsCount);
+
+    const tagSettings = JSON.stringify(this.tagSettings);
+
+    this.loading = true;
+
+    app
+      .request({
+        method: 'PATCH',
+        url: app.forum.attribute('apiUrl') + '/tags/' + tag.id() + '/tagSettings',
+        body: { data: { tagSettings } },
+      })
+      .then(function () {
+        tag.data.attributes.walsgitDiscussionCardsTagSettings = tagSettings;
+        app.modal.close();
+      });
+  }
 }

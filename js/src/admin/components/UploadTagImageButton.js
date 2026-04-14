@@ -1,140 +1,141 @@
-import app from "flarum/admin/app";
-import Button from "flarum/common/components/Button";
-import classList from "flarum/common/utils/classList";
-
+import app from 'flarum/admin/app';
+import Button from 'flarum/common/components/Button';
+import classList from 'flarum/common/utils/classList';
 
 export default class UploadTagImageButton extends Button {
-	constructor(props) {
-		super(props);
-		this.tagId = props.attrs.tagId;
-	}
-	
-	loading = false;
+  constructor(props) {
+    super(props);
+    this.tagId = props.attrs.tagId;
+  }
 
-	view(vnode) {
-		this.attrs.loading = this.loading;
-		this.attrs.className = classList(this.attrs.className, "Button");
+  loading = false;
 
-		if (app.store.data.tags[this.tagId].data.attributes.walsgitDiscussionCardsTagDefaultImage) {
-			this.attrs.onclick = this.remove.bind(this);
+  view(vnode) {
+    this.attrs.loading = this.loading;
+    this.attrs.className = classList(this.attrs.className, 'Button');
 
-			return (
-				<div>
-					<p>
-						<img
-							className="DC-TagDefaultImage"
-							src={"assets/extensions/walsgit-discussion-cards/" + app.store.data.tags[this.tagId].data.attributes.walsgitDiscussionCardsTagDefaultImage}
-							alt=""
-							width="200px"
-						/>
-					</p>
-					<p>
-						{super.view({
-							...vnode,
-							children: app.translator.trans(
-								"core.admin.upload_image.remove_button"
-							),
-						})}
-					</p>
-				</div>
-			);
-		} else {
-			this.attrs.onclick = this.upload.bind(this);
-		}
+    if (app.store.data.tags[this.tagId].data.attributes.walsgitDiscussionCardsTagDefaultImage) {
+      this.attrs.onclick = this.remove.bind(this);
 
-		return super.view({
-			...vnode,
-			children: app.translator.trans(
-				"core.admin.upload_image.upload_button"
-			),
-		});
-	}
+      return (
+        <div>
+          <p>
+            <img
+              className="DC-TagDefaultImage"
+              src={
+                'assets/extensions/walsgit-discussion-cards/' + app.store.data.tags[this.tagId].data.attributes.walsgitDiscussionCardsTagDefaultImage
+              }
+              alt=""
+              width="200px"
+            />
+          </p>
+          <p>
+            {super.view({
+              ...vnode,
+              children: app.translator.trans('core.admin.upload_image.remove_button'),
+            })}
+          </p>
+        </div>
+      );
+    } else {
+      this.attrs.onclick = this.upload.bind(this);
+    }
 
-	/**
-	 * Prompt the user to upload an image.
-	 */
-	upload() {
-		if (this.loading) return;
+    return super.view({
+      ...vnode,
+      children: app.translator.trans('core.admin.upload_image.upload_button'),
+    });
+  }
 
-		const $input = $('<input type="file">');
+  /**
+   * Prompt the user to upload an image.
+   */
+  upload() {
+    if (this.loading) return;
 
-		$input
-			.appendTo("body")
-			.hide()
-			.trigger("click")
-			.on("change", (e) => {
-				const body = new FormData();
-				body.append(this.attrs.name, $(e.target)[0].files[0]);
-				body.append('tagId', this.tagId);
+    const $input = $('<input type="file">');
 
-				this.loading = true;
-				m.redraw();
+    $input
+      .appendTo('body')
+      .hide()
+      .trigger('click')
+      .on('change', (e) => {
+        const body = new FormData();
+        body.append(this.attrs.name, $(e.target)[0].files[0]);
+        body.append('tagId', this.tagId);
 
-				app.request({
-					method: "POST",
-					url: this.resourceUrl(),
-					serialize: (raw) => raw,
-					body,
-				}).then(this.success.bind(this), this.failure.bind(this));
-			});
-	}
+        this.loading = true;
+        m.redraw();
 
-	/**
-	 * Remove the image.
-	 */
-	remove() {
-		this.loading = true;
-		m.redraw();
-		
-		const body = new FormData();
-		body.append('tagId', this.tagId);
+        app
+          .request({
+            method: 'POST',
+            url: this.resourceUrl(),
+            serialize: (raw) => raw,
+            body,
+          })
+          .then(this.success.bind(this), this.failure.bind(this));
+      });
+  }
 
-		app.request({
-			method: "DELETE",
-			url: this.resourceUrl(),
-			body,
-		}).then(this.success.bind(this), this.failure.bind(this));
-	}
+  /**
+   * Remove the image.
+   */
+  remove() {
+    this.loading = true;
+    m.redraw();
 
-	resourceUrl() {
-		return app.forum.attribute("apiUrl") + "/" + this.attrs.name;
-	}
+    const body = new FormData();
+    body.append('tagId', this.tagId);
 
-	/**
-	 * After a successful upload/removal, reload the page.
-	 *
-	 * @param {object} response
-	 * @protected
-	 */
-	success(response) {
-		const tag = app.store.getById('tags', this.tagId);
+    app
+      .request({
+        method: 'DELETE',
+        url: this.resourceUrl(),
+        body,
+      })
+      .then(this.success.bind(this), this.failure.bind(this));
+  }
 
-		if (tag) {
-			const newValue = response?.data?.attributes?.walsgitDiscussionCardsTagDefaultImage ?? null;
+  resourceUrl() {
+    return app.forum.attribute('apiUrl') + '/' + this.attrs.name;
+  }
 
-			if (newValue) {
-				tag.pushAttributes({
-					walsgitDiscussionCardsTagDefaultImage: newValue + '?v=' + Date.now()
-				});
-			} else {
-				tag.pushAttributes({
-					walsgitDiscussionCardsTagDefaultImage: null
-				});
-			}
-		}
+  /**
+   * After a successful upload/removal, reload the page.
+   *
+   * @param {object} response
+   * @protected
+   */
+  success(response) {
+    const tag = app.store.getById('tags', this.tagId);
 
-		this.loading = false;
-		m.redraw();
-	}
+    if (tag) {
+      const newValue = response?.data?.attributes?.walsgitDiscussionCardsTagDefaultImage ?? null;
 
-	/**
-	 * If upload/removal fails, stop loading.
-	 *
-	 * @param {object} response
-	 * @protected
-	 */
-	failure(response) {
-		this.loading = false;
-		m.redraw();
-	}
+      if (newValue) {
+        tag.pushAttributes({
+          walsgitDiscussionCardsTagDefaultImage: newValue + '?v=' + Date.now(),
+        });
+      } else {
+        tag.pushAttributes({
+          walsgitDiscussionCardsTagDefaultImage: null,
+        });
+      }
+    }
+
+    this.loading = false;
+    m.redraw();
+  }
+
+  /**
+   * If upload/removal fails, stop loading.
+   *
+   * @param {object} response
+   * @protected
+   */
+  failure(response) {
+    this.loading = false;
+    m.redraw();
+  }
 }
