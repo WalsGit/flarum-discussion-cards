@@ -21,11 +21,8 @@ use Flarum\Http\RequestUtil;
 
 class UpdateAllowedTagsController implements RequestHandlerInterface
 {
-    protected $settings;
-
-    public function __construct(SettingsRepositoryInterface $settings)
+    public function __construct(protected SettingsRepositoryInterface $settings)
     {
-        $this->settings = $settings;
     }
 
     public function handle(ServerRequestInterface $request): ResponseInterface

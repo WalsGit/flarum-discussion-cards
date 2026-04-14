@@ -15,15 +15,10 @@ use Flarum\Foundation\Paths;
 
 class LoggingService
 {
-    protected Paths $paths;
     protected string $logDirectory;
-    protected string $prefix;
 
-    public function __construct(Paths $paths, string $prefix = 'general')
+    public function __construct(protected Paths $paths, protected string $prefix = 'general')
     {
-        $this->paths = $paths;
-        $this->prefix = $prefix;
-
         // Create log directory
         $this->logDirectory = $this->paths->base . '/storage/logs/walsgit-discussion-cards';
         if (!is_dir($this->logDirectory)) {

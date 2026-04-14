@@ -23,16 +23,10 @@ use Exception;
 
 class TagImageController extends AbstractShowController
 {
-    protected ImageProcessingService $imageService;
-    protected Paths $paths;
     public $serializer = TagSerializer::class;
-    protected Translator $translator;
 
-    public function __construct(ImageProcessingService $imageService, Paths $paths, Translator $translator)
+    public function __construct(protected ImageProcessingService $imageService, protected Paths $paths, protected Translator $translator)
     {
-        $this->imageService = $imageService;
-        $this->paths = $paths;
-        $this->translator = $translator;
     }
 
     protected function data(ServerRequestInterface $request, Document $document)

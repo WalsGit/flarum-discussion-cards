@@ -28,24 +28,8 @@ class UpdateTagSettingsController extends AbstractShowController
      */
     public $serializer = TagSerializer::class;
 
-    /**
-     * @var SettingsRepositoryInterface
-     */
-    protected $settings;
-
-    /**
-     * @var TagSettingsValidator
-     */
-    protected $validator;
-
-    /**
-     * @param SettingsRepositoryInterface $settings
-     * @param TagSettingsValidator        $validator
-     */
-    public function __construct(SettingsRepositoryInterface $settings, TagSettingsValidator $validator)
+    public function __construct(protected SettingsRepositoryInterface $settings, protected TagSettingsValidator $validator)
     {
-        $this->settings = $settings;
-        $this->validator = $validator;
     }
 
     /**

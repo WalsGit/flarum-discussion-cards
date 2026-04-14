@@ -23,17 +23,8 @@ use Exception;
 
 class AdminImageController implements RequestHandlerInterface
 {
-    protected $settings;
-    protected ImageProcessingService $imageService;
-    protected Paths $paths;
-    protected Translator $translator;
-
-    public function __construct(SettingsRepositoryInterface $settings, ImageProcessingService $imageService, Paths $paths, Translator $translator)
+    public function __construct(protected SettingsRepositoryInterface $settings, protected ImageProcessingService $imageService, protected Paths $paths, protected Translator $translator)
     {
-        $this->settings = $settings;
-        $this->imageService = $imageService;
-        $this->paths = $paths;
-        $this->translator = $translator;
     }
 
     public function handle(ServerRequestInterface $request): ResponseInterface

@@ -16,11 +16,8 @@ use Walsgit\Discussion\Cards\Image\CardImageResolver;
 
 class GenerateCardImageOnDiscussionCreate
 {
-    protected $resolver;
-
-    public function __construct(CardImageResolver $resolver)
+    public function __construct(protected CardImageResolver $resolver)
     {
-        $this->resolver = $resolver;
     }
 
     public function handle(Posted $event)

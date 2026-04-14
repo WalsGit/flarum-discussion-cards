@@ -17,11 +17,8 @@ use Walsgit\Discussion\Cards\Image\CardImageResolver;
 
 class UpdateCardImageOnDiscussionUpdate
 {
-    protected CardImageResolver $resolver;
-
-    public function __construct(CardImageResolver $resolver)
+    public function __construct(protected CardImageResolver $resolver)
     {
-        $this->resolver = $resolver;
     }
 
     /**

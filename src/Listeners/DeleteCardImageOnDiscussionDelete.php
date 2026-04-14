@@ -20,15 +20,8 @@ use Walsgit\Discussion\Cards\Image\CardImageResolver;
 
 class DeleteCardImageOnDiscussionDelete
 {
-    protected Config $config;
-    protected Paths $paths;
-    protected CardImageResolver $resolver;
-
-    public function __construct(Config $config, Paths $paths, CardImageResolver $resolver)
+    public function __construct(protected Config $config, protected Paths $paths, protected CardImageResolver $resolver)
     {
-        $this->config = $config;
-        $this->paths = $paths;
-        $this->resolver = $resolver;
     }
 
     /**

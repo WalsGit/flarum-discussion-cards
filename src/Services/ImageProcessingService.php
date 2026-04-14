@@ -20,10 +20,6 @@ use Exception;
 
 class ImageProcessingService
 {
-    protected Paths $paths;
-    protected Translator $translator;
-    protected Config $config;
-
     protected array $directories = [
         'default'    => 'assets/extensions/walsgit-discussion-cards/',
         'tag'        => 'assets/extensions/walsgit-discussion-cards/tags/',
@@ -36,11 +32,8 @@ class ImageProcessingService
         'upscaling' => false,
     ];
 
-    public function __construct(Paths $paths, Translator $translator, Config $config)
+    public function __construct(protected Paths $paths, protected Translator $translator, protected Config $config)
     {
-        $this->paths = $paths;
-        $this->translator = $translator;
-        $this->config = $config;
     }
 
     /**

@@ -13,7 +13,7 @@ use Flarum\Tags\Tag;
 
 class RegisterLessVariables implements ExtenderInterface
 {
-    public function extend(Container $container, Extension $extension = null)
+    public function extend(Container $container, ?Extension $extension = null): void
     {
         $container->resolving('flarum.assets.forum', function (Assets $assets) {
             $assets->css(function (SourceCollector $sources) {

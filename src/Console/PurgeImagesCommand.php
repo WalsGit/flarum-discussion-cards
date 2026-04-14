@@ -33,10 +33,6 @@ use Symfony\Component\Console\Input\InputOption;
 
 class PurgeImagesCommand extends AbstractCommand
 {
-    protected Paths $paths;
-    protected ConnectionInterface $db;
-    protected Translator $translator;
-
     protected bool $dryRun = false;
 
     protected int $deletedFiles = 0;
@@ -47,15 +43,11 @@ class PurgeImagesCommand extends AbstractCommand
     protected int $lockTimeout = 30;
 
     public function __construct(
-        Paths $paths,
-        ConnectionInterface $db,
-        Translator $translator
+        protected Paths $paths,
+        protected ConnectionInterface $db,
+        protected Translator $translator
     ) {
         parent::__construct();
-
-        $this->paths = $paths;
-        $this->db = $db;
-        $this->translator = $translator;
     }
 
     protected function configure(): void

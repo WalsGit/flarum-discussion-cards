@@ -23,30 +23,8 @@ use Walsgit\Discussion\Cards\Services\TagImageSelector;
 
 class CardImageResolver
 {
-    protected SettingsRepositoryInterface $settings;
-    protected Config $config;
-    protected Formatter $formatter;
-    protected Paths $paths;
-    protected ImageProcessingService $imageService;
-    protected HtmlImageExtractor $htmlImageExtractor;
-    protected TagImageSelector $tagSelector;
-
-    public function __construct(
-        SettingsRepositoryInterface $settings,
-        Config $config,
-        Formatter $formatter,
-        Paths $paths,
-        ImageProcessingService $imageService,
-        HtmlImageExtractor $htmlImageExtractor,
-        TagImageSelector $tagSelector
-    ) {
-        $this->settings = $settings;
-        $this->config = $config;
-        $this->formatter = $formatter;
-        $this->paths = $paths;
-        $this->imageService = $imageService;
-        $this->htmlImageExtractor = $htmlImageExtractor;
-        $this->tagSelector = $tagSelector;
+    public function __construct(protected SettingsRepositoryInterface $settings, protected Config $config, protected Formatter $formatter, protected Paths $paths, protected ImageProcessingService $imageService, protected HtmlImageExtractor $htmlImageExtractor, protected TagImageSelector $tagSelector)
+    {
     }
 
     /**

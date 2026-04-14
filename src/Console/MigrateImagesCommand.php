@@ -17,16 +17,8 @@ use Flarum\Locale\Translator;
 
 class MigrateImagesCommand extends AbstractCommand
 {
-    /**
-     * @var ImageMigrationService
-     */
-    protected $migrator;
-    protected $translator;
-
-    public function __construct(ImageMigrationService $migrator, Translator $translator)
+    public function __construct(protected ImageMigrationService $migrator, protected Translator $translator)
     {
-        $this->migrator = $migrator;
-        $this->translator = $translator;
         parent::__construct();
     }
 
