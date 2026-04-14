@@ -34,7 +34,6 @@ export default class DiscussionMedia extends Component {
             {viewsCount}
           </div>
         )}
-
         {/* Image */}
         {imageUrl ? (
           <img src={imageUrl} className="previewCardImg" alt={discussion.title()} loading="lazy" />
@@ -42,7 +41,6 @@ export default class DiscussionMedia extends Component {
           // fallback to Discussion Cards' extension default image
           <div className="imgStub" />
         )}
-
         {/* Optional: show author & date */}
         {Number(settings.showAuthor) === 1 && (
           <div className="cardFoot">
