@@ -1,3 +1,4 @@
+import Form from 'flarum/common/components/Form';
 import Modal from 'flarum/common/components/Modal';
 import Button from 'flarum/common/components/Button';
 import app from 'flarum/app';
@@ -22,9 +23,8 @@ export default class PurgeImagesModal extends Modal {
   content() {
     return (
       <div className="Modal-body">
-        <div className="Form">
+        <Form>
           <p className="helpText">{app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_helpText')}</p>
-
           <div className="Form-group">
             <label>{app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteUnusedLabel')}</label>
             <div className="helpText">
@@ -40,7 +40,6 @@ export default class PurgeImagesModal extends Modal {
               {app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteUnusedBtnText')}
             </Button>
           </div>
-
           <div className="Form-group">
             <label>{app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteAllLabel')}</label>
             <div className="helpText">
@@ -56,7 +55,6 @@ export default class PurgeImagesModal extends Modal {
               {app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteAllBtnText')}
             </Button>
           </div>
-
           {this.output && (
             <div className="Form-group">
               <div className="PurgeImages-output">
@@ -64,7 +62,6 @@ export default class PurgeImagesModal extends Modal {
               </div>
             </div>
           )}
-
           {this.commandOutput.length > 0 && (
             <div className="Form-group">
               <div className="PurgeImages-summary">
@@ -74,7 +71,7 @@ export default class PurgeImagesModal extends Modal {
               </div>
             </div>
           )}
-        </div>
+        </Form>
       </div>
     );
   }

@@ -4,7 +4,7 @@
 import Component from 'flarum/common/Component';
 import humanTime from 'flarum/common/utils/humanTime';
 import username from 'flarum/common/helpers/username';
-import icon from 'flarum/common/helpers/icon';
+import Icon from 'flarum/common/components/Icon';
 
 export default class DiscussionMedia extends Component {
   view(vnode) {
@@ -30,7 +30,7 @@ export default class DiscussionMedia extends Component {
         {/* Optional: show Views */}
         {(isViewsSet || isViewCountSet) && Number(settings.showViews) === 1 && !isNaN(viewsCount) && (
           <div className="imageLabel discussionViews">
-            {icon('fas fa-eye', { className: 'labelIcon' })}
+            <Icon name="fas fa-eye" className="labelIcon" />
             {viewsCount}
           </div>
         )}

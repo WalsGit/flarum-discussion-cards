@@ -3,7 +3,7 @@ import Settings from './components/Settings';
 import { extend } from 'flarum/extend';
 import Model from 'flarum/common/Model';
 import Button from 'flarum/common/components/Button';
-import icon from 'flarum/common/helpers/icon';
+import Icon from 'flarum/common/components/Icon';
 import Tag from 'ext:flarum/tags/models/Tag';
 import EditTagModal from 'ext:flarum/tags/components/EditTagModal';
 import WdcTagSettingsModal from './components/WdcTagSettingsModal';
@@ -87,5 +87,5 @@ app.initializers.add('walsgit/discussion-cards', () => {
     }
   });
 
-  app.extensionData.for('walsgit-discussion-cards').registerPage(Settings);
+  app.registry.for('walsgit-discussion-cards').registerPage(Settings);
 });

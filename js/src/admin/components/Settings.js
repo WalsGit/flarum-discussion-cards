@@ -1,9 +1,9 @@
 import app from 'flarum/admin/app';
 import ExtensionPage from 'flarum/admin/components/ExtensionPage';
-import UploadImageButton from 'flarum/admin/components/UploadImageButton';
+import UploadImageButton from 'flarum/common/components/UploadImageButton';
 import isExtensionInstalled from '../helpers/isExtensionInstalled';
 import isExtensionActive from '../helpers/isExtensionActive';
-import icon from 'flarum/common/helpers/icon';
+import Icon from 'flarum/common/components/Icon';
 import StatsToolsBanner from './StatsToolsBanner';
 
 export default class Settings extends ExtensionPage {
@@ -30,7 +30,7 @@ export default class Settings extends ExtensionPage {
       url: 'https://flarum.org/extension/shebaoting/repost',
     };
 
-    const warningIcon = icon('fas fa-exclamation-triangle');
+    const warningIcon = <Icon name="fas fa-exclamation-triangle" />;
 
     return (
       <div className="DiscussionCardsSettings">

@@ -1,3 +1,4 @@
+import Form from 'flarum/common/components/Form';
 import Modal from 'flarum/common/components/Modal';
 import Button from 'flarum/common/components/Button';
 import app from 'flarum/app';
@@ -24,14 +25,13 @@ export default class RegenerateImagesModal extends Modal {
   content() {
     return (
       <div className="Modal-body">
-        <div className="Form">
+        <Form>
           <p className="helpText">
             {app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_helpText')}
             <a href="https://github.com/WalsGit/flarum-discussion-cards/wiki/CLI-Commands#discussion-cardsregenerate-images" target="_blank">
               {app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_helpTextUrlTitle')}.
             </a>
           </p>
-
           {/* Regenerate for 20 LATEST discussions */}
           <div className="Form-group">
             <label>
@@ -49,7 +49,6 @@ export default class RegenerateImagesModal extends Modal {
               {app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_regenerateLatestBtnText')}
             </Button>
           </div>
-
           {/* Regenerate for 20 LATEST+TOP+NEWEST+OLDEST (LTNO) discussions */}
           <div className="Form-group">
             <label>
@@ -67,7 +66,6 @@ export default class RegenerateImagesModal extends Modal {
               {app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_regenerateLTNOBtnText')}
             </Button>
           </div>
-
           {/* Generate card images for 20 discussions without one */}
           <div className="Form-group">
             <label>
@@ -85,7 +83,6 @@ export default class RegenerateImagesModal extends Modal {
               {app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_regenerateWithoutBtnText')}
             </Button>
           </div>
-
           {/* ==== OUTPUT ==== */}
           {this.output && (
             <div className="Form-group">
@@ -94,7 +91,6 @@ export default class RegenerateImagesModal extends Modal {
               </div>
             </div>
           )}
-
           {this.exitCode === 0 && this.commandOutput && this.commandOutput.length > 0 && (
             <div className="Form-group">
               <div className="RegenerateImages-summary">
@@ -106,7 +102,6 @@ export default class RegenerateImagesModal extends Modal {
               </div>
             </div>
           )}
-
           {this.exitCode === 1 && this.errorOutput && (
             <div className="Form-group">
               <div className="RegenerateImages-error">
@@ -114,7 +109,7 @@ export default class RegenerateImagesModal extends Modal {
               </div>
             </div>
           )}
-        </div>
+        </Form>
       </div>
     );
   }

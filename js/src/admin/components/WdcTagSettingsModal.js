@@ -1,11 +1,12 @@
+import Form from 'flarum/common/components/Form';
 import Button from 'flarum/common/components/Button';
-import Modal from 'flarum/common/components/Modal';
+import FormModal from 'flarum/common/components/FormModal';
 import Stream from 'flarum/common/utils/Stream';
 import Switch from 'flarum/common/components/Switch';
 
 let defaultSettings = {};
 
-export default class WdcTagSettingsModal extends Modal {
+export default class WdcTagSettingsModal extends FormModal {
   oninit(vnode) {
     super.oninit(vnode);
 
@@ -59,57 +60,63 @@ export default class WdcTagSettingsModal extends Modal {
   content() {
     return [
       <div className="Modal-body">
-        <div className="Form">
+        <Form>
           <p>{app.translator.trans('walsgit_discussion_cards.admin.tag_modal.intro_text')}</p>
-
           <div className="Form-group">
             <label htmlFor="primaryCards">{app.translator.trans('walsgit_discussion_cards.admin.tag_modal.primaryCards_label')}</label>
             <div className="helpText">
-              {app.translator.trans('walsgit_discussion_cards.admin.tag_modal.primaryCards_help', { default: defaultSettings.primaryCards })}
+              {app.translator.trans('walsgit_discussion_cards.admin.tag_modal.primaryCards_help', {
+                default: defaultSettings.primaryCards,
+              })}
             </div>
             <input type="number" name="primaryCards" className="FormControl DC-Number" bidi={this.tagSettings.primaryCards} />
           </div>
           <div className="Form-group">
             <label htmlFor="desktopCardWidth">{app.translator.trans('walsgit_discussion_cards.admin.tag_modal.desktopCardWidth_label')}</label>
             <div className="helpText">
-              {app.translator.trans('walsgit_discussion_cards.admin.tag_modal.desktopCardWidth_help', { default: defaultSettings.desktopCardWidth })}
+              {app.translator.trans('walsgit_discussion_cards.admin.tag_modal.desktopCardWidth_help', {
+                default: defaultSettings.desktopCardWidth,
+              })}
             </div>
             <input type="number" name="desktopCardWidth" className="FormControl DC-Number" bidi={this.tagSettings.desktopCardWidth} />
           </div>
           <div className="Form-group">
             <label htmlFor="tabletCardWidth">{app.translator.trans('walsgit_discussion_cards.admin.tag_modal.tabletCardWidth_label')}</label>
             <div className="helpText">
-              {app.translator.trans('walsgit_discussion_cards.admin.tag_modal.tabletCardWidth_help', { default: defaultSettings.tabletCardWidth })}
+              {app.translator.trans('walsgit_discussion_cards.admin.tag_modal.tabletCardWidth_help', {
+                default: defaultSettings.tabletCardWidth,
+              })}
             </div>
             <input type="number" name="tabletCardWidth" className="FormControl DC-Number" bidi={this.tagSettings.tabletCardWidth} />
           </div>
           {/* LIST CARDS OPTIONS */}
           <div className="Form-group">
             <label>{app.translator.trans('walsgit_discussion_cards.admin.tag_modal.useListCards_title')}</label>
-
             {Switch.component(
               {
                 state: this.tagSettings.useListCards() == 1,
+
                 onchange: (value) => {
                   this.tagSettings.useListCards(value ? 1 : 0);
                 },
               },
               app.translator.trans('walsgit_discussion_cards.admin.tag_modal.useListCards_label')
             )}
-
             <div className="helpText">{app.translator.trans('walsgit_discussion_cards.admin.tag_modal.useListCards_help')}</div>
           </div>
           <div className="Form-group">
             <label htmlFor="listCardsCount">{app.translator.trans('walsgit_discussion_cards.admin.tag_modal.listCardsCount_label')}</label>
             <div className="helpText">
-              {app.translator.trans('walsgit_discussion_cards.admin.tag_modal.listCardsCount_help', { default: defaultSettings.listCardsCount })}
+              {app.translator.trans('walsgit_discussion_cards.admin.tag_modal.listCardsCount_help', {
+                default: defaultSettings.listCardsCount,
+              })}
             </div>
             <input type="number" name="listCardsCount" className="FormControl DC-Number" bidi={this.tagSettings.listCardsCount} />
           </div>
           <Button type="submit" className="Button Button--primary" loading={this.loading} disabled={this.changed()}>
             {app.translator.trans('walsgit_discussion_cards.admin.tag_modal.submit_button')}
           </Button>
-        </div>
+        </Form>
       </div>,
     ];
   }

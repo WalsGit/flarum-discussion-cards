@@ -3,7 +3,7 @@
  */
 import Component from 'flarum/common/Component';
 import Link from 'flarum/common/components/Link';
-import icon from 'flarum/common/helpers/icon';
+import Icon from 'flarum/common/components/Icon';
 import craftRepliesAvatars from '../../utils/craftRepliesAvatars';
 import abbreviateNumber from 'flarum/common/utils/abbreviateNumber';
 import DiscussionLastPost from './DiscussionLastPost';
@@ -36,7 +36,9 @@ export default class DiscussionReplies extends Component {
             <div className="Right">
               {/* Optional: Last post (reply) info component */}
               <DiscussionLastPost discussion={discussion} settings={settings} layout="card" />
-              <div className="Arrow">{icon('fas fa-angle-right')}</div>
+              <div className="Arrow">
+                <Icon name="fas fa-angle-right" />
+              </div>
             </div>
           </Link>
         </div>
@@ -59,7 +61,7 @@ export default class DiscussionReplies extends Component {
     if (layout === 'fallback') {
       return (
         <div className="imageLabel discussionReplyCount">
-          {icon('fas fa-comment', { className: 'labelIcon' })}
+          <Icon name="fas fa-comment" className="labelIcon" />
           {postCount}
         </div>
       );
