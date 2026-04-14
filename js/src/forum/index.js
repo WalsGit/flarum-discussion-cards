@@ -142,8 +142,5 @@ extend(
   100
 );
 
-// Expose compat API
-import extCompat from './compat';
-import { compat } from '@flarum/core/forum';
-
-Object.assign(compat, extCompat);
+// Allow flarum to discover modules
+import './forum';
