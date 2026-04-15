@@ -23,8 +23,7 @@
     ],
     "require": {
         "flarum/core": "^2.0.0-beta",
-        "flarum/tags": "*",
-        "intervention/image": "^2.7"
+        "flarum/tags": "*"
     },
     "autoload": {
         "psr-4": {
