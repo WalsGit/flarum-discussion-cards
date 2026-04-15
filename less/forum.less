@@ -418,7 +418,7 @@
   }
 
   .flexCard {
-    background: @control-bg;
+    background: var(--control-bg);
   }
 
   .CardsListItem {
@@ -659,8 +659,7 @@
   grid-column-end: span 3;
 }
 
-body {
-  & when (@config-dark-mode =true) {
+body {[data-theme^=dark] & {
 
     @muted-color: hsl(@secondary-hue, min(15%, @secondary-sat), 60%);
 
@@ -675,7 +674,7 @@ body {
 
       .Repcount,
       .Arrow {
-        color: @muted-color;
+        color: var(--muted-color);
       }
 
       .Avatar--mini {
@@ -687,7 +686,7 @@ body {
       background: hsl(@secondary-hue, min(20%, @secondary-sat), 14%);
 
       h2 {
-        color: @muted-color;
+        color: var(--muted-color);
       }
     }
 
