@@ -3,21 +3,23 @@
 namespace Walsgit\Discussion\Cards;
 
 use Flarum\Extend;
-use Flarum\Api\Controller\ListDiscussionsController;
-use Flarum\Api\Serializer\DiscussionSerializer;
-use Flarum\Api\Serializer\PostSerializer;
+use Flarum\Api\Context;
+use Flarum\Api\Endpoint;
+use Flarum\Api\Resource;
+use Flarum\Api\Schema;
 use Flarum\Discussion\Discussion;
 use Flarum\Discussion\Event\Deleting;
-use Flarum\Tags\Api\Serializer\TagSerializer;
 use Flarum\Post\Event\Revised;
 use Flarum\Post\Event\Deleting as PostDeleting;
 use Flarum\Tags\Event\DiscussionWasTagged;
+use Flarum\Locale\Translator;
+use Illuminate\Support\Arr;
 use V17Development\FlarumBlog\Event\BlogMetaSaving;
 
+use Walsgit\Discussion\Cards\Services\ImageProcessingService;
+
 use Walsgit\Discussion\Cards\Api\Controllers\AdminImageController;
-use Walsgit\Discussion\Cards\Api\Controllers\TagImageController;
 use Walsgit\Discussion\Cards\Api\Controllers\UpdateAllowedTagsController;
-use Walsgit\Discussion\Cards\Api\Controllers\UpdateTagSettingsController;
 use Walsgit\Discussion\Cards\Api\Controllers\StatisticsController;
 use Walsgit\Discussion\Cards\Api\Controllers\RefreshStatsController;
 use Walsgit\Discussion\Cards\Api\Controllers\PurgeImagesController;
@@ -46,20 +48,35 @@ return [
 
     new Extenders\RegisterLessVariables(),
 
-    (new Extend\ApiController(ListDiscussionsController::class))
-        ->addInclude(['firstPost', 'tags']),
-    
-    (new Extend\ApiSerializer(PostSerializer::class))
-        ->attribute('contentHtml', function (PostSerializer $serializer, $post) {
-            if ($post instanceof \Flarum\Post\CommentPost) {
-                return $post->formatContent();
-            }
-            return null;
+    (new Extend\ApiResource(Resource\DiscussionResource::class))
+        ->endpoint(['index'], function (Endpoint\Index $endpoint) {
+            return $endpoint->addDefaultInclude(['firstPost', 'tags']);
         }),
-    
-    (new Extend\ApiSerializer(DiscussionSerializer::class))
-        ->attribute('cardImageUrl', function ($serializer, Discussion $discussion) {
-            return $discussion->walsgit_card_image_url ?: null;
+
+    (new Extend\ApiResource(Resource\PostResource::class))
+        ->fields(function () {
+            return [
+                Schema\Str::make('contentHtml')
+                    ->visible(function ($post, Context $context) {
+                        return $post instanceof \Flarum\Post\CommentPost;
+                    })
+                    ->getter(function ($post) {
+                        if ($post instanceof \Flarum\Post\CommentPost) {
+                            return $post->formatContent();
+                        }
+                        return null;
+                    }),
+            ];
+        }),
+
+    (new Extend\ApiResource(Resource\DiscussionResource::class))
+        ->fields(function () {
+            return [
+                Schema\Str::make('cardImageUrl')
+                    ->getter(function (Discussion $discussion) {
+                        return $discussion->walsgit_card_image_url ?: null;
+                    }),
+            ];
         }),
 
     (new Extend\Event())
@@ -92,12 +109,83 @@ return [
         ->serializeToForum('walsgitDiscussionCardsUseListCards', 'walsgit_discussion_cards_useListCards')
         ->serializeToForum('walsgitDiscussionCardsListCardsCount', 'walsgit_discussion_cards_listCardsCount'),
     
-    (new Extend\ApiSerializer(TagSerializer::class))
-        ->attribute('walsgitDiscussionCardsTagDefaultImage', function ($serializer, $model) {
-            return $model->walsgit_discussion_cards_tag_default_image ?: null;
+    (new Extend\ApiResource(Resource\TagResource::class))
+        ->fields(function () {
+            return [
+                Schema\Str::make('walsgitDiscussionCardsTagDefaultImage')
+                    ->getter(function ($tag) {
+                        return $tag->walsgit_discussion_cards_tag_default_image ?: null;
+                    }),
+                Schema\Str::make('walsgitDiscussionCardsTagSettings')
+                    ->getter(function ($tag) {
+                        return $tag->walsgit_discussion_cards_tag_settings;
+                    }),
+            ];
         })
-        ->attribute('walsgitDiscussionCardsTagSettings', function ($serializer, $model) {
-            return $model->walsgit_discussion_cards_tag_settings;
+        ->endpoint(['uploadTagImage'], function (Endpoint\Endpoint $endpoint) {
+            return $endpoint
+                ->route('POST', '/{id}/image')
+                ->admin()
+                ->action(function (Context $context) {
+                    // Get dependencies from container
+                    $imageService = resolve(ImageProcessingService::class);
+
+                    $tag = $context->model;
+                    $request = $context->request;
+
+                    $result = $imageService->handleUpload($request, 'tag', [
+                        'tagId' => $tag->id
+                    ]);
+
+                    // Update database
+                    $tag->walsgit_discussion_cards_tag_default_image = 'tags/' . $result['path'];
+                    $tag->save();
+
+                    return $tag;
+                });
+        })
+        ->endpoint(['deleteTagImage'], function (Endpoint\Endpoint $endpoint) {
+            return $endpoint
+                ->route('DELETE', '/{id}/image')
+                ->admin()
+                ->action(function (Context $context) {
+                    // Get dependencies from container
+                    $imageService = resolve(ImageProcessingService::class);
+
+                    $tag = $context->model;
+
+                    $imageService->handleDelete('tag', "tag-{$tag->id}-default-card-image.webp");
+                    $tag->walsgit_discussion_cards_tag_default_image = null;
+                    $tag->save();
+
+                    return $tag;
+                });
+        })
+        ->endpoint(['updateTagSettings'], function (Endpoint\Endpoint $endpoint) {
+            return $endpoint
+                ->route('PATCH', '/{id}/tag-settings')
+                ->admin()
+                ->action(function (Context $context) {
+                    // Get dependencies from container
+                    $validator = resolve(TagSettingsValidator::class);
+
+                    $tag = $context->model;
+                    $request = $context->request;
+                    $actor = $context->getActor();
+
+                    $actor->assertAdmin();
+
+                    $data = Arr::get($request->getParsedBody(), 'data', []);
+                    $tagSettings = isset($data['tagSettings']) ? json_decode($data['tagSettings'], true) : [];
+
+                    $validator->assertValid($tagSettings);
+
+                    // Update tag settings
+                    $tag->walsgit_discussion_cards_tag_settings = $data['tagSettings'];
+                    $tag->save();
+
+                    return $tag;
+                });
         }),
 
     (new Extend\Validator(TagSettingsValidator::class)),
@@ -110,10 +198,7 @@ return [
     (new Extend\Routes('api'))
         ->post('/walsgit_discussion_cards_default_image', 'walsgit_discussion_cards_default_image.upload', AdminImageController::class)
         ->delete('/walsgit_discussion_cards_default_image', 'walsgit_discussion_cards_default_image.delete', AdminImageController::class)
-        ->post('/walsgit_discussion_cards_tag_default_image', 'walsgit_discussion_cards_tag_default_image.upload', TagImageController::class)
-        ->delete('/walsgit_discussion_cards_tag_default_image', 'walsgit_discussion_cards_tag_default_image.delete', TagImageController::class)
         ->post('/walsgit_discussion_cards_tag_update_allowedTags', 'walsgit_discussion_cards_updateAllowedTags', UpdateAllowedTagsController::class)
-        ->patch('/tags/{id}/tagSettings', 'walsgit_discussion_cards_updateTagSettings', UpdateTagSettingsController::class)
         ->get('/walsgit/discussion-cards/image-stats', 'walsgit.discussion-cards.image-stats', StatisticsController::class)
         ->post('/walsgit/discussion-cards/image-stats/refresh', 'walsgit.discussion-cards.image-stats.refresh', RefreshStatsController::class)
         ->post('/walsgit/discussion-cards/purge-images', 'walsgit.discussion-cards.purge-images', PurgeImagesController::class)
