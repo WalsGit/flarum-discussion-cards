@@ -14,11 +14,19 @@ namespace Walsgit\Discussion\Cards\Listeners;
 use Flarum\Post\Event\Revised;
 use Flarum\Tags\Event\DiscussionWasTagged;
 use Walsgit\Discussion\Cards\Image\CardImageResolver;
+use V17Development\FlarumBlog\Event\BlogMetaSaving;
 
 class UpdateCardImageOnDiscussionUpdate
 {
     public function __construct(protected CardImageResolver $resolver)
     {
+    }
+
+    public function subscribe($events)
+    {
+        $events->listen(Revised::class, [$this, 'onPostRevised']);
+        $events->listen(DiscussionWasTagged::class, [$this, 'onDiscussionTagged']);
+        $events->listen(BlogMetaSaving::class, [$this, 'onBlogMetaSaving']);
     }
 
     /**

@@ -24,6 +24,12 @@ class DeleteCardImageOnDiscussionDelete
     {
     }
 
+    public function subscribe($events)
+    {
+        $events->listen(Deleting::class, [$this, 'onDiscussionDeleting']);
+        $events->listen(PostDeleting::class, [$this, 'onFirstPostDeleting']);
+    }
+
     /**
      * 1. Delete card image on discussion delete (forever)
      */

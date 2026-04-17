@@ -8,13 +8,8 @@ use Flarum\Api\Endpoint;
 use Flarum\Api\Resource;
 use Flarum\Api\Schema;
 use Flarum\Discussion\Discussion;
-use Flarum\Discussion\Event\Deleting;
-use Flarum\Post\Event\Revised;
-use Flarum\Post\Event\Deleting as PostDeleting;
-use Flarum\Tags\Event\DiscussionWasTagged;
-use Flarum\Locale\Translator;
+use Flarum\Tags\Api\Resource\TagResource;
 use Illuminate\Support\Arr;
-use V17Development\FlarumBlog\Event\BlogMetaSaving;
 
 use Walsgit\Discussion\Cards\Services\ImageProcessingService;
 
@@ -60,7 +55,7 @@ return [
                     ->visible(function ($post, Context $context) {
                         return $post instanceof \Flarum\Post\CommentPost;
                     })
-                    ->getter(function ($post) {
+                    ->get(function ($post) {
                         if ($post instanceof \Flarum\Post\CommentPost) {
                             return $post->formatContent();
                         }
@@ -73,7 +68,7 @@ return [
         ->fields(function () {
             return [
                 Schema\Str::make('cardImageUrl')
-                    ->getter(function (Discussion $discussion) {
+                    ->get(function (Discussion $discussion) {
                         return $discussion->walsgit_card_image_url ?: null;
                     }),
             ];
@@ -81,11 +76,8 @@ return [
 
     (new Extend\Event())
         ->listen(\Flarum\Post\Event\Posted::class, \Walsgit\Discussion\Cards\Listeners\GenerateCardImageOnDiscussionCreate::class)
-        ->listen(Revised::class, [UpdateCardImageOnDiscussionUpdate::class, 'onPostRevised'])
-        ->listen(DiscussionWasTagged::class, [UpdateCardImageOnDiscussionUpdate::class, 'onDiscussionTagged'])
-        ->listen(BlogMetaSaving::class, [UpdateCardImageOnDiscussionUpdate::class, 'onBlogMetaSaving'])
-        ->Listen(Deleting::class, [DeleteCardImageOnDiscussionDelete::class, 'onDiscussionDeleting'])
-        ->Listen(PostDeleting::class, [DeleteCardImageOnDiscussionDelete::class, 'onFirstPostDeleting']),
+        ->subscribe(UpdateCardImageOnDiscussionUpdate::class)
+        ->subscribe(DeleteCardImageOnDiscussionDelete::class),
 
 
     (new Extend\Settings())
@@ -109,15 +101,15 @@ return [
         ->serializeToForum('walsgitDiscussionCardsUseListCards', 'walsgit_discussion_cards_useListCards')
         ->serializeToForum('walsgitDiscussionCardsListCardsCount', 'walsgit_discussion_cards_listCardsCount'),
     
-    (new Extend\ApiResource(Resource\TagResource::class))
+    (new Extend\ApiResource(TagResource::class))
         ->fields(function () {
             return [
                 Schema\Str::make('walsgitDiscussionCardsTagDefaultImage')
-                    ->getter(function ($tag) {
+                    ->get(function ($tag) {
                         return $tag->walsgit_discussion_cards_tag_default_image ?: null;
                     }),
                 Schema\Str::make('walsgitDiscussionCardsTagSettings')
-                    ->getter(function ($tag) {
+                    ->get(function ($tag) {
                         return $tag->walsgit_discussion_cards_tag_settings;
                     }),
             ];
