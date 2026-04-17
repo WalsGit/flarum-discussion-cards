@@ -27,8 +27,8 @@
       font-weight: 400;
 
       &:before {
-        .far();
-        content: @fa-var-comment;
+        font: var(--fa-font-regular); // This replaces old Font Awesome .far()
+        content: "fa-comment";
       }
 
       @media phone {
@@ -602,8 +602,8 @@
       padding-top: 3px;
 
       &:before {
-        .fas();
-        content: @fa-var-comment;
+        font: var(--fa-font-solid); // This replaces old Font Awesome .fas()
+        content: "fa-comment";
       }
     }
   }
