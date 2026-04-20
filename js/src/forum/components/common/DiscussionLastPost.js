@@ -3,7 +3,7 @@
  * Uses the TerminalPost component from Flarum
  */
 import Component from 'flarum/common/Component';
-import TerminalPost from 'flarum/components/TerminalPost';
+import TerminalPost from 'flarum/forum/components/TerminalPost';
 
 export default class DiscussionLastPost extends Component {
   view(vnode) {
