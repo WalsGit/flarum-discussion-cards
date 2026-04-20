@@ -4,7 +4,7 @@ import UploadImageButton from 'flarum/common/components/UploadImageButton';
 import isExtensionInstalled from '../helpers/isExtensionInstalled';
 import isExtensionActive from '../helpers/isExtensionActive';
 import Icon from 'flarum/common/components/Icon';
-// import StatsToolsBanner from './StatsToolsBanner'; // TODO uncomment after component is updated for 2.0
+import StatsToolsBanner from './StatsToolsBanner';
 
 export default class Settings extends ExtensionPage {
   content() {
@@ -35,7 +35,7 @@ export default class Settings extends ExtensionPage {
     return (
       <div className="DiscussionCardsSettings">
         <div className="container">
-          {/*<StatsToolsBanner /> // TODO uncomment after component is updated for 2.0 */}
+          <StatsToolsBanner />
 
           <div className="DiscussionCardsSettings--content">
             {/* ============== WHERE? SECTION ============== */}

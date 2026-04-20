@@ -1,7 +1,7 @@
 import Form from 'flarum/common/components/Form';
 import Modal from 'flarum/common/components/Modal';
 import Button from 'flarum/common/components/Button';
-import app from 'flarum/app';
+import app from 'flarum/admin/app';
 
 export default class PurgeImagesModal extends Modal {
   oninit(vnode) {
