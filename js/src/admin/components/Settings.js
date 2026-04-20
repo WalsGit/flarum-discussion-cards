@@ -1,5 +1,5 @@
-import app from 'flarum/admin/app';
 import ExtensionPage from 'flarum/admin/components/ExtensionPage';
+import app from 'flarum/admin/app';
 import UploadImageButton from 'flarum/common/components/UploadImageButton';
 import isExtensionInstalled from '../helpers/isExtensionInstalled';
 import isExtensionActive from '../helpers/isExtensionActive';
