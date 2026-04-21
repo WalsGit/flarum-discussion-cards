@@ -14,7 +14,8 @@ namespace Walsgit\Discussion\Cards\Services;
 use Flarum\Foundation\Paths;
 use Flarum\Locale\Translator;
 use Flarum\Foundation\Config;
-use Intervention\Image\ImageManagerStatic as Image;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Encoders\WebpEncoder;
 use InvalidArgumentException;
 use Exception;
 
@@ -37,7 +38,7 @@ class ImageProcessingService
     }
 
     /**
-     * Ulpoading images
+     * Uploading images
      */
     public function handleUpload($request, string $origin, array $options = []): array
     {
@@ -89,24 +90,19 @@ class ImageProcessingService
         try {
             @ini_set('memory_limit', '256M');
 
-            $image = Image::make($sourcePath);
+            $image = ImageManager::gd()->read($sourcePath);
 
-            $image->resize($options['width'], null, function ($constraint) use ($options) {
-                $constraint->aspectRatio();
-                if (!$options['upscaling']) {
-                    $constraint->upsize();
-                }
-            });
+            // Scale image
+            $image = $options['upscaling']
+                ? $image->scale(width: $options['width'])
+                : $image->scaleDown(width: $options['width']);
 
-            $image->encode('webp', $options['quality'])->save($targetPath);
+            // Convert to webp & save
+            $encoded = $image->encode(new WebpEncoder(quality: $options['quality']));
+            $encoded->save($targetPath);
 
         } catch (Exception $e) {
             throw new Exception($this->translator->trans('walsgit_discussion_cards.admin.errors.imageProcessingFailed') . ' ' . $e->getMessage());
-        } finally {
-            if (isset($image)) {
-                $image->destroy();
-                unset($image);
-            }
         }
     }
 
