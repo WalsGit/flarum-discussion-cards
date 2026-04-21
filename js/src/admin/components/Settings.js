@@ -141,7 +141,11 @@ export default class Settings extends ExtensionPage {
                     }
                   />
                 )}
-                {m(UploadImageButton, { name: 'walsgit_discussion_cards_default_image', class: 'DC-UploadImageBtn' })}
+                {m(UploadImageButton, { 
+                  name: 'walsgit_discussion_cards_default_image',
+                  routePath: 'walsgit_discussion_cards_default_image',
+                  className: 'DC-UploadImageBtn' 
+                })}
               </div>
               {this.buildSettingComponent({
                 type: 'switch',
