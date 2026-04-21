@@ -31,6 +31,8 @@ export default class Settings extends ExtensionPage {
     };
 
     const warningIcon = <Icon name="fas fa-exclamation-triangle" />;
+    const baseUrl = app.forum.attribute('baseUrl');
+    const imagePath = baseUrl + '/assets/extensions/walsgit-discussion-cards/';
 
     return (
       <div className="DiscussionCardsSettings">
@@ -129,23 +131,17 @@ export default class Settings extends ExtensionPage {
                   {app.translator.trans('walsgit_discussion_cards.admin.settings.general.defaultImage_title')}
                 </label>
                 <p className="helpText">{app.translator.trans('walsgit_discussion_cards.admin.settings.general.defaultImage_info')}</p>
-                {app.forum.attribute('walsgitDiscussionCardsDefaultImage') === null ? (
-                  <div className="imgStub"></div>
-                ) : (
-                  <img
-                    className="DC-UserUploadedImage"
-                    src={
-                      app.forum.attribute('baseUrl') +
-                      '/assets/extensions/walsgit-discussion-cards/' +
-                      app.forum.attribute('walsgitDiscussionCardsDefaultImage')
-                    }
-                  />
-                )}
-                {m(UploadImageButton, { 
-                  name: 'walsgit_discussion_cards_default_image',
-                  routePath: 'walsgit_discussion_cards_default_image',
-                  className: 'DC-UploadImageBtn' 
-                })}
+                {app.forum.attribute('walsgitDiscussionCardsDefaultImage') === null 
+                  ? ( <div className="imgStub"></div> )
+                  : '' 
+                }
+                <UploadImageButton 
+                  name='walsgit_discussion_cards_default_image'
+                  routePath='walsgit_discussion_cards_default_image'
+                  value={app.data.settings.walsgit_discussion_cards_default_image_path ? imagePath + app.data.settings.walsgit_discussion_cards_default_image_path : ''}
+                  url={imagePath + app.forum.attribute('walsgitDiscussionCardsDefaultImage')}
+                  className='DC-UploadImageBtn'
+                />
               </div>
               {this.buildSettingComponent({
                 type: 'switch',
