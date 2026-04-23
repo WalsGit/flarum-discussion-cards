@@ -5,7 +5,7 @@ import Button from 'flarum/common/components/Button';
 import Icon from 'flarum/common/components/Icon';
 import EditTagModal from 'ext:flarum/tags/admin/components/EditTagModal';
 import WdcTagSettingsModal from '../components/WdcTagSettingsModal';
-import UploadImageButton from 'flarum/common/components/UploadImageButton';
+import TagUploadImageButton from '../components/TagUploadImageButton';
 
 export default function extendEditTagModal() {
     extend(EditTagModal.prototype, 'fields', function (items) {
@@ -64,7 +64,7 @@ export default function extendEditTagModal() {
                     <div className="DC-TagDefaultImageSettings">
                     <h4>{app.translator.trans('walsgit_discussion_cards.admin.tags.defaultImage_title')}</h4>
                     <p className="helpText">{app.translator.trans('walsgit_discussion_cards.admin.tags.defaultImage_info')}</p>
-                    <UploadImageButton
+                    <TagUploadImageButton
                         name='walsgit_discussion_cards_tag_default_image'
                         routePath={'walsgit/discussion-cards/tag-default-image/' + this.tag.id()}
                         value={tagDefaultImage ? ImageFolderUrl + tagDefaultImage : ''}

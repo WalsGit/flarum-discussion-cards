@@ -29,10 +29,10 @@ class TagImageController implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $queryParams = $request->getQueryParams();
+        $routeParams = $request->getAttribute('routeParameters', []);
 
         $method = strtoupper($request->getMethod());
-        $tagId = Arr::get($queryParams, 'tagId') ?? null;
+        $tagId = Arr::get($routeParams, 'tagId') ?? null;
 
         if (!$tagId) {
             throw new \InvalidArgumentException($this->translator->trans('walsgit_discussion_cards.admin.errors.tagImageNoTagId'));
