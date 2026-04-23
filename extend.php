@@ -9,10 +9,10 @@ use Flarum\Api\Resource;
 use Flarum\Api\Schema;
 use Flarum\Discussion\Discussion;
 use Flarum\Tags\Api\Resource\TagResource;
-use Illuminate\Support\Arr;
 
 use Walsgit\Discussion\Cards\Api\Controllers\AdminImageController;
 use Walsgit\Discussion\Cards\Api\Controllers\TagImageController;
+use Walsgit\Discussion\Cards\Api\Controllers\UpdateTagSettingsController;
 use Walsgit\Discussion\Cards\Api\Controllers\UpdateAllowedTagsController;
 use Walsgit\Discussion\Cards\Api\Controllers\StatisticsController;
 use Walsgit\Discussion\Cards\Api\Controllers\RefreshStatsController;
@@ -112,32 +112,6 @@ return [
                         return $tag->walsgit_discussion_cards_tag_settings;
                     }),
             ];
-        })
-        ->endpoint(['updateTagSettings'], function (Endpoint\Endpoint $endpoint) {
-            return $endpoint
-                ->route('PATCH', '/{id}/tag-settings')
-                ->admin()
-                ->action(function (Context $context) {
-                    // Get dependencies from container
-                    $validator = resolve(TagSettingsValidator::class);
-
-                    $tag = $context->model;
-                    $request = $context->request;
-                    $actor = $context->getActor();
-
-                    $actor->assertAdmin();
-
-                    $data = Arr::get($request->getParsedBody(), 'data', []);
-                    $tagSettings = isset($data['tagSettings']) ? json_decode($data['tagSettings'], true) : [];
-
-                    $validator->assertValid($tagSettings);
-
-                    // Update tag settings
-                    $tag->walsgit_discussion_cards_tag_settings = $data['tagSettings'];
-                    $tag->save();
-
-                    return $tag;
-                });
         }),
 
     (new Extend\Validator(TagSettingsValidator::class)),
@@ -152,6 +126,7 @@ return [
         ->delete('/walsgit_discussion_cards_default_image', 'walsgit_discussion_cards_default_image.delete', AdminImageController::class)
         ->post('/walsgit/discussion-cards/tag-default-image/{tagId}', 'walsgit.discussion-cards.tag-default-image.upload', TagImageController::class)
         ->delete('/walsgit/discussion-cards/tag-default-image/{tagId}', 'walsgit.discussion-cards.tag-default-image.delete', TagImageController::class)
+        ->patch('/walsgit/discussion-cards/tag-{tagId}-settings', 'walsgit_discussion_cards_tag_settings', UpdateTagSettingsController::class)
         ->post('/walsgit_discussion_cards_tag_update_allowedTags', 'walsgit_discussion_cards_updateAllowedTags', UpdateAllowedTagsController::class)
         ->get('/walsgit/discussion-cards/image-stats', 'walsgit.discussion-cards.image-stats', StatisticsController::class)
         ->post('/walsgit/discussion-cards/image-stats/refresh', 'walsgit.discussion-cards.image-stats.refresh', RefreshStatsController::class)

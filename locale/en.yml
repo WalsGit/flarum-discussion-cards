@@ -141,6 +141,7 @@ walsgit_discussion_cards:
       adminImageProcessingError: "Error while processing image: "
       tagImageNoTagId: "No tagId provided!"
       tagImageUnsupportedMethod: "Unsupported method ({method})"
+      tagSettingsNoTagId: "No tagId provided!"
     console:
       migrateImagesStart: "➡ Migrating old Discussion Cards default images..."
       migrateImagesEnd: "️✅ Migration over. Migrated images : {count}"

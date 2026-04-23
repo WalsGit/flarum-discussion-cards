@@ -198,7 +198,7 @@ export default class WdcTagSettingsModal extends FormModal {
     app
       .request({
         method: 'PATCH',
-        url: app.forum.attribute('apiUrl') + '/tags/' + tag.id() + '/tagSettings',
+        url: app.forum.attribute('apiUrl') + '/walsgit/discussion-cards/tag-' + tag.id() + '-settings',
         body: { data: { tagSettings } },
       })
       .then(function () {
