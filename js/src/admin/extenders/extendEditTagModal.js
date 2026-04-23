@@ -5,7 +5,7 @@ import Button from 'flarum/common/components/Button';
 import Icon from 'flarum/common/components/Icon';
 import EditTagModal from 'ext:flarum/tags/admin/components/EditTagModal';
 import WdcTagSettingsModal from '../components/WdcTagSettingsModal';
-import UploadTagImageButton from '../components/UploadTagImageButton';
+import UploadImageButton from 'flarum/common/components/UploadImageButton';
 
 export default function extendEditTagModal() {
     extend(EditTagModal.prototype, 'fields', function (items) {
@@ -18,6 +18,10 @@ export default function extendEditTagModal() {
             let activationBtnText = isActivatedForTag
                 ? app.translator.trans('walsgit_discussion_cards.admin.tags.deactivation_button')
                 : app.translator.trans('walsgit_discussion_cards.admin.tags.activation_button');
+
+            const tagDefaultImage = app.store.data.tags[this.tag.id()].data.attributes.walsgitDiscussionCardsTagDefaultImage;
+            const baseUrl = app.forum.attribute('baseUrl');
+            const ImageFolderUrl = baseUrl + '/assets/extensions/walsgit-discussion-cards/';
 
             const toggleActivation = () => {
                 isActivatedForTag = !isActivatedForTag;
@@ -60,12 +64,13 @@ export default function extendEditTagModal() {
                     <div className="DC-TagDefaultImageSettings">
                     <h4>{app.translator.trans('walsgit_discussion_cards.admin.tags.defaultImage_title')}</h4>
                     <p className="helpText">{app.translator.trans('walsgit_discussion_cards.admin.tags.defaultImage_info')}</p>
-                    {m(UploadTagImageButton, {
-                        name: 'walsgit_discussion_cards_tag_default_image',
-                        className: 'DC-UploadTagImageBtn',
-                        ariaLabel: 'Upload a default image for this tag',
-                        tagId: this.tag.id(),
-                    })}
+                    <UploadImageButton
+                        name='walsgit_discussion_cards_tag_default_image'
+                        routePath={'walsgit/discussion-cards/tag-default-image/' + this.tag.id()}
+                        value={tagDefaultImage ? ImageFolderUrl + tagDefaultImage : ''}
+                        url={ImageFolderUrl + tagDefaultImage}
+                        className='DC-UploadTagImageBtn'
+                    />
                     </div>
                     <Button
                     className="Button Button--primary"

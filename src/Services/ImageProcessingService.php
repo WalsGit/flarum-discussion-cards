@@ -159,9 +159,9 @@ class ImageProcessingService
                 if (is_array($context) && isset($context['tagId'])) {
                     $tagId = $context['tagId'];
                 }
-                // 2) Else, fallback to parsed body
-                elseif ($context && method_exists($context, 'getParsedBody')) {
-                    $tagId = $context->getParsedBody()['tagId'] ?? null;
+                // 2) Else, fallback to QueryParams
+                elseif ($context && method_exists($context, 'getQueryParams')) {
+                    $tagId = $context->getQueryParams()['tagId'] ?? null;
                 } else {
                     $tagId = null;
                 }
@@ -320,7 +320,7 @@ class ImageProcessingService
             $contentLength = end($contentLength);
         }
 
-        // Creat fingerprint
+        // Create fingerprint
         $fingerprint = $etag . $lastModified . $contentLength;
 
         // If all 3 values are empty → use image url as hash

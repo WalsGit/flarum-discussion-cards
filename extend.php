@@ -11,9 +11,8 @@ use Flarum\Discussion\Discussion;
 use Flarum\Tags\Api\Resource\TagResource;
 use Illuminate\Support\Arr;
 
-use Walsgit\Discussion\Cards\Services\ImageProcessingService;
-
 use Walsgit\Discussion\Cards\Api\Controllers\AdminImageController;
+use Walsgit\Discussion\Cards\Api\Controllers\TagImageController;
 use Walsgit\Discussion\Cards\Api\Controllers\UpdateAllowedTagsController;
 use Walsgit\Discussion\Cards\Api\Controllers\StatisticsController;
 use Walsgit\Discussion\Cards\Api\Controllers\RefreshStatsController;
@@ -114,45 +113,6 @@ return [
                     }),
             ];
         })
-        ->endpoint(['uploadTagImage'], function (Endpoint\Endpoint $endpoint) {
-            return $endpoint
-                ->route('POST', '/{id}/image')
-                ->admin()
-                ->action(function (Context $context) {
-                    // Get dependencies from container
-                    $imageService = resolve(ImageProcessingService::class);
-
-                    $tag = $context->model;
-                    $request = $context->request;
-
-                    $result = $imageService->handleUpload($request, 'tag', [
-                        'tagId' => $tag->id
-                    ]);
-
-                    // Update database
-                    $tag->walsgit_discussion_cards_tag_default_image = 'tags/' . $result['path'];
-                    $tag->save();
-
-                    return $tag;
-                });
-        })
-        ->endpoint(['deleteTagImage'], function (Endpoint\Endpoint $endpoint) {
-            return $endpoint
-                ->route('DELETE', '/{id}/image')
-                ->admin()
-                ->action(function (Context $context) {
-                    // Get dependencies from container
-                    $imageService = resolve(ImageProcessingService::class);
-
-                    $tag = $context->model;
-
-                    $imageService->handleDelete('tag', "tag-{$tag->id}-default-card-image.webp");
-                    $tag->walsgit_discussion_cards_tag_default_image = null;
-                    $tag->save();
-
-                    return $tag;
-                });
-        })
         ->endpoint(['updateTagSettings'], function (Endpoint\Endpoint $endpoint) {
             return $endpoint
                 ->route('PATCH', '/{id}/tag-settings')
@@ -190,6 +150,8 @@ return [
     (new Extend\Routes('api'))
         ->post('/walsgit_discussion_cards_default_image', 'walsgit_discussion_cards_default_image.upload', AdminImageController::class)
         ->delete('/walsgit_discussion_cards_default_image', 'walsgit_discussion_cards_default_image.delete', AdminImageController::class)
+        ->post('/walsgit/discussion-cards/tag-default-image/{tagId}', 'walsgit.discussion-cards.tag-default-image.upload', TagImageController::class)
+        ->delete('/walsgit/discussion-cards/tag-default-image/{tagId}', 'walsgit.discussion-cards.tag-default-image.delete', TagImageController::class)
         ->post('/walsgit_discussion_cards_tag_update_allowedTags', 'walsgit_discussion_cards_updateAllowedTags', UpdateAllowedTagsController::class)
         ->get('/walsgit/discussion-cards/image-stats', 'walsgit.discussion-cards.image-stats', StatisticsController::class)
         ->post('/walsgit/discussion-cards/image-stats/refresh', 'walsgit.discussion-cards.image-stats.refresh', RefreshStatsController::class)
