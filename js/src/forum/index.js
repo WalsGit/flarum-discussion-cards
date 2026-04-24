@@ -88,7 +88,7 @@ app.initializers.add(
                     ? m(ListItem, { discussion })
                     : m(DiscussionListItem, {
                         discussion,
-                        params: app.search?.params() ?? {},
+                        params: app.search?.state?.params() ?? {},
                       });
                 });
               })}
