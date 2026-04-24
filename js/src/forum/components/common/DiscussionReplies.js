@@ -33,7 +33,7 @@ export default class DiscussionReplies extends Component {
                     <Link className="Replies" href={app.route.discussion(discussion, discussion.lastPostNumber())}>
                         <div className="Left">
                             <div className="Avatars">{craftRepliesAvatars(discussion)}</div>
-                            <div className="Repcount">{replyText}</div>
+                            <div className="ReplyCount">{replyText}</div>
                         </div>
                         <div className="Right">
                             {/* Optional: Last post (reply) info component */}
@@ -55,7 +55,7 @@ export default class DiscussionReplies extends Component {
                     <span className="visually-hidden">
                         {app.translator.trans(
                         "core.forum.discussion_list.unread_replies_a11y_label",
-                        { count: discussion.replyCount() }
+                        { count: postCount }
                         )}
                     </span>
                 </div>
