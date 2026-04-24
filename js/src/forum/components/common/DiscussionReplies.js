@@ -28,7 +28,7 @@ export default class DiscussionReplies extends Component {
     if (layout === 'card' || layout === 'mobile') {
       return (
         <div className="cardSpacer">
-          <Link className="Replies" href={app.route.discussion(discussion, discussion.lastReadPostNumber())}>
+          <Link className="Replies" href={app.route.discussion(discussion, discussion.lastPostNumber())}>
             <div className="Left">
               <div className="Avatars">{craftRepliesAvatars(discussion)}</div>
               <div className="ReplyCount">{replyText}</div>
