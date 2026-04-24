@@ -132,12 +132,12 @@ return [
     new Extend\ServiceProvider(TagImageSelectorProvider::class),
 
     (new Extend\Routes('api'))
-        ->post('/walsgit_discussion_cards_default_image', 'walsgit_discussion_cards_default_image.upload', AdminImageController::class)
-        ->delete('/walsgit_discussion_cards_default_image', 'walsgit_discussion_cards_default_image.delete', AdminImageController::class)
+        ->post('/walsgit/discussion-cards/default-image', 'walsgit.discussion-cards.default-image-upload', AdminImageController::class)
+        ->delete('/walsgit/discussion-cards/default-image', 'walsgit.discussion-cards.default-image-delete', AdminImageController::class)
         ->post('/walsgit/discussion-cards/tag-default-image/{tagId}', 'walsgit.discussion-cards.tag-default-image.upload', TagImageController::class)
         ->delete('/walsgit/discussion-cards/tag-default-image/{tagId}', 'walsgit.discussion-cards.tag-default-image.delete', TagImageController::class)
-        ->patch('/walsgit/discussion-cards/tag-{tagId}-settings', 'walsgit_discussion_cards_tag_settings', UpdateTagSettingsController::class)
-        ->post('/walsgit_discussion_cards_tag_update_allowedTags', 'walsgit_discussion_cards_updateAllowedTags', UpdateAllowedTagsController::class)
+        ->patch('/walsgit/discussion-cards/tag-{tagId}-settings', 'walsgit.discussion-cards.tag-settings', UpdateTagSettingsController::class)
+        ->post('/walsgit/discussion-cards/tag-update-allowed-tags', 'walsgit.discussion-cards.update-allowed-tags', UpdateAllowedTagsController::class)
         ->get('/walsgit/discussion-cards/image-stats', 'walsgit.discussion-cards.image-stats', StatisticsController::class)
         ->post('/walsgit/discussion-cards/image-stats/refresh', 'walsgit.discussion-cards.image-stats.refresh', RefreshStatsController::class)
         ->post('/walsgit/discussion-cards/purge-images', 'walsgit.discussion-cards.purge-images', PurgeImagesController::class)

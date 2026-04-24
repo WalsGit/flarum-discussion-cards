@@ -34,7 +34,7 @@ export default function extendEditTagModal() {
                 app
                 .request({
                     method: 'POST',
-                    url: app.forum.attribute('apiUrl') + '/walsgit_discussion_cards_tag_update_allowedTags',
+                    url: app.forum.attribute('apiUrl') + '/walsgit/discussion-cards/tag-update-allowed-tags',
                     body: { allowedTags },
                 })
                 .then(() => {

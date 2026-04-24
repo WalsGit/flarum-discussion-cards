@@ -137,7 +137,7 @@ export default class Settings extends ExtensionPage {
                 }
                 <UploadImageButton 
                   name='walsgit_discussion_cards_default_image'
-                  routePath='walsgit_discussion_cards_default_image'
+                  routePath='walsgit/discussion-cards/default-image'
                   value={app.data.settings.walsgit_discussion_cards_default_image_path ? imagePath + app.data.settings.walsgit_discussion_cards_default_image_path : ''}
                   url={imagePath + app.forum.attribute('walsgitDiscussionCardsDefaultImage')}
                   className='DC-UploadImageBtn'
