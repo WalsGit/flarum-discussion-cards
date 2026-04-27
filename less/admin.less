@@ -8,6 +8,18 @@
     border-radius: var(--border-radius); // Consistent border radius
     box-shadow: 0 2px 4px var(--shadow-color); // Subtle shadow for depth
 
+    // TEMP FIX for Flarum 2.0 style issue on .Form-group (new form-group gap)
+    .Form-group {
+      gap: 0;
+      margin-bottom: 20px;
+    }
+    .Form-group:last-child {
+      margin-bottom: 0 !important;
+    }
+      .helpText {
+        margin-bottom: 10px;
+      }
+
     h3 {
       color: var(--primary-color); // Primary color for headings
       margin-bottom: 10px;
