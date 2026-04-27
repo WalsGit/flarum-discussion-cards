@@ -48,7 +48,7 @@ export default class DiscussionReplies extends Component {
     // For List cards layout (icon via css + number on the right)
     if (layout === 'list') {
       return (
-        <div className="DiscussionListItem-count">
+        <div className="DiscussionListItem-replyCount">
           <span aria-hidden="true">{abbreviateNumber(postCount)}</span>
           <span className="visually-hidden">
             {app.translator.trans('core.forum.discussion_list.unread_replies_a11y_label', { count: postCount })}

@@ -22,7 +22,7 @@
       font-weight: 500;
     }
 
-    .DiscussionListItem-count {
+    .DiscussionListItem-replyCount {
       color: var(--discussion-title-color);
       font-weight: 400;
 
@@ -593,7 +593,7 @@
       z-index: 3;
     }
 
-    .DiscussionListItem-count {
+    .DiscussionListItem-replyCount {
       color: var(--heading-color);
       font-weight: bold;
       margin-right: 0;
@@ -601,10 +601,14 @@
       flex-shrink: 0;
       align-self: self-start;
       padding-top: 3px;
+      margin-top: 12px;
+      width: 55px;
+      font-size: 14px;
 
       &:before {
         font: var(--fa-font-solid); // This replaces old Font Awesome .fas()
         content: "\f075";
+        padding-right: 6px;
       }
     }
   }
