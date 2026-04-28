@@ -560,11 +560,7 @@ class RegenerateImagesCommand extends AbstractCommand
     {
         $discussion = Discussion::with('firstPost')->find($discussionId);
 
-        if (!$discussion || !$discussion->firstPost) {
-            throw new \RuntimeException('first post not found');
-        }
-
-        $html = $discussion->firstPost->formatContent();
+        $html = ($discussion->firstPost) ? $discussion->firstPost->formatContent() : NULL;
 
         $this->regenerator->regenerate($discussion, $html, true);
     }
