@@ -66,8 +66,6 @@ use Walsgit\Discussion\Cards\Services\CardImageRegenerationService;
 
 class RegenerateImagesCommand extends AbstractCommand
 {
-    protected static $defaultName = 'discussion-cards:regenerate-images';
-
     private const DEFAULT_LIMIT = 20;
     private const DEFAULT_BATCH_SIZE = 100;
 
@@ -83,6 +81,7 @@ class RegenerateImagesCommand extends AbstractCommand
     protected function configure(): void
     {
         $this
+            ->setName('discussion-cards:regenerate-images')
             ->setDescription('Regenerate discussion card images')
             ->addOption('latest', 'l', InputOption::VALUE_OPTIONAL, 'Regenerate card images for the N number of latest discussions (default is 20)')
             ->addOption('top', 't', InputOption::VALUE_OPTIONAL, 'Regenerate card images for the N number of top discussions (default is 20)')
@@ -92,7 +91,7 @@ class RegenerateImagesCommand extends AbstractCommand
             ->addOption('unpopular', 'u', InputOption::VALUE_OPTIONAL, 'Regenerate card images for the N number of unpopular discussions (default is 20)')
             ->addOption('discussion', 'd', InputOption::VALUE_OPTIONAL, 'Regenerate card images for specified discussion id(s) (comma separated)')
             ->addOption('all', 'a', InputOption::VALUE_NONE, 'Regenerate card images for all discussions')
-            ->addOption('without', 'w', InputOption::VALUE_OPTIONAL, 'Regenerate card images only for discussions without images (walsgit_card_image_url is NULL)')
+            ->addOption('without', 'w', InputOption::VALUE_OPTIONAL, 'Regenerate card images only for discussions without images (walsgit_card_image_url is NULL)', 'false')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Simulate without changing or saving anything')
             ->addOption('batch-size', 'b', InputOption::VALUE_OPTIONAL, 'Set a custom batch size for the number of discussions to process at a time', self::DEFAULT_BATCH_SIZE)
             ->addOption('tag', null, InputOption::VALUE_OPTIONAL, 'Regenerate card images for all discussions of specified tag id(s) and/or quoted tag slug(s) (comma separated)');
@@ -108,14 +107,14 @@ class RegenerateImagesCommand extends AbstractCommand
         $batchSize = max(1, (int) $this->input->getOption('batch-size'));
 
         // Handle --without option with --all
-        if ($all && $without !== false) {
+        if ($all && $without !== 'false') {
             $limit = is_numeric($without) ? max(1, (int) $without) : null;
             return $this->processAllWithoutImages($limit, $batchSize, $dryRun);
         }
 
         // --all
         if ($all && !$dryRun) {
-            $helper   = $this->getHelper('question');
+            $helper   = $this->getHelperSet()->get('question');
             $question = new ConfirmationQuestion($this->trans('ConfirmAll') . ' ', false);
 
             if (!$helper->ask($this->input, $this->output, $question)) {
@@ -140,15 +139,14 @@ class RegenerateImagesCommand extends AbstractCommand
 
         // Special case: if --without is used alone and we have no discussions from collectDiscussionIds,
         // we need to get discussions without images directly
-        $without = $this->input->getOption('without');
-        if ($without !== false && empty($discussionIds) && !$this->hasAnySortingFlag()) {
+        if ($without !== 'false' && empty($discussionIds) && !$this->hasAnySortingFlag()) {
             // Get latest discussions without images directly
             $limit = is_numeric($without) ? max(1, (int) $without) : self::DEFAULT_LIMIT;
             $discussionIds = $this->getDiscussionsWithoutImages($limit);
         }
 
         // Apply --without filter if specified and we have discussions from collectDiscussionIds
-        if ($without !== false && !empty($discussionIds) && $this->hasAnySortingFlag()) {
+        if ($without !== 'false' && !empty($discussionIds)) {
             $discussionIds = $this->filterDiscussionsWithoutImages($discussionIds);
 
             // Limit the number of discussions if a limit is specified with --without
