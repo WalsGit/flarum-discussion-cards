@@ -35,7 +35,7 @@ class MigrateImagesCommand extends AbstractCommand
             ->setDescription('Process and migrates old default Discussion Cards images (from pre v1.4 of the extension) to new location');
     }
 
-    protected function fire()
+    protected function fire(): int
     {
         $this->info($this->translator->trans('walsgit-discussion-cards.admin.console.migrateImagesStart'));
 
