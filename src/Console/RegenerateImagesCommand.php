@@ -92,7 +92,7 @@ class RegenerateImagesCommand extends AbstractCommand
             ->addOption('unpopular', 'u', InputOption::VALUE_OPTIONAL, 'Regenerate card images for the N number of unpopular discussions (default is 20)')
             ->addOption('discussion', 'd', InputOption::VALUE_OPTIONAL, 'Regenerate card images for specified discussion id(s) (comma separated)')
             ->addOption('all', 'a', InputOption::VALUE_NONE, 'Regenerate card images for all discussions')
-            ->addOption('without', 'w', InputOption::VALUE_OPTIONAL, 'Regenerate card images only for discussions without images (walsgit_card_image_url is NULL)')
+            ->addOption('without', 'w', InputOption::VALUE_OPTIONAL, 'Regenerate card images only for discussions without images (walsgit_card_image_url is NULL)', 'false')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Simulate without changing or saving anything')
             ->addOption('batch-size', 'b', InputOption::VALUE_OPTIONAL, 'Set a custom batch size for the number of discussions to process at a time', self::DEFAULT_BATCH_SIZE)
             ->addOption('tag', null, InputOption::VALUE_OPTIONAL, 'Regenerate card images for all discussions of specified tag id(s) and/or quoted tag slug(s) (comma separated)');
@@ -108,7 +108,7 @@ class RegenerateImagesCommand extends AbstractCommand
         $batchSize = max(1, (int) $this->input->getOption('batch-size'));
 
         // Handle --without option with --all
-        if ($all && $without !== false) {
+        if ($all && $without !== 'false') {
             $limit = is_numeric($without) ? max(1, (int) $without) : null;
             return $this->processAllWithoutImages($limit, $batchSize, $dryRun);
         }
@@ -141,14 +141,14 @@ class RegenerateImagesCommand extends AbstractCommand
         // Special case: if --without is used alone and we have no discussions from collectDiscussionIds,
         // we need to get discussions without images directly
         $without = $this->input->getOption('without');
-        if ($without !== false && empty($discussionIds) && !$this->hasAnySortingFlag()) {
+        if ($without !== 'false' && empty($discussionIds) && !$this->hasAnySortingFlag()) {
             // Get latest discussions without images directly
             $limit = is_numeric($without) ? max(1, (int) $without) : self::DEFAULT_LIMIT;
             $discussionIds = $this->getDiscussionsWithoutImages($limit);
         }
 
         // Apply --without filter if specified and we have discussions from collectDiscussionIds
-        if ($without !== false && !empty($discussionIds) && $this->hasAnySortingFlag()) {
+        if ($without !== 'false' && !empty($discussionIds)) {
             $discussionIds = $this->filterDiscussionsWithoutImages($discussionIds);
 
             // Limit the number of discussions if a limit is specified with --without
