@@ -64,6 +64,7 @@ return [
 
     (new Extend\Event())
         ->listen(\Flarum\Post\Event\Posted::class, \Walsgit\Discussion\Cards\Listeners\GenerateCardImageOnDiscussionCreate::class)
+        ->listen(\Flarum\Post\Event\Deleting::class, \Walsgit\Discussion\Cards\Listeners\UpdateCardImageOnFirstPostDelete::class)
         ->listen(Revised::class, [UpdateCardImageOnDiscussionUpdate::class, 'onPostRevised'])
         ->listen(DiscussionWasTagged::class, [UpdateCardImageOnDiscussionUpdate::class, 'onDiscussionTagged'])
         ->listen(BlogMetaSaving::class, [UpdateCardImageOnDiscussionUpdate::class, 'onBlogMetaSaving'])
