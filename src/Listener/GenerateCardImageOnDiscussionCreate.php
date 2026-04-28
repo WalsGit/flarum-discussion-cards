@@ -9,7 +9,7 @@
  *  LICENSE file that was distributed with this source code.
  */
 
-namespace Walsgit\Discussion\Cards\Listeners;
+namespace Walsgit\Discussion\Cards\Listener;
 
 use Flarum\Post\Event\Posted;
 use Walsgit\Discussion\Cards\Image\CardImageResolver;

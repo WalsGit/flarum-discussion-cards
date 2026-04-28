@@ -9,7 +9,7 @@
  *  LICENSE file that was distributed with this source code.
  */
 
-namespace Walsgit\Discussion\Cards\Listeners;
+namespace Walsgit\Discussion\Cards\Listener;
 
 use Flarum\Discussion\Event\Deleting;
 use Flarum\Post\Event\Deleting as PostDeleting;

@@ -9,7 +9,7 @@
  *  LICENSE file that was distributed with this source code.
  */
 
-namespace Walsgit\Discussion\Cards\Listeners;
+namespace Walsgit\Discussion\Cards\Listener;
 
 use Flarum\Post\Event\Revised;
 use Flarum\Tags\Event\DiscussionWasTagged;

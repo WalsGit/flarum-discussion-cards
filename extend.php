@@ -26,8 +26,8 @@ use Walsgit\Discussion\Cards\Providers\TagImageSelectorProvider;
 use Walsgit\Discussion\Cards\Console\MigrateImagesCommand;
 use Walsgit\Discussion\Cards\Console\PurgeImagesCommand;
 use Walsgit\Discussion\Cards\Console\RegenerateImagesCommand;
-use Walsgit\Discussion\Cards\Listeners\UpdateCardImageOnDiscussionUpdate;
-use Walsgit\Discussion\Cards\Listeners\DeleteCardImageOnDiscussionDelete;
+use Walsgit\Discussion\Cards\Listener\UpdateCardImageOnDiscussionUpdate;
+use Walsgit\Discussion\Cards\Listener\DeleteCardImageOnDiscussionDelete;
 
 return [
     (new Extend\Frontend('forum'))
@@ -84,7 +84,7 @@ return [
         }),
 
     (new Extend\Event())
-        ->listen(\Flarum\Post\Event\Posted::class, \Walsgit\Discussion\Cards\Listeners\GenerateCardImageOnDiscussionCreate::class)
+        ->listen(\Flarum\Post\Event\Posted::class, \Walsgit\Discussion\Cards\Listener\GenerateCardImageOnDiscussionCreate::class)
         ->listen(\Flarum\Post\Event\Deleting::class, \Walsgit\Discussion\Cards\Listener\UpdateCardImageOnFirstPostDelete::class)
         ->subscribe(UpdateCardImageOnDiscussionUpdate::class)
         ->subscribe(DeleteCardImageOnDiscussionDelete::class),
