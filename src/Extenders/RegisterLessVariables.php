@@ -13,16 +13,16 @@ use Flarum\Tags\Tag;
 
 class RegisterLessVariables implements ExtenderInterface
 {
-    public function extend(Container $container, Extension $extension = null)
+    public function extend(Container $container, ?Extension $extension = null): void
     {
-        $container->resolving('flarum.assets.forum', function (Assets $assets) {
-            $assets->css(function (SourceCollector $sources) {
-                $sources->addString(function () {
-                    $settings = app(SettingsRepositoryInterface::class);
-                    
+        $container->resolving('flarum.assets.forum', function (Assets $assets) use ($container) {
+            $assets->css(function (SourceCollector $sources) use ($container) {
+                $sources->addString(function () use ($container) {
+                    $settings = $container->make(SettingsRepositoryInterface::class);
+
                     $defaultDesktopCardWidth = $settings->get('walsgit_discussion_cards_desktopCardWidth');
                     $defaultTabletCardWidth = $settings->get('walsgit_discussion_cards_tabletCardWidth');
-                    
+
                     $tags = Tag::all();
 
                     $css = "@desktop-card-width: {$defaultDesktopCardWidth}%;\n";

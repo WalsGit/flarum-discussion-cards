@@ -9,19 +9,24 @@
  *  LICENSE file that was distributed with this source code.
  */
 
-namespace Walsgit\Discussion\Cards\Listeners;
+namespace Walsgit\Discussion\Cards\Listener;
 
 use Flarum\Post\Event\Revised;
 use Flarum\Tags\Event\DiscussionWasTagged;
 use Walsgit\Discussion\Cards\Image\CardImageResolver;
+use V17Development\FlarumBlog\Event\BlogMetaSaving;
 
 class UpdateCardImageOnDiscussionUpdate
 {
-    protected CardImageResolver $resolver;
-
-    public function __construct(CardImageResolver $resolver)
+    public function __construct(protected CardImageResolver $resolver)
     {
-        $this->resolver = $resolver;
+    }
+
+    public function subscribe($events)
+    {
+        $events->listen(Revised::class, [$this, 'onPostRevised']);
+        $events->listen(DiscussionWasTagged::class, [$this, 'onDiscussionTagged']);
+        $events->listen(BlogMetaSaving::class, [$this, 'onBlogMetaSaving']);
     }
 
     /**

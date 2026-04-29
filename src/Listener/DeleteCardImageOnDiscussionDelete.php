@@ -9,7 +9,7 @@
  *  LICENSE file that was distributed with this source code.
  */
 
-namespace Walsgit\Discussion\Cards\Listeners;
+namespace Walsgit\Discussion\Cards\Listener;
 
 use Flarum\Discussion\Event\Deleting;
 use Flarum\Post\Event\Deleting as PostDeleting;
@@ -20,15 +20,14 @@ use Walsgit\Discussion\Cards\Image\CardImageResolver;
 
 class DeleteCardImageOnDiscussionDelete
 {
-    protected Config $config;
-    protected Paths $paths;
-    protected CardImageResolver $resolver;
-
-    public function __construct(Config $config, Paths $paths, CardImageResolver $resolver)
+    public function __construct(protected Config $config, protected Paths $paths, protected CardImageResolver $resolver)
     {
-        $this->config = $config;
-        $this->paths = $paths;
-        $this->resolver = $resolver;
+    }
+
+    public function subscribe($events)
+    {
+        $events->listen(Deleting::class, [$this, 'onDiscussionDeleting']);
+        $events->listen(PostDeleting::class, [$this, 'onFirstPostDeleting']);
     }
 
     /**

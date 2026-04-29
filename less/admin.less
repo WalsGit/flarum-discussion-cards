@@ -3,31 +3,43 @@
   padding-top: 20px;
 
   &--content {
-    background: @control-bg; // Use control background for coherence
+    background: var(--control-bg); // Use control background for coherence
     padding: 20px;
-    border-radius: @border-radius; // Consistent border radius
-    box-shadow: 0 2px 4px @shadow-color; // Subtle shadow for depth
+    border-radius: var(--border-radius); // Consistent border radius
+    box-shadow: 0 2px 4px var(--shadow-color); // Subtle shadow for depth
+
+    // TEMP FIX for Flarum 2.0 style issue on .Form-group (new form-group gap)
+    .Form-group {
+      gap: 0;
+      margin-bottom: 20px;
+    }
+    .Form-group:last-child {
+      margin-bottom: 0 !important;
+    }
+      .helpText {
+        margin-bottom: 10px;
+      }
 
     h3 {
-      color: @primary-color; // Primary color for headings
+      color: var(--primary-color); // Primary color for headings
       margin-bottom: 10px;
     }
 
     .Section {
-      background: @body-bg; // Contrast with the section background
-      border-radius: @border-radius;
-      box-shadow: 0 1px 3px @shadow-color;
+      background: var(--body-bg); // Contrast with the section background
+      border-radius: var(--border-radius);
+      box-shadow: 0 1px 3px var(--shadow-color);
       padding: 15px;
       margin-bottom: 20px;
     }
 
     .Form {
       .control {
-        background: @body-bg;
-        border: 1px solid @muted-color; // Defines the input fields
-        color: @text-color;
+        background: var(--body-bg);
+        border: 1px solid var(--muted-color); // Defines the input fields
+        color: var(--text-color);
         padding: 6px 12px;
-        border-radius: @border-radius;
+        border-radius: var(--border-radius);
       }
     }
   }
@@ -104,6 +116,9 @@
   display: none;
 }
 
+.DC-TagDefaultImageSettings div.UploadImageButton-image img {
+  width: 200px;
+}
 
 .DC-TagDefaultImageSettings h4 {
   margin: 3px 0;
@@ -121,7 +136,6 @@
 .DC-DefaultImageTitle {
   font-size: 14px;
   font-weight: bold;
-  margin-bottom: 10px;
   color: var(--text-color);
   display: block;
 }

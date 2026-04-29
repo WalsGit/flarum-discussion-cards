@@ -11,36 +11,28 @@
 
 namespace Walsgit\Discussion\Cards\Api\Controllers;
 
-use Flarum\Foundation\Paths;
-use Flarum\Tags\Api\Serializer\TagSerializer;
 use Flarum\Tags\Tag;
 use Flarum\Locale\Translator;
+use Illuminate\Support\Arr;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Flarum\Api\Controller\AbstractShowController;
-use Tobscure\JsonApi\Document;
+use Psr\Http\Server\RequestHandlerInterface;
+use Laminas\Diactoros\Response\JsonResponse;
 use Walsgit\Discussion\Cards\Services\ImageProcessingService;
 use Exception;
 
-class TagImageController extends AbstractShowController
+class TagImageController implements RequestHandlerInterface
 {
-    protected ImageProcessingService $imageService;
-    protected Paths $paths;
-    public $serializer = TagSerializer::class;
-    protected Translator $translator;
-
-    public function __construct(ImageProcessingService $imageService, Paths $paths, Translator $translator)
+    public function __construct(protected ImageProcessingService $imageService, protected Translator $translator)
     {
-        $this->imageService = $imageService;
-        $this->paths = $paths;
-        $this->translator = $translator;
     }
 
-    protected function data(ServerRequestInterface $request, Document $document)
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $request->getAttribute('actor')->assertAdmin();
+        $routeParams = $request->getAttribute('routeParameters', []);
 
         $method = strtoupper($request->getMethod());
-        $tagId = $request->getParsedBody()['tagId'] ?? null;
+        $tagId = Arr::get($routeParams, 'tagId') ?? null;
 
         if (!$tagId) {
             throw new \InvalidArgumentException($this->translator->trans('walsgit_discussion_cards.admin.errors.tagImageNoTagId'));
@@ -54,21 +46,45 @@ class TagImageController extends AbstractShowController
                     'tagId' => $tagId
                 ]);
 
-                // mise à jour en base
                 $tag->walsgit_discussion_cards_tag_default_image = 'tags/' . $result['path'];
                 $tag->save();
 
-                return $tag;
+                return $this->createTagResponse($tag);
 
             case 'DELETE':
-                $this->imageService->handleDelete('tag', "tag-$tagId-default-card-image.webp");
+                $this->imageService->handleDelete('tag', "tag-{$tagId}-default-card-image.webp");
                 $tag->walsgit_discussion_cards_tag_default_image = null;
                 $tag->save();
 
-                return $tag;
+                return $this->createTagResponse($tag);
 
             default:
                 throw new \Exception($this->translator->trans('walsgit_discussion_cards.admin.errors.tagImageUnsupportedMethod', ['method' => $method]));
         }
+    }
+
+    protected function createTagResponse(Tag $tag): JsonResponse
+    {
+        $data = [
+            'id' => $tag->id,
+            'attributes' => [
+                'name' => $tag->name,
+                'description' => $tag->description,
+                'slug' => $tag->slug,
+                'color' => $tag->color,
+                'icon' => $tag->icon,
+                'isHidden' => $tag->is_hidden,
+                'isPrimary' => $tag->is_primary,
+                'isRestricted' => $tag->is_restricted,
+                'discussionCount' => $tag->discussion_count,
+                'position' => $tag->position,
+                'defaultSort' => $tag->default_sort,
+                'lastPostedAt' => $tag->last_posted_at,
+                'walsgitDiscussionCardsTagDefaultImage' => $tag->walsgit_discussion_cards_tag_default_image,
+                'walsgitDiscussionCardsTagSettings' => $tag->walsgit_discussion_cards_tag_settings,
+            ]
+        ];
+
+        return new JsonResponse(['data' => $data]);
     }
 }

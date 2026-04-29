@@ -21,27 +21,16 @@ use Flarum\Locale\Translator;
 
 class ImageMigrationService
 {
-    protected Paths $paths;
-    protected SettingsRepositoryInterface $settings;
-    protected ImageProcessingService $imageService;
-    protected Connection $db;
-    protected $translator;
     protected LoggingService $logger;
     protected int $failedMigrationCount = 0;
 
     public function __construct(
-        Paths $paths,
-        SettingsRepositoryInterface $settings,
-        ImageProcessingService $imageService,
-        Connection $db,
-        Translator $translator
+        protected Paths $paths,
+        protected SettingsRepositoryInterface $settings,
+        protected ImageProcessingService $imageService,
+        protected Connection $db,
+        protected Translator $translator
     ) {
-        $this->paths = $paths;
-        $this->settings = $settings;
-        $this->imageService = $imageService;
-        $this->db = $db;
-        $this->translator = $translator;
-
         // Initialize logger with 'migration' prefix
         $this->logger = new LoggingService($paths, 'migration');
     }

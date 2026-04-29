@@ -3,27 +3,24 @@
 /*
  * This file is part of walsgit/discussion-cards
  *
- *  Copyright (c) 2025 Wa!id.
+ *  Copyright (c) 2026 Wa!id.
  *
  *  For detailed copyright and license information, please view the
  *  LICENSE file that was distributed with this source code.
  */
 
-namespace Walsgit\Discussion\Cards\Listeners;
+namespace Walsgit\Discussion\Cards\Listener;
 
-use Flarum\Post\Event\Posted;
+use Flarum\Post\Event\Deleting;
 use Walsgit\Discussion\Cards\Image\CardImageResolver;
 
-class GenerateCardImageOnDiscussionCreate
+class UpdateCardImageOnFirstPostDelete
 {
-    protected $resolver;
-
-    public function __construct(CardImageResolver $resolver)
+    public function __construct(protected CardImageResolver $resolver)
     {
-        $this->resolver = $resolver;
     }
 
-    public function handle(Posted $event)
+    public function handle(Deleting $event)
     {
         $post = $event->post;
 
@@ -34,15 +31,8 @@ class GenerateCardImageOnDiscussionCreate
 
         $discussion = $post->discussion;
 
-        // Get the formatted HTML content
-        if (method_exists($post, 'formatContent')) {
-            $html = $post->formatContent();
-        } else {
-            $html = null;
-        }
-
         try {
-            $url = $this->resolver->resolve($discussion, $html);
+            $url = $this->resolver->resolve($discussion, null);
 
             if ($url) {
                 $discussion->walsgit_card_image_url = $url;
@@ -50,7 +40,7 @@ class GenerateCardImageOnDiscussionCreate
             }
 
         } catch (\Throwable $e) {
-            // Don't block post creation
+            // Don't block post deletion
         }
     }
 }

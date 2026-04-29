@@ -8,7 +8,7 @@
   &.read {
 
     h2,
-    .Repcount {
+    .ReplyCount {
       color: var(--discussion-title-color);
       font-weight: 400;
     }
@@ -18,17 +18,17 @@
       font-weight: 300;
     }
 
-    .Repcount {
+    .ReplyCount {
       font-weight: 500;
     }
 
-    .DiscussionListItem-count {
+    .DiscussionListItem-replyCount {
       color: var(--discussion-title-color);
       font-weight: 400;
 
       &:before {
-        .far();
-        content: @fa-var-comment;
+        font: var(--fa-font-regular); // This replaces old Font Awesome .far()
+        content: "\f075";
       }
 
       @media phone {
@@ -119,12 +119,13 @@
   .Left {
     display: flex;
     width: fit-content;
-    min-width: 40%;
+    min-width: 50%;
     margin-right: 15px;
   }
 
   .Avatars {
     align-self: center;
+    display: flex;
   }
 
   .Avatar--mini {
@@ -140,7 +141,7 @@
     }
   }
 
-  .Repcount {
+  .ReplyCount {
     font-size: 14px;
     color: #2d4453;
     font-weight: bold;
@@ -418,7 +419,7 @@
   }
 
   .flexCard {
-    background: @control-bg;
+    background: var(--control-bg);
   }
 
   .CardsListItem {
@@ -592,7 +593,7 @@
       z-index: 3;
     }
 
-    .DiscussionListItem-count {
+    .DiscussionListItem-replyCount {
       color: var(--heading-color);
       font-weight: bold;
       margin-right: 0;
@@ -600,10 +601,14 @@
       flex-shrink: 0;
       align-self: self-start;
       padding-top: 3px;
+      margin-top: 12px;
+      width: 55px;
+      font-size: 14px;
 
       &:before {
-        .fas();
-        content: @fa-var-comment;
+        font: var(--fa-font-solid); // This replaces old Font Awesome .fas()
+        content: "\f075";
+        padding-right: 6px;
       }
     }
   }
@@ -659,8 +664,7 @@
   grid-column-end: span 3;
 }
 
-body {
-  & when (@config-dark-mode =true) {
+body {[data-theme^=dark] & {
 
     @muted-color: hsl(@secondary-hue, min(15%, @secondary-sat), 60%);
 
@@ -673,9 +677,9 @@ body {
         background: hsl(@primary-hue, min(20%, @primary-sat), 30%);
       }
 
-      .Repcount,
+      .ReplyCount,
       .Arrow {
-        color: @muted-color;
+        color: var(--muted-color);
       }
 
       .Avatar--mini {
@@ -687,7 +691,7 @@ body {
       background: hsl(@secondary-hue, min(20%, @secondary-sat), 14%);
 
       h2 {
-        color: @muted-color;
+        color: var(--muted-color);
       }
     }
 

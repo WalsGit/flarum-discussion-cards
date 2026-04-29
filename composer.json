@@ -2,7 +2,12 @@
     "name": "walsgit/flarum-discussion-cards",
     "description": "Output of discussions lists in form of cards",
     "type": "flarum-extension",
-    "keywords": ["flarum", "extension", "discussion", "cards"],
+    "keywords": [
+        "flarum",
+        "extension",
+        "discussion",
+        "cards"
+    ],
     "license": "MIT",
     "authors": [
         {
@@ -17,9 +22,8 @@
         }
     ],
     "require": {
-        "flarum/core": "^1.8.0",
-        "flarum/tags": "^1.8.0",
-        "intervention/image": "^2.7"
+        "flarum/core": "^2.0.0-beta",
+        "flarum/tags": "^2.0.0-beta"
     },
     "autoload": {
         "psr-4": {

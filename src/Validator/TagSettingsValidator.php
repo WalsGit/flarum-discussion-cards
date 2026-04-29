@@ -15,7 +15,7 @@ use Flarum\Foundation\AbstractValidator;
 
 class TagSettingsValidator extends AbstractValidator
 {
-    protected $rules = [
+    protected array $rules = [
         'primaryCards'     => 'nullable|numeric|min:0',
         'desktopCardWidth' => 'nullable|numeric|min:10|max:100',
         'tabletCardWidth'  => 'nullable|numeric|min:10|max:100',
@@ -33,7 +33,7 @@ class TagSettingsValidator extends AbstractValidator
         'listCardsCount'   => 'walsgit_discussion_cards.admin.errors.listCardsCount',
     ];
 
-    protected function makeValidator(array $attributes)
+    protected function makeValidator(array $attributes): \Illuminate\Validation\Validator
     {
         $validator = parent::makeValidator($attributes);
 

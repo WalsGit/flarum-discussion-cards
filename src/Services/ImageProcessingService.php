@@ -14,16 +14,13 @@ namespace Walsgit\Discussion\Cards\Services;
 use Flarum\Foundation\Paths;
 use Flarum\Locale\Translator;
 use Flarum\Foundation\Config;
-use Intervention\Image\ImageManagerStatic as Image;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Encoders\WebpEncoder;
 use InvalidArgumentException;
 use Exception;
 
 class ImageProcessingService
 {
-    protected Paths $paths;
-    protected Translator $translator;
-    protected Config $config;
-
     protected array $directories = [
         'default'    => 'assets/extensions/walsgit-discussion-cards/',
         'tag'        => 'assets/extensions/walsgit-discussion-cards/tags/',
@@ -36,15 +33,12 @@ class ImageProcessingService
         'upscaling' => false,
     ];
 
-    public function __construct(Paths $paths, Translator $translator, Config $config)
+    public function __construct(protected Paths $paths, protected Translator $translator, protected Config $config)
     {
-        $this->paths = $paths;
-        $this->translator = $translator;
-        $this->config = $config;
     }
 
     /**
-     * Ulpoading images
+     * Uploading images
      */
     public function handleUpload($request, string $origin, array $options = []): array
     {
@@ -96,24 +90,19 @@ class ImageProcessingService
         try {
             @ini_set('memory_limit', '256M');
 
-            $image = Image::make($sourcePath);
+            $image = ImageManager::gd()->read($sourcePath);
 
-            $image->resize($options['width'], null, function ($constraint) use ($options) {
-                $constraint->aspectRatio();
-                if (!$options['upscaling']) {
-                    $constraint->upsize();
-                }
-            });
+            // Scale image
+            $image = $options['upscaling']
+                ? $image->scale(width: $options['width'])
+                : $image->scaleDown(width: $options['width']);
 
-            $image->encode('webp', $options['quality'])->save($targetPath);
+            // Convert to webp & save
+            $encoded = $image->encode(new WebpEncoder(quality: $options['quality']));
+            $encoded->save($targetPath);
 
         } catch (Exception $e) {
             throw new Exception($this->translator->trans('walsgit_discussion_cards.admin.errors.imageProcessingFailed') . ' ' . $e->getMessage());
-        } finally {
-            if (isset($image)) {
-                $image->destroy();
-                unset($image);
-            }
         }
     }
 
@@ -170,9 +159,9 @@ class ImageProcessingService
                 if (is_array($context) && isset($context['tagId'])) {
                     $tagId = $context['tagId'];
                 }
-                // 2) Else, fallback to parsed body
-                elseif ($context && method_exists($context, 'getParsedBody')) {
-                    $tagId = $context->getParsedBody()['tagId'] ?? null;
+                // 2) Else, fallback to QueryParams
+                elseif ($context && method_exists($context, 'getQueryParams')) {
+                    $tagId = $context->getQueryParams()['tagId'] ?? null;
                 } else {
                     $tagId = null;
                 }
@@ -331,7 +320,7 @@ class ImageProcessingService
             $contentLength = end($contentLength);
         }
 
-        // Creat fingerprint
+        // Create fingerprint
         $fingerprint = $etag . $lastModified . $contentLength;
 
         // If all 3 values are empty → use image url as hash

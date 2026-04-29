@@ -1,31 +1,27 @@
-/**
- * Crafts avatars of some participants of the discussion (used in primary cards)
- * @param {Discussion} discussion
- * @returns {Mithril.Children}
- */
-
-import avatar from "flarum/common/helpers/avatar";
+import Avatar from 'flarum/common/components/Avatar';
 
 export default function craftRepliesAvatars(discussion) {
-    const participants = [];
+  const participants = [];
 
-    // Always add the discussion starter
-    const starter = discussion.user && discussion.user();
-    if (!starter) {
-        return null;
-    }
-    participants.push(starter);
+  // Always add the discussion starter
+  const starter = discussion.user && discussion.user();
+  if (!starter) {
+    return null;
+  }
+  participants.push(starter);
 
-    // Then add the last poster if they're different from the starter
-    const lastPoster = discussion.lastPostedUser && discussion.lastPostedUser();
-    if (lastPoster && lastPoster.id() !== starter.id()) {
-        participants.push(lastPoster);
-    }
+  // Then add the last poster if they're different from the starter
+  const lastPoster = discussion.lastPostedUser && discussion.lastPostedUser();
+  if (lastPoster && lastPoster.id() !== starter.id()) {
+    participants.push(lastPoster);
+  }
 
-    // Limit to 2 participants maximum (starter + last poster)
-    const finalParticipants = participants.slice(0, 2);
+  // Limit to 2 participants maximum (starter + last poster)
+  const finalParticipants = participants.slice(0, 2);
 
-    return finalParticipants.map((user) => (
-        <>{avatar(user, {className: 'Avatar--mini'})}</>
-    ));
+  return finalParticipants.map((user) => (
+    <>
+      <Avatar user={user} className="Avatar--mini" />
+    </>
+  ));
 }
