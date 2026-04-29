@@ -8,7 +8,7 @@
   &.read {
 
     h2,
-    .Repcount {
+    .ReplyCount {
       color: var(--discussion-title-color);
       font-weight: 400;
     }
@@ -18,7 +18,7 @@
       font-weight: 300;
     }
 
-    .Repcount {
+    .ReplyCount {
       font-weight: 500;
     }
 
@@ -119,12 +119,13 @@
   .Left {
     display: flex;
     width: fit-content;
-    min-width: 40%;
+    min-width: 50%;
     margin-right: 15px;
   }
 
   .Avatars {
     align-self: center;
+    display: flex;
   }
 
   .Avatar--mini {
@@ -140,7 +141,7 @@
     }
   }
 
-  .Repcount {
+  .ReplyCount {
     font-size: 14px;
     color: #2d4453;
     font-weight: bold;
@@ -673,7 +674,7 @@ body {
         background: hsl(@primary-hue, min(20%, @primary-sat), 30%);
       }
 
-      .Repcount,
+      .ReplyCount,
       .Arrow {
         color: @muted-color;
       }

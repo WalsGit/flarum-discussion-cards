@@ -16,10 +16,16 @@ export default class CardItem extends BaseItem {
         const settings = this.settings;
         const jumpTo = this.getJumpTo();
 
+        // Getting the tagId for [data-tag-id=] needed when we are in tag pages to use their custom Discussion Cards settings
+        const isTagPage = m.route.get().split('?')[0].startsWith('/t/');
+        const tagSlug = m.route.param().tags ?? null;
+        const currentTagId = isTagPage ? app.store.all('tags').find(t => t.slug() === tagSlug).data.id : '';
+
         return (
             <div
                 key={discussion.id()}
                 data-id={discussion.id()}
+                data-tag-id={currentTagId}
                 className={this.getItemClasses("CardsListItem Card")}
             >
                 {DiscussionControls.controls(discussion, this).toArray().length 

@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.4.3] - 2026-04-29
+### Added
+- Backend: a listener has been added to resolve a new card image for the discussion on first post deletion
+
+### Changed
+- Admin Settings Page: some labels & help texts
+- Admin Settings Page: 3rd party extensions' URLs
+- Backend: removed unnecessary helper
+- Updated README.md & CHANGELOG.md
+
+### Fixed
+- Primary Cards: on tag pages, custom width of cards set in tag settings weren't taken into account.
+- Primary Cards: avatars' alignment on primary cards
+- List Cards: reply count was always showing total replies instead of unread total when needed.
+- Console: Regenerate-images command wasn't working properly when the --without (or -w) option was used.
+- Console: when (re)generating card image on discussions where the first post was deleted (first_post_id = null in DB) an error was thrown instead of reverting to one of the defaults
+
 ## [1.4.2] - 2026-04-13
 ### Added
 - Logging service to allow creation of logs in `Storage/logs/walsgit-discussion-cards/`.

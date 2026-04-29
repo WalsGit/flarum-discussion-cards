@@ -17,17 +17,17 @@ export default class Settings extends ExtensionPage {
 		const mbViewsExtension = {
 			id: 'michaelbelgium-discussion-views',
 			name: 'michaelbelgium/flarum-discussion-views',
-			url: 'https://flarum.org/extension/michaelbelgium/flarum-discussion-views',
+			url: 'https://github.com/MichaelBelgium/flarum-discussion-views',
 		};
 		const blogExtension = {
 			id: 'v17development-blog',
 			name: 'Flarum Blog',
-			url: 'https://flarum.org/extension/v17development/flarum-blog',
+			url: 'https://discuss.flarum.org/d/33038-blog-adds-a-blog-section-to-your-community',
 		};
 		const repostExtension = {
 			id: 'shebaoting-repost',
 			name: 'Repost',
-			url: 'https://flarum.org/extension/shebaoting/repost',
+			url: 'https://discuss.flarum.org/d/35420-repost',
 		};
 
 		const warningIcon = icon("fas fa-exclamation-triangle");
