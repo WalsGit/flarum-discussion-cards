@@ -7,6 +7,14 @@ walsgit_discussion_cards:
   admin:
     settings:
       statsToolsBanner:
+        statTotalImagesTitle: "Total images"
+        statDiscussionImagesTitle: "Discussion images"
+        statDiscussionsWithoutImagesTitle: "Discussions without images"
+        statUnusedImagesTitle: "Unused images"
+        toolsMenuLabel: "Tools"
+        toolsMenuUpdateStats: "Update stats"
+        toolsMenuPurgeImages: "Purge Images"
+        toolsMenuRegenerateImages: "Regenerate images"
         refreshStats: "Image statistics have been updated successfully"
         purgeImagesModal_title: "Purge images"
         purgeImagesModal_helpText: "These options will let you delete discussion card images from your server. You can find more purge options with the CLI command: <code>php flarum discussion-cards:purge-images --help</code>\n<strong>WARNING: these actions are irreversible!</strong> Also, note that default images (general or tag) will not be delete here (to delete them, use the remove button in the dedicated section of the extension settings or tag settings respectively"
