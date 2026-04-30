@@ -48,28 +48,28 @@ export default class StatsToolsBanner extends Component {
 			<div className="DashboardWidget Widget StatusWidget DiscussionCardsSettings--content">
 			<ul>
 				<li className="StatsWidget-item">
-				<span className="StatsWidget-label">Total images</span><br />
+				<span className="StatsWidget-label">{app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.statTotalImagesTitle')}</span><br />
 				<strong className="StatsWidget-value">
 					{this.loading ? '…' : this.stats.totalImages}
 				</strong>
 				</li>
 
 				<li className="StatsWidget-item">
-				<span className="StatsWidget-label">Discussions images</span><br />
+				<span className="StatsWidget-label">{app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.statDiscussionImagesTitle')}</span><br />
 				<strong className="StatsWidget-value">
 					{this.loading ? '…' : this.stats.discussionImages}
 				</strong>
 				</li>
 
 				<li className="StatsWidget-item">
-				<span className="StatsWidget-label">Discussions without images</span><br />
+				<span className="StatsWidget-label">{app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.statDiscussionsWithoutImagesTitle')}</span><br />
 				<strong className="StatsWidget-value">
 					{this.loading ? '…' : this.stats.discussionsWithoutImages}
 				</strong>
 				</li>
 
 				<li className="StatsWidget-item">
-				<span className="StatsWidget-label">Unused images</span><br />
+				<span className="StatsWidget-label">{app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.statUnusedImagesTitle')}</span><br />
 				<strong className="StatsWidget-value">
 					{this.loading ? '…' : this.stats.unusedImages}
 				</strong>
@@ -78,21 +78,21 @@ export default class StatsToolsBanner extends Component {
 				{/* ==== Tools menu ==== */}
 				<li className="item-tools">
 				<Dropdown
-					label="Tools"
+					label={app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.toolsMenuLabel')}
 					icon="fas fa-cog"
 					buttonClassName="Button"
 					menuClassName="Dropdown-menu--right"
 				>
 					<Button onclick={() => this.refreshStats()}>
-					Update stats
+						{app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.toolsMenuUpdateStats')}
 					</Button>
 					
 					<Button onclick={() => app.modal.show(PurgeImagesModal)}>
-					Purge images
+						{app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.toolsMenuPurgeImages')}
 					</Button>
 
 					<Button onclick={() => app.modal.show(RegenerateImagesModal)}>
-					Regenerate images
+						{app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.toolsMenuRegenerateImages')}
 					</Button>
 				</Dropdown>
 				</li>
