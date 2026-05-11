@@ -83,7 +83,7 @@ class CardImageResolver
      * Priority: featured image > first image in blog post > blog-default image
      * Returns an absolute image URL or null.
      */
-    protected function resolveBlogImage(Discussion $discussion, ?string $firstPostHtml = null): ?string
+    public function resolveBlogImage(Discussion $discussion, ?string $firstPostHtml = null): ?string
     {
         $useBlogImages = (int) $this->settings->get('walsgit_discussion_cards_useBlogImages');
 
@@ -294,7 +294,7 @@ class CardImageResolver
         return rtrim((string) $this->config->url(), '/') . '/assets/extensions/walsgit-discussion-cards/' . ltrim($filename, '/');
     }
 
-    protected function isImageAccessible(string $url): bool
+    public function isImageAccessible(string $url): bool
     {
         $baseUrl = (string) ($this->config->url() ?? '');
 

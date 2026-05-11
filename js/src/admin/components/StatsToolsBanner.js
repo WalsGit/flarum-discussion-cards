@@ -4,6 +4,7 @@ import Button from 'flarum/common/components/Button';
 import app from 'flarum/app';
 import PurgeImagesModal from './PurgeImagesModal';
 import RegenerateImagesModal from './RegenerateImagesModal';
+import DebugModal from './DebugModal';
 
 export default class StatsToolsBanner extends Component {
 	oninit() {
@@ -93,6 +94,10 @@ export default class StatsToolsBanner extends Component {
 
 					<Button onclick={() => app.modal.show(RegenerateImagesModal)}>
 						{app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.toolsMenuRegenerateImages')}
+					</Button>
+
+					<Button onclick={() => app.modal.show(DebugModal)}>
+						{app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.toolsMenuDebug')}
 					</Button>
 				</Dropdown>
 				</li>
