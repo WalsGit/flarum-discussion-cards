@@ -141,8 +141,48 @@
 }
 
 /* StatsToolsBanner > Tools > Modals */
-.Modal-body code {
+.Modal-body {  
+  code {
     background-color: #fff;
     padding: 0 3px;
     border-radius: 3px;
+  }
+
+  .Form {
+    gap: unset !important;
+  }
+
+  .Form>* {
+    margin-bottom: 1em;
+  }
+}
+
+.InfoModal-content {
+  max-height: 400px;
+}
+
+.Debug-discussion {
+  display: flex;
+  margin-bottom: unset !important;
+
+  .Form-group {
+    display: unset !important;
+  }
+
+  .Form-group>label {
+    margin-bottom: 10px;
+  }
+
+  .Form-group > input, .Form-group > button {
+    display: inline !important;
+    vertical-align: baseline !important;
+  }
+
+  .Button-label {
+    display: unset !important;
+  }
+
+  .FormControl {
+    margin-right: 20px;
+  }
 }
