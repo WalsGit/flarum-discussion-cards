@@ -62,6 +62,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Exception\InvalidOptionException;
 use Walsgit\Discussion\Cards\Services\CardImageRegenerationService;
+use Exception;
 
 
 class RegenerateImagesCommand extends AbstractCommand
@@ -557,6 +558,9 @@ class RegenerateImagesCommand extends AbstractCommand
     private function regenerateDiscussion(int $discussionId): void
     {
         $discussion = Discussion::with('firstPost')->find($discussionId);
+        if (!$discussion) {
+            throw new Exception("Discussion doesn't exist!");
+        }
 
         $html = ($discussion->firstPost) ? $discussion->firstPost->formatContent() : NULL;
 
