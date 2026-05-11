@@ -38,6 +38,9 @@
         }
     },
     "scripts": {
+        "post-install-cmd": [
+            "test -f flarum && php flarum discussion-cards:regenerate-images -l -t -N || echo \"(Discussion Cards card images generation ignored: Not in Flarum folder)\""
+        ],
         "post-update-cmd": [
             "@migrate-discussion-cards"
         ],
