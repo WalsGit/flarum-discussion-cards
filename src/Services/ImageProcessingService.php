@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of walsgit/discussion-cards
+ * This file is part of walsgit/flarum-discussion-cards
  *
  *  Copyright (c) 2025 Wa!id.
  *
@@ -14,6 +14,7 @@ namespace Walsgit\Discussion\Cards\Services;
 use Flarum\Foundation\Paths;
 use Flarum\Locale\Translator;
 use Flarum\Foundation\Config;
+use Psr\Http\Message\ServerRequestInterface;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Encoders\WebpEncoder;
 use InvalidArgumentException;
@@ -33,14 +34,12 @@ class ImageProcessingService
         'upscaling' => false,
     ];
 
-    public function __construct(protected Paths $paths, protected Translator $translator, protected Config $config)
-    {
-    }
+    public function __construct(protected Paths $paths, protected Translator $translator, protected Config $config) {}
 
     /**
      * Uploading images
      */
-    public function handleUpload($request, string $origin, array $options = []): array
+    public function handleUpload(ServerRequestInterface $request, string $origin, array $options = []): array
     {
         $options = array_merge($this->defaults, $options);
 
@@ -52,7 +51,7 @@ class ImageProcessingService
             ?? null;
 
         if (!$uploadedFile) {
-            throw new InvalidArgumentException($this->translator->trans('walsgit_discussion_cards.admin.errors.noFileUploaded')); 
+            throw new InvalidArgumentException($this->translator->trans('walsgit_discussion_cards.admin.errors.noFileUploaded'));
         }
 
         $tmpPath = $uploadedFile->getStream()->getMetadata('uri');
@@ -100,7 +99,6 @@ class ImageProcessingService
             // Convert to webp & save
             $encoded = $image->encode(new WebpEncoder(quality: $options['quality']));
             $encoded->save($targetPath);
-
         } catch (Exception $e) {
             throw new Exception($this->translator->trans('walsgit_discussion_cards.admin.errors.imageProcessingFailed') . ' ' . $e->getMessage());
         }
@@ -143,7 +141,7 @@ class ImageProcessingService
     public function generateFilename(string $origin, $context = null): string
     {
         // Special case for 3rd party BLOG Extension: blog-default-{hash}.png will generate blog-default-card-image.webp
-        if ($origin === 'discussion' && $context && $context->getParsedBody()['filename'] ?? null) { 
+        if ($origin === 'discussion' && $context && $context->getParsedBody()['filename'] ?? null) {
             $filename = $context->getParsedBody()['filename'];
             if (preg_match('/^blog\-default\-[a-z0-9]+\.png$/i', $filename)) {
                 return 'blog-default-card-image.webp';
@@ -329,9 +327,8 @@ class ImageProcessingService
         }
 
         return substr(sha1($fingerprint), 0, 10);
-
     }
-    
+
 
     /*
     * Remove old discussion card images
@@ -387,5 +384,4 @@ class ImageProcessingService
 
         return $filename;
     }
-
 }

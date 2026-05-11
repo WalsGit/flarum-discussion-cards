@@ -4,6 +4,7 @@ import Button from 'flarum/common/components/Button';
 import app from 'flarum/admin/app';
 import PurgeImagesModal from './PurgeImagesModal';
 import RegenerateImagesModal from './RegenerateImagesModal';
+import DebugModal from './DebugModal';
 
 export default class StatsToolsBanner extends Component {
   oninit() {
@@ -49,37 +50,52 @@ export default class StatsToolsBanner extends Component {
       <div className="DashboardWidget Widget StatusWidget DiscussionCardsSettings--content">
         <ul>
           <li className="StatsWidget-item">
-            <span className="StatsWidget-label">Total images</span>
+            <span className="StatsWidget-label">{app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.statTotalImagesTitle')}</span>
             <br />
             <strong className="StatsWidget-value">{this.loading ? '…' : this.stats.totalImages}</strong>
           </li>
 
           <li className="StatsWidget-item">
-            <span className="StatsWidget-label">Discussions images</span>
+            <span className="StatsWidget-label">{app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.statDiscussionImagesTitle')}</span>
             <br />
             <strong className="StatsWidget-value">{this.loading ? '…' : this.stats.discussionImages}</strong>
           </li>
 
           <li className="StatsWidget-item">
-            <span className="StatsWidget-label">Discussions without images</span>
+            <span className="StatsWidget-label">{app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.statDiscussionsWithoutImagesTitle')}</span>
             <br />
             <strong className="StatsWidget-value">{this.loading ? '…' : this.stats.discussionsWithoutImages}</strong>
           </li>
 
           <li className="StatsWidget-item">
-            <span className="StatsWidget-label">Unused images</span>
+            <span className="StatsWidget-label">{app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.statUnusedImagesTitle')}</span>
             <br />
             <strong className="StatsWidget-value">{this.loading ? '…' : this.stats.unusedImages}</strong>
           </li>
 
           {/* ==== Tools menu ==== */}
           <li className="item-tools">
-            <Dropdown label="Tools" icon="fas fa-cog" buttonClassName="Button" menuClassName="Dropdown-menu--right">
-              <Button onclick={() => this.refreshStats()}>Update stats</Button>
+            <Dropdown 
+              label={app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.toolsMenuLabel')} 
+              icon="fas fa-cog" 
+              buttonClassName="Button" 
+              menuClassName="Dropdown-menu--right"
+            >
+              <Button onclick={() => this.refreshStats()}>
+                {app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.toolsMenuUpdateStats')}
+              </Button>
 
-              <Button onclick={() => app.modal.show(PurgeImagesModal)}>Purge images</Button>
+              <Button onclick={() => app.modal.show(PurgeImagesModal)}>
+                {app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.toolsMenuPurgeImages')}
+              </Button>
 
-              <Button onclick={() => app.modal.show(RegenerateImagesModal)}>Regenerate images</Button>
+              <Button onclick={() => app.modal.show(RegenerateImagesModal)}>
+                {app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.toolsMenuRegenerateImages')}
+              </Button>
+
+              <Button onclick={() => app.modal.show(DebugModal)}>
+                {app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.toolsMenuDebug')}
+              </Button>
             </Dropdown>
           </li>
         </ul>

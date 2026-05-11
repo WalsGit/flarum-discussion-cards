@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of walsgit/discussion-cards
+ * This file is part of walsgit/flarum-discussion-cards
  *
  *  Copyright (c) 2025 Wa!id.
  *
@@ -11,20 +11,20 @@
 
 namespace Walsgit\Discussion\Cards\Listener;
 
+use Flarum\Discussion\Discussion;
 use Flarum\Discussion\Event\Deleting;
 use Flarum\Post\Event\Deleting as PostDeleting;
 use Flarum\Foundation\Config;
+use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Str;
 use Flarum\Foundation\Paths;
 use Walsgit\Discussion\Cards\Image\CardImageResolver;
 
 class DeleteCardImageOnDiscussionDelete
 {
-    public function __construct(protected Config $config, protected Paths $paths, protected CardImageResolver $resolver)
-    {
-    }
+    public function __construct(protected Config $config, protected Paths $paths, protected CardImageResolver $resolver) {}
 
-    public function subscribe($events)
+    public function subscribe(Dispatcher $events): void
     {
         $events->listen(Deleting::class, [$this, 'onDiscussionDeleting']);
         $events->listen(PostDeleting::class, [$this, 'onFirstPostDeleting']);
@@ -38,16 +38,12 @@ class DeleteCardImageOnDiscussionDelete
         $imageUrl = $event->discussion->walsgit_card_image_url;
 
         // If no image or url ends with "default-card-image.webp" do nothing (don't delete)
-        if (!$imageUrl || str::endsWith($imageUrl, 'default-card-image.webp')) {
+        if (!$imageUrl || Str::endsWith($imageUrl, 'default-card-image.webp')) {
             return;
         }
 
-        // convert ImageURL to local path
-        $baseUrl = (string) ($this->config->url() ?? '');
-        $localPath = str_replace($baseUrl, $this->paths->public, $imageUrl);
-        if (file_exists($localPath)) {
-            unlink($localPath);
-        }
+        // convert ImageURL to local path and delete
+        $this->deleteImageFile($imageUrl);
     }
 
     /**
@@ -65,11 +61,7 @@ class DeleteCardImageOnDiscussionDelete
         }
 
         // Convert ImageURL to local path and delete
-        $baseUrl = (string) ($this->config->url() ?? '');
-        $localPath = str_replace($baseUrl, $this->paths->public, $imageUrl);
-        if (file_exists($localPath)) {
-            unlink($localPath);
-        }
+        $this->deleteImageFile($imageUrl);
 
         // If post has replies -> regenerate card
         $replies = (int) $post->discussion->comment_count ?? null;
@@ -85,7 +77,7 @@ class DeleteCardImageOnDiscussionDelete
      * Regenerate card images
      * (Duplicated from UpdateCardImageOnDiscussionUpdate.php)
      */
-    protected function regenerateCardImage($discussion, $html)
+    protected function regenerateCardImage(Discussion $discussion, ?string $html)
     {
         try {
             $url = $this->resolver->resolve($discussion, $html);
@@ -95,6 +87,18 @@ class DeleteCardImageOnDiscussionDelete
             }
         } catch (\Throwable $e) {
             // Don't block post deletion
+        }
+    }
+
+    /**
+     * Convert ImageURL to local path and delete
+     */
+    protected function deleteImageFile(?string $imageUrl): void
+    {
+        $baseUrl = (string) ($this->config->url() ?? '');
+        $localPath = str_replace($baseUrl, $this->paths->public, $imageUrl);
+        if (file_exists($localPath)) {
+            unlink($localPath);
         }
     }
 }

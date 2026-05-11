@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of walsgit/discussion-cards
+ * This file is part of walsgit/flarum-discussion-cards
  *
  *  Copyright (c) 2025 Wa!id.
  *
@@ -11,18 +11,18 @@
 
 namespace Walsgit\Discussion\Cards\Listener;
 
+use Flarum\Discussion\Discussion;
 use Flarum\Post\Event\Revised;
 use Flarum\Tags\Event\DiscussionWasTagged;
+use Illuminate\Events\Dispatcher;
 use Walsgit\Discussion\Cards\Image\CardImageResolver;
 use V17Development\FlarumBlog\Event\BlogMetaSaving;
 
 class UpdateCardImageOnDiscussionUpdate
 {
-    public function __construct(protected CardImageResolver $resolver)
-    {
-    }
+    public function __construct(protected CardImageResolver $resolver) {}
 
-    public function subscribe($events)
+    public function subscribe(Dispatcher $events): void
     {
         $events->listen(Revised::class, [$this, 'onPostRevised']);
         $events->listen(DiscussionWasTagged::class, [$this, 'onDiscussionTagged']);
@@ -67,8 +67,8 @@ class UpdateCardImageOnDiscussionUpdate
     /**
      * 3. 3rd party Blog Extension support:
      * Regenerate card image when a blog post is edited/modified (mainly for featured image changes)
-    */
-    public function onBlogMetaSaving($event)
+     */
+    public function onBlogMetaSaving(Dispatcher $event)
     {
         if (!isset($event->blogMeta) || !is_object($event->blogMeta)) {
             return;
@@ -99,7 +99,7 @@ class UpdateCardImageOnDiscussionUpdate
     /**
      * Regenerate card images
      */
-    protected function regenerateCardImage($discussion, ?string $html)
+    protected function regenerateCardImage(Discussion $discussion, ?string $html)
     {
         try {
             $url = $this->resolver->resolve($discussion, $html);

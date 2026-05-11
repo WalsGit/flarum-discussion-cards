@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of walsgit/discussion-cards
+ * This file is part of walsgit/flarum-discussion-cards
  *
  *  Copyright (c) 2025 Wa!id.
  *
@@ -18,22 +18,22 @@ use Psr\Http\Message\UploadedFileInterface;
 class ImageUploadValidator extends AbstractValidator
 {
     protected function getRules(): array
-{
-    return [
-        'walsgit_discussion_cards_tag_default_image' => [
-            'required',
-            function ($attribute, $value, $fail) {
-                $this->validateUploadedFile($attribute, $value, $fail);
-            },
-        ],
-        'walsgit_discussion_cards_default_image' => [
-            'required',
-            function ($attribute, $value, $fail) {
-                $this->validateUploadedFile($attribute, $value, $fail);
-            },
-        ],
-    ];
-}
+    {
+        return [
+            'walsgit_discussion_cards_tag_default_image' => [
+                'required',
+                function ($attribute, $value, $fail) {
+                    $this->validateUploadedFile($attribute, $value, $fail);
+                },
+            ],
+            'walsgit_discussion_cards_default_image' => [
+                'required',
+                function ($attribute, $value, $fail) {
+                    $this->validateUploadedFile($attribute, $value, $fail);
+                },
+            ],
+        ];
+    }
     /**
      * Callable used by the rules above.
      *

@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of walsgit/discussion-cards
+ * This file is part of walsgit/flarum-discussion-cards
  *
  *  Copyright (c) 2026 Wa!id.
  *
@@ -22,9 +22,7 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class RegenerateImagesController implements RequestHandlerInterface
 {
-    public function __construct(protected Paths $paths)
-    {
-    }
+    public function __construct(protected Paths $paths) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
@@ -75,7 +73,6 @@ class RegenerateImagesController implements RequestHandlerInterface
                 'exitCode' => $process->getExitCode(),
                 'summary' => $summary
             ];
-
         } catch (ProcessFailedException $exception) {
             $result = [
                 'command' => implode(' ', $command),
@@ -96,7 +93,7 @@ class RegenerateImagesController implements RequestHandlerInterface
     /**
      * Parse the command output to extract statistics
      */
-    private function parseSummary($output)
+    private function parseSummary(string $output)
     {
         $summary = [
             'total' => 0,

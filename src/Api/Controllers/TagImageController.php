@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of walsgit/discussion-cards
+ * This file is part of walsgit/flarum-discussion-cards
  *
  *  Copyright (c) 2025 Wa!id.
  *
@@ -23,9 +23,7 @@ use Exception;
 
 class TagImageController implements RequestHandlerInterface
 {
-    public function __construct(protected ImageProcessingService $imageService, protected Translator $translator)
-    {
-    }
+    public function __construct(protected ImageProcessingService $imageService, protected Translator $translator) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {

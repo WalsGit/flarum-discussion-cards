@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.0.1] - 2026-05-11
+### Added
+- Admin Settings Page: Debug information tool in the Tools menu
+- Backend: After install is completed, the command `php flarum discussion-cards:regenerate-images -l -t -N` will automatically run to generate card images for the 20 latest, top and newest discussion.
+- Backend: missing typing
+
+### Changed
+- Backend: some minor refactoring, formatting and cleanup
+
+### Fixed
+- Admin Settings Page: missing locales
+- Console: an Exception is now thrown when a discussion doesn't exist in the regenerate-images command.
+
 ## [2.0.0] - 2026-04-29
 This is the first version compatible with Flarum V2.
 

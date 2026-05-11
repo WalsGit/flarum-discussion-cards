@@ -16,12 +16,12 @@ use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Walsgit\Discussion\Cards\Services\StatisticsService;
+use Walsgit\Discussion\Cards\Services\InfoService;
 
-class RefreshStatsController implements RequestHandlerInterface
+class ShowInfoController implements RequestHandlerInterface
 {
     public function __construct(
-        protected StatisticsService $statisticsService
+        protected InfoService $infoService
     ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -30,7 +30,7 @@ class RefreshStatsController implements RequestHandlerInterface
         $actor->assertAdmin();
 
         return new JsonResponse(
-            $this->statisticsService->refreshStats()
+            $this->infoService->getFileSystemInfo()
         );
     }
 }
