@@ -22,6 +22,8 @@ use Walsgit\Discussion\Cards\Api\Controllers\StatisticsController;
 use Walsgit\Discussion\Cards\Api\Controllers\RefreshStatsController;
 use Walsgit\Discussion\Cards\Api\Controllers\PurgeImagesController;
 use Walsgit\Discussion\Cards\Api\Controllers\RegenerateImagesController;
+use Walsgit\Discussion\Cards\Api\Controllers\ShowInfoController;
+use Walsgit\Discussion\Cards\Api\Controllers\CheckDiscussionController;
 use Walsgit\Discussion\Cards\Validator\TagSettingsValidator;
 use Walsgit\Discussion\Cards\Validator\ImageUploadValidator;
 use Walsgit\Discussion\Cards\Providers\ImageProcessingProvider;
@@ -118,7 +120,9 @@ return [
         ->get('/walsgit/discussion-cards/image-stats', 'walsgit.discussion-cards.image-stats', StatisticsController::class)
         ->post('/walsgit/discussion-cards/image-stats/refresh', 'walsgit.discussion-cards.image-stats.refresh', RefreshStatsController::class)
         ->post('/walsgit/discussion-cards/purge-images', 'walsgit.discussion-cards.purge-images', PurgeImagesController::class)
-        ->post('/walsgit/discussion-cards/regenerate-images', 'walsgit.discussion-cards.regenerate-images', RegenerateImagesController::class),
+        ->post('/walsgit/discussion-cards/regenerate-images', 'walsgit.discussion-cards.regenerate-images', RegenerateImagesController::class)
+        ->get('/walsgit/discussion-cards/info', 'walsgit.discussion-cards.info', ShowInfoController::class)
+        ->get('/walsgit/discussion-cards/check-discussion/{id}', 'walsgit.discussion-cards.check-discussion', CheckDiscussionController::class),
     
     (new Extend\Console())
         ->command(MigrateImagesCommand::class)

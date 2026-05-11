@@ -62,6 +62,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Exception\InvalidOptionException;
 use Walsgit\Discussion\Cards\Services\CardImageRegenerationService;
+use Exception;
 
 
 class RegenerateImagesCommand extends AbstractCommand
@@ -140,7 +141,6 @@ class RegenerateImagesCommand extends AbstractCommand
 
         // Special case: if --without is used alone and we have no discussions from collectDiscussionIds,
         // we need to get discussions without images directly
-        $without = $this->input->getOption('without');
         if ($without !== 'false' && empty($discussionIds) && !$this->hasAnySortingFlag()) {
             // Get latest discussions without images directly
             $limit = is_numeric($without) ? max(1, (int) $without) : self::DEFAULT_LIMIT;
@@ -528,12 +528,11 @@ class RegenerateImagesCommand extends AbstractCommand
                     $processed++;
                 } catch (\Throwable $e) {
                     $errors++;
-                    $this->error(
-                        $this->trans('Error', [
+                    $error = $this->trans('Error', [
                             'id'      => $id,
                             'message' => $e->getMessage(),
-                        ])
-                    );
+                        ]);
+                    $this->error($error);
                 }
 
                 $bar->advance();
@@ -559,7 +558,10 @@ class RegenerateImagesCommand extends AbstractCommand
     private function regenerateDiscussion(int $discussionId): void
     {
         $discussion = Discussion::with('firstPost')->find($discussionId);
-
+        if (!$discussion) {
+            throw new Exception("Discussion doesn't exist!");
+        }
+        
         $html = ($discussion->firstPost) ? $discussion->firstPost->formatContent() : NULL;
 
         $this->regenerator->regenerate($discussion, $html, true);
@@ -626,14 +628,13 @@ class RegenerateImagesCommand extends AbstractCommand
 
     private function printSummary(?int $total, int $success, int $errors, bool $dryRun): void
     {
-        $this->info(
-            $this->trans('Summary', [
+        $summary = $this->trans('Summary', [
                 'total'   => $total ?? ($success + $errors),
                 'success' => $success,
                 'errors'  => $errors,
                 'mode'    => $dryRun ? ' [DRY-RUN]' : '',
-            ])
-        );
+            ]);
+        $this->info($summary);        
     }
 
     protected function trans(string $key, array $params = []): string
