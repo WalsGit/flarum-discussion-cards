@@ -39,6 +39,7 @@ class PurgeImagesCommand extends AbstractCommand
     protected int $skippedFiles = 0;
     protected int $updatedDiscussions = 0;
 
+    /** @var resource|null */
     protected $lockHandle = null;
     protected int $lockTimeout = 30;
 

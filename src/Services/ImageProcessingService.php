@@ -14,6 +14,7 @@ namespace Walsgit\Discussion\Cards\Services;
 use Flarum\Foundation\Paths;
 use Flarum\Locale\Translator;
 use Flarum\Foundation\Config;
+use Psr\Http\Message\ServerRequestInterface;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Encoders\WebpEncoder;
 use InvalidArgumentException;
@@ -38,7 +39,7 @@ class ImageProcessingService
     /**
      * Uploading images
      */
-    public function handleUpload($request, string $origin, array $options = []): array
+    public function handleUpload(ServerRequestInterface $request, string $origin, array $options = []): array
     {
         $options = array_merge($this->defaults, $options);
 

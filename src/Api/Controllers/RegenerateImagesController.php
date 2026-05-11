@@ -93,7 +93,7 @@ class RegenerateImagesController implements RequestHandlerInterface
     /**
      * Parse the command output to extract statistics
      */
-    private function parseSummary($output)
+    private function parseSummary(string $output)
     {
         $summary = [
             'total' => 0,

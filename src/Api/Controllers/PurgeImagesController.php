@@ -79,7 +79,7 @@ class PurgeImagesController implements RequestHandlerInterface
     /**
      * Parse the command output to extract statistics
      */
-    private function parseSummary($output)
+    private function parseSummary(string $output)
     {
         $summary = [
             'deleted' => 0,
