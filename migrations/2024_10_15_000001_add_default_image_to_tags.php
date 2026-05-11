@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of walsgit/discussion-cards
+ * This file is part of walsgit/flarum-discussion-cards
  *
  *  Copyright (c) 2024 Wa!id.
  *
@@ -15,7 +15,7 @@ use Illuminate\Database\Schema\Builder;
 return [
     'up' => function (Builder $schema) {
         $schema->table('tags', function (Blueprint $table) {
-                $table->text('walsgit_discussion_cards_tag_default_image')->nullable();
+            $table->text('walsgit_discussion_cards_tag_default_image')->nullable();
         });
     },
 

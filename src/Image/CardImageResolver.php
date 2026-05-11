@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of walsgit/discussion-cards
+ * This file is part of walsgit/flarum-discussion-cards
  *
  *  Copyright (c) 2025 Wa!id.
  *
@@ -23,9 +23,7 @@ use Walsgit\Discussion\Cards\Services\TagImageSelector;
 
 class CardImageResolver
 {
-    public function __construct(protected SettingsRepositoryInterface $settings, protected Config $config, protected Formatter $formatter, protected Paths $paths, protected ImageProcessingService $imageService, protected HtmlImageExtractor $htmlImageExtractor, protected TagImageSelector $tagSelector)
-    {
-    }
+    public function __construct(protected SettingsRepositoryInterface $settings, protected Config $config, protected Formatter $formatter, protected Paths $paths, protected ImageProcessingService $imageService, protected HtmlImageExtractor $htmlImageExtractor, protected TagImageSelector $tagSelector) {}
 
     /**
      * Main resolver: returns an optimized image URL (absolute) or null.
@@ -130,7 +128,7 @@ class CardImageResolver
     protected function resolveFirstPostImage(Discussion $discussion, ?string $firstPostHtml = null): ?string
     {
         $firstPost = $discussion->firstPost;
-        
+
         if (!empty($firstPostHtml)) {
             // Use provided first post HTML (only for create/update)
             $imageUrl = $this->htmlImageExtractor->extract($firstPostHtml);
@@ -138,7 +136,7 @@ class CardImageResolver
                 return $imageUrl;
             }
             return null;
-        // Use the saved post in other cases
+            // Use the saved post in other cases
         } else {
             if (! $firstPost || ! method_exists($firstPost, 'formatContent')) {
                 return null;
@@ -163,8 +161,8 @@ class CardImageResolver
     {
         try {
             $tags = $discussion->tags()
-            ->select('id', 'position', 'parent_id', 'walsgit_discussion_cards_tag_default_image')
-            ->get();
+                ->select('id', 'position', 'parent_id', 'walsgit_discussion_cards_tag_default_image')
+                ->get();
         } catch (\Throwable $e) {
             $tags = collect();
         }
@@ -294,5 +292,4 @@ class CardImageResolver
             str_contains($headers[0], '500')
         );
     }
-
 }

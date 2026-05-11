@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of walsgit/discussion-cards
+ * This file is part of walsgit/flarum-discussion-cards
  *
  *  Copyright (c) 2025 Wa!id.
  *
@@ -21,14 +21,12 @@ use Flarum\Http\RequestUtil;
 
 class UpdateAllowedTagsController implements RequestHandlerInterface
 {
-    public function __construct(protected SettingsRepositoryInterface $settings)
-    {
-    }
+    public function __construct(protected SettingsRepositoryInterface $settings) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $actor = RequestUtil::getActor($request);
-        
+
         if (!$actor->isAdmin()) {
             throw new PermissionDeniedException();
         }

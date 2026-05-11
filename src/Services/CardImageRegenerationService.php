@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of walsgit/discussion-cards
+ * This file is part of walsgit/flarum-discussion-cards
  *
  *  Copyright (c) 2026 Wa!id.
  *
@@ -31,7 +31,8 @@ class CardImageRegenerationService
      * @param string|null  $firstPostHtml  Rendered HTML of the first post (optional)
      * @param bool         $force          Force regeneration even if an image already exists
      */
-    public function regenerate(Discussion $discussion, ?string $firstPostHtml = null, bool $force = false): bool {
+    public function regenerate(Discussion $discussion, ?string $firstPostHtml = null, bool $force = false): bool
+    {
         // Do not regenerate unless forced
         if (!$force && !empty($discussion->walsgit_card_image_url)) {
             return false;

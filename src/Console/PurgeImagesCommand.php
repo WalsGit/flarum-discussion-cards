@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of walsgit/discussion-cards
+ * This file is part of walsgit/flarum-discussion-cards
  *
  *  Copyright (c) 2026 Wa!id.
  *
@@ -9,18 +9,18 @@
  *  LICENSE file that was distributed with this source code.
  */
 
-    /**
-     * This adds a CLI command discussion-cards:purge-images to delete non-used (orphan) card images or delete all of them.
-     * Note that default images (general, tag) will never be deleted by these commands
-     * discussion-cards:purge-images 
-     *      > will delete permanently all discussion card images not in use (not in db)
-     * discussion-cards:purge-images -a | --all 
-     *      > will delete ALL discussion card images (excluding default images)
-     * discussion-cards:purge-images -d | --discussion [discussion.id] 
-     *      > will delete the card images of specific discussion ids (comma separated, excluding default images)
-     * discussion-cards:purge-images --dry-run
-     *      > will simulate without deleting anything
-     */
+/**
+ * This adds a CLI command discussion-cards:purge-images to delete non-used (orphan) card images or delete all of them.
+ * Note that default images (general, tag) will never be deleted by these commands
+ * discussion-cards:purge-images 
+ *      > will delete permanently all discussion card images not in use (not in db)
+ * discussion-cards:purge-images -a | --all 
+ *      > will delete ALL discussion card images (excluding default images)
+ * discussion-cards:purge-images -d | --discussion [discussion.id] 
+ *      > will delete the card images of specific discussion ids (comma separated, excluding default images)
+ * discussion-cards:purge-images --dry-run
+ *      > will simulate without deleting anything
+ */
 
 namespace Walsgit\Discussion\Cards\Console;
 
@@ -185,7 +185,7 @@ class PurgeImagesCommand extends AbstractCommand
         $used = $this->db->table('discussions')
             ->whereNotNull('walsgit_card_image_url')
             ->pluck('walsgit_card_image_url')
-            ->map(fn ($url) => basename($url))
+            ->map(fn($url) => basename($url))
             ->flip()
             ->all();
 
@@ -289,4 +289,3 @@ class PurgeImagesCommand extends AbstractCommand
         );
     }
 }
-

@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of walsgit/discussion-cards
+ * This file is part of walsgit/flarum-discussion-cards
  *
  *  Copyright (c) 2025 Wa!id.
  *
@@ -23,9 +23,7 @@ use Exception;
 
 class AdminImageController implements RequestHandlerInterface
 {
-    public function __construct(protected SettingsRepositoryInterface $settings, protected ImageProcessingService $imageService, protected Paths $paths, protected Translator $translator)
-    {
-    }
+    public function __construct(protected SettingsRepositoryInterface $settings, protected ImageProcessingService $imageService, protected Paths $paths, protected Translator $translator) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
@@ -34,19 +32,19 @@ class AdminImageController implements RequestHandlerInterface
         try {
             switch ($method) {
                 case 'POST':
-                $result = $this->imageService->handleUpload($request, 'default');
+                    $result = $this->imageService->handleUpload($request, 'default');
 
-                if (empty($result['path'])) {
-                    throw new Exception($this->translator->trans('walsgit_discussion_cards.admin.errors.adminImageNoPath'));
-                }
+                    if (empty($result['path'])) {
+                        throw new Exception($this->translator->trans('walsgit_discussion_cards.admin.errors.adminImageNoPath'));
+                    }
 
-                $this->settings->set('walsgit_discussion_cards_default_image_path', $result['path']);
+                    $this->settings->set('walsgit_discussion_cards_default_image_path', $result['path']);
 
-                return new JsonResponse([
-                    'status' => 'ok',
-                    'path'   => $result['path'],
-                    'url'    => $result['url'],
-                ]);
+                    return new JsonResponse([
+                        'status' => 'ok',
+                        'path'   => $result['path'],
+                        'url'    => $result['url'],
+                    ]);
 
                 case 'DELETE':
                     $deleted = $this->imageService->handleDelete('default');

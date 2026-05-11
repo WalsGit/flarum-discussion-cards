@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of walsgit/discussion-cards
+ * This file is part of walsgit/flarum-discussion-cards
  *
  *  Copyright (c) 2025 Wa!id.
  *
@@ -20,9 +20,7 @@ use Walsgit\Discussion\Cards\Image\CardImageResolver;
 
 class DeleteCardImageOnDiscussionDelete
 {
-    public function __construct(protected Config $config, protected Paths $paths, protected CardImageResolver $resolver)
-    {
-    }
+    public function __construct(protected Config $config, protected Paths $paths, protected CardImageResolver $resolver) {}
 
     public function subscribe($events)
     {

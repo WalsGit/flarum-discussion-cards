@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of walsgit/discussion-cards
+ * This file is part of walsgit/flarum-discussion-cards
  *
  *  Copyright (c) 2026 Wa!id.
  *
@@ -14,7 +14,7 @@ namespace Walsgit\Discussion\Cards\Services;
 use Flarum\Foundation\Paths;
 
 class InfoService
-{    
+{
     public function __construct(
         protected Paths $paths,
     ) {}
@@ -28,7 +28,7 @@ class InfoService
         $assetsPathText = InfoService::getDirInfo($assetsPath);
         $logsPathText = InfoService::getDirInfo($logsPath);
         $tempPathText = InfoService::getDirInfo($tempPath);
-        
+
         return [
             "Folder {$assetsPath} {$assetsPathText} \n",
             "Folder {$logsPath} {$logsPathText} \n",
@@ -47,7 +47,7 @@ class InfoService
         }
 
 
-        return $exists 
+        return $exists
             ? "exists " . ($writable ? "and is writable" : "but is NOT writable (permissions: {$permissions}")
             : "doesn't exist";
     }

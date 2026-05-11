@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of walsgit/discussion-cards
+ * This file is part of walsgit/flarum-discussion-cards
  *
  *  Copyright (c) 2026 Wa!id.
  *
@@ -16,9 +16,7 @@ use Walsgit\Discussion\Cards\Image\CardImageResolver;
 
 class UpdateCardImageOnFirstPostDelete
 {
-    public function __construct(protected CardImageResolver $resolver)
-    {
-    }
+    public function __construct(protected CardImageResolver $resolver) {}
 
     public function handle(Deleting $event)
     {
@@ -38,7 +36,6 @@ class UpdateCardImageOnFirstPostDelete
                 $discussion->walsgit_card_image_url = $url;
                 $discussion->save();
             }
-
         } catch (\Throwable $e) {
             // Don't block post deletion
         }

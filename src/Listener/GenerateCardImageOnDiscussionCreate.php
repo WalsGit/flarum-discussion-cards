@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of walsgit/discussion-cards
+ * This file is part of walsgit/flarum-discussion-cards
  *
  *  Copyright (c) 2025 Wa!id.
  *
@@ -16,9 +16,7 @@ use Walsgit\Discussion\Cards\Image\CardImageResolver;
 
 class GenerateCardImageOnDiscussionCreate
 {
-    public function __construct(protected CardImageResolver $resolver)
-    {
-    }
+    public function __construct(protected CardImageResolver $resolver) {}
 
     public function handle(Posted $event)
     {
@@ -45,7 +43,6 @@ class GenerateCardImageOnDiscussionCreate
                 $discussion->walsgit_card_image_url = $url;
                 $discussion->save();
             }
-
         } catch (\Throwable $e) {
             // Don't block post creation
         }

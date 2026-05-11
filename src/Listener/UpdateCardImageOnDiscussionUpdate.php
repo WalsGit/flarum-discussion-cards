@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of walsgit/discussion-cards
+ * This file is part of walsgit/flarum-discussion-cards
  *
  *  Copyright (c) 2025 Wa!id.
  *
@@ -18,9 +18,7 @@ use V17Development\FlarumBlog\Event\BlogMetaSaving;
 
 class UpdateCardImageOnDiscussionUpdate
 {
-    public function __construct(protected CardImageResolver $resolver)
-    {
-    }
+    public function __construct(protected CardImageResolver $resolver) {}
 
     public function subscribe($events)
     {
@@ -67,7 +65,7 @@ class UpdateCardImageOnDiscussionUpdate
     /**
      * 3. 3rd party Blog Extension support:
      * Regenerate card image when a blog post is edited/modified (mainly for featured image changes)
-    */
+     */
     public function onBlogMetaSaving($event)
     {
         if (!isset($event->blogMeta) || !is_object($event->blogMeta)) {

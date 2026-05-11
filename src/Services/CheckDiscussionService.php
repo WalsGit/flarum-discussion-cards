@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of walsgit/discussion-cards
+ * This file is part of walsgit/flarum-discussion-cards
  *
  *  Copyright (c) 2026 Wa!id.
  *
@@ -71,7 +71,7 @@ class CheckDiscussionService
 
         /**1. Check if blog post */
         $blogPostImage = $this->resolver->resolveBlogImage($discussion);
-        
+
         $lines = "1. Is it a blog post: " . ($blogPostImage ? "YES" : "NO") . " \n";
         array_push($output, $lines);
 
@@ -82,24 +82,24 @@ class CheckDiscussionService
             $featuredImage = $blogMeta->getAttribute('featured_image');
             $lines = "└ Blog post's feature image: {$featuredImage} \n";
             array_push($output, $lines);
-            
+
             // First post image
             $lines = "└ Blog post's first image in first post: SEE BELOW (2.) \n";
             array_push($output, $lines);
-            
+
             // Blog default image
             $blogDefault = $this->settings->get('blog_default_image_path');
             $lines = "└ Blog's default image: {$blogDefault} \n";
             array_push($output, $lines);
-            
+
             // Resolver's result
             $lines = [
                 "└ Resolver's picked image: {$blogPostImage} \n",
-                "└ Card image filename: ". $this->cardImageName($discussionId, $blogPostImage) ." \n",
+                "└ Card image filename: " . $this->cardImageName($discussionId, $blogPostImage) . " \n",
             ];
             array_push($output, $lines);
         }
-        
+
         // 2. Check first post's first image
         $firstPostImage = $this->htmlImageExtractor->extract($firstPostContent);
         $lines = "2. First image in first post: " . ($firstPostImage ?: "NONE FOUND") . " \n";
@@ -121,7 +121,7 @@ class CheckDiscussionService
             $imageSize = $headers['Content-Length'] ?? null;
             $lines = "└ Remote image's size: " . ($imageSize ? $this->humanReadableSize($imageSize) : "N/C") . " \n";
             array_push($output, $lines);
-            
+
             // Get the generated filename of the saved card image
             $filename = $this->cardImageName($discussionId, $firstPostImage);
             $lines = "└ Card image filename: {$filename} \n";
@@ -129,11 +129,11 @@ class CheckDiscussionService
         }
 
         /** FALLBACKS */
-        if(!$blogPostImage && !$firstPostImage) {
+        if (!$blogPostImage && !$firstPostImage) {
             // 3. Check Tag priority
             $tags = $discussion->tags()
-                    ->select('id', 'name', 'walsgit_discussion_cards_tag_default_image')
-                    ->get();
+                ->select('id', 'name', 'walsgit_discussion_cards_tag_default_image')
+                ->get();
             $tagImage = $this->tagSelector->selectTagImage($tags);
             $tagName = null;
             foreach ($tags as $tag) {
@@ -146,7 +146,7 @@ class CheckDiscussionService
 
             $lines = "3. Tag default image fallback: " . ($tagImage ? "[from: {$tagName}] {$tagImage}" : "NONE") . " \n";
             array_push($output, $lines);
-            
+
             // 4. Check general default image
             if (!$tagImage) {
                 $defaultImage = $this->settings->get('walsgit_discussion_cards_default_image_path');
@@ -164,7 +164,7 @@ class CheckDiscussionService
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
         $i = $sizeInBytes ? floor(log($sizeInBytes, 1024)) : 1;
 
-        return round($sizeInBytes / pow(1024, $i), 2).' '.$units[$i];
+        return round($sizeInBytes / pow(1024, $i), 2) . ' ' . $units[$i];
     }
 
     protected function cardImageName(int $discussionId, string $imageURL): string

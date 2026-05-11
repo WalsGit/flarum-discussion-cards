@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of walsgit/discussion-cards
+ * This file is part of walsgit/flarum-discussion-cards
  *
  *  Copyright (c) 2026 Wa!id.
  *
@@ -9,43 +9,43 @@
  *  LICENSE file that was distributed with this source code.
  */
 
-    /**
-     * This adds a CLI command discussion-cards:regenerate-images to re-analyse discussions' first posts and re-generate their card images.
-     * 
-     * discussion-cards:regenerate-images
-     *      > will regenerate card images for the "Latest" 20 discussions (default)
-     * discussion-cards:regenerate-images -l | --latest [number of discussions]
-     *      > will regenerate card images for the [number] "Latest" discussions (latest active discussions aka with the latest replies, default number is 20)
-     * discussion-cards:regenerate-images -t | --top [number of discussions]
-     *      > will regenerate card images for the [number] "Top" discussions (discussions with the most replies, default number is 20)
-     * discussion-cards:regenerate-images -N | --newest [number of discussions]
-     *      > will regenerate card images for the [number] "Newest" discussions (newest created discussions, default number is 20)
-     * discussion-cards:regenerate-images -o | --oldest [number of discussions]
-     *      > will regenerate card images for the [number] "Oldest" discussions (oldest created discussions, default number is 20)
-     * discussion-cards:regenerate-images -a | --all
-     *      > will regenerate card images for ALL discussions (ignores any other --flag option except --dry-run & --without)
-     * discussion-cards:regenerate-images -w | --without [number of discussions without images to process]
-     *      > will regenerate card images only for discussions without images (walsgit_card_image_url is NULL)
-     *      > when used alone, processes latest 20 discussions without images
-     *      > when combined with other flags, filters those discussions to only include those without images
-     *      > when used with --all, regenerates images for ALL discussions without images
-     *      > if a number is specified, limits processing to that many discussions without images
-     * discussion-cards:regenerate-images -d | --discussion [discussion.id]
-     *      > will regenerate card images of specific discussion ids (comma separated)
-     * discussion-cards:regenerate-images --tag [tag.id OR tag.slug]
-     *      > will regenerate card images of specific tag ids or slug (comma separated) only for tags that have discussion cards activated for them
-     * discussion-cards:regenerate-images -b | --batch-size [number of discussions]
-     *      > will set a custom batch size for the number of discussions to be processed at once (default is 100)
-     * discussion-cards:regenerate-images --dry-run
-     *      > will simulate without regenerating anything
-     * 
-     * ======== 3rd party extensions support ========
-     * > If fof/discussion-views or michaelbelgium/flarum-discussion-views is installed and activated:
-     * discussion-cards:regenerate-images -p | --popular [number of discussions]
-     *      > will regenerate card images for the [number] "Popular" discussions (most viewed discussions if Discussion Views is activated, default number is 20)
-     * discussion-cards:regenerate-images -u | --unpopular [number of discussions]
-     *      > will regenerate card images for the [number] "Unpopular" discussions (least viewed discussions if 3rd party extension Discussion Views is activated, default number is 20)
-     */
+/**
+ * This adds a CLI command discussion-cards:regenerate-images to re-analyse discussions' first posts and re-generate their card images.
+ * 
+ * discussion-cards:regenerate-images
+ *      > will regenerate card images for the "Latest" 20 discussions (default)
+ * discussion-cards:regenerate-images -l | --latest [number of discussions]
+ *      > will regenerate card images for the [number] "Latest" discussions (latest active discussions aka with the latest replies, default number is 20)
+ * discussion-cards:regenerate-images -t | --top [number of discussions]
+ *      > will regenerate card images for the [number] "Top" discussions (discussions with the most replies, default number is 20)
+ * discussion-cards:regenerate-images -N | --newest [number of discussions]
+ *      > will regenerate card images for the [number] "Newest" discussions (newest created discussions, default number is 20)
+ * discussion-cards:regenerate-images -o | --oldest [number of discussions]
+ *      > will regenerate card images for the [number] "Oldest" discussions (oldest created discussions, default number is 20)
+ * discussion-cards:regenerate-images -a | --all
+ *      > will regenerate card images for ALL discussions (ignores any other --flag option except --dry-run & --without)
+ * discussion-cards:regenerate-images -w | --without [number of discussions without images to process]
+ *      > will regenerate card images only for discussions without images (walsgit_card_image_url is NULL)
+ *      > when used alone, processes latest 20 discussions without images
+ *      > when combined with other flags, filters those discussions to only include those without images
+ *      > when used with --all, regenerates images for ALL discussions without images
+ *      > if a number is specified, limits processing to that many discussions without images
+ * discussion-cards:regenerate-images -d | --discussion [discussion.id]
+ *      > will regenerate card images of specific discussion ids (comma separated)
+ * discussion-cards:regenerate-images --tag [tag.id OR tag.slug]
+ *      > will regenerate card images of specific tag ids or slug (comma separated) only for tags that have discussion cards activated for them
+ * discussion-cards:regenerate-images -b | --batch-size [number of discussions]
+ *      > will set a custom batch size for the number of discussions to be processed at once (default is 100)
+ * discussion-cards:regenerate-images --dry-run
+ *      > will simulate without regenerating anything
+ * 
+ * ======== 3rd party extensions support ========
+ * > If fof/discussion-views or michaelbelgium/flarum-discussion-views is installed and activated:
+ * discussion-cards:regenerate-images -p | --popular [number of discussions]
+ *      > will regenerate card images for the [number] "Popular" discussions (most viewed discussions if Discussion Views is activated, default number is 20)
+ * discussion-cards:regenerate-images -u | --unpopular [number of discussions]
+ *      > will regenerate card images for the [number] "Unpopular" discussions (least viewed discussions if 3rd party extension Discussion Views is activated, default number is 20)
+ */
 
 namespace Walsgit\Discussion\Cards\Console;
 
@@ -646,4 +646,3 @@ class RegenerateImagesCommand extends AbstractCommand
         );
     }
 }
-
