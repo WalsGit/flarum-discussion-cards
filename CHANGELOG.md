@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.0.2] - 2026-10-19
+### Security
+- Backend: the endpoints to upload/delete the general default image and the tags' default images now require administrator permissions (they were previously accessible to any visitor)
+- Backend: the 2 MB size limit and the MIME type check on uploaded images are now enforced server-side
+- Backend: card image deletion is now restricted to the extension's own `discussion-{id}-{hash}-{hash}.webp` files
+
+### Fixed
+- Backend: deleting a reply no longer deletes the discussion's card image (only the first post is considered)
+- Backend: merged the two duplicate first post deletion listeners into one
+- Forum: tags are no longer matched by substring when checking where cards are activated (activating tag 12 also activated tag 2)
+- Forum: no more error when the current tag isn't in the store
+- Forum: cards of deleted discussions now disappear immediately
+- Forum: the card image is now refreshed after the first post is deleted (no more broken image until reload)
+
 ## [2.0.1] - 2026-05-11
 ### Added
 - Admin Settings Page: Debug information tool in the Tools menu
