@@ -70,7 +70,7 @@ app.initializers.add(
               {state
                 .getPages()
                 .map((pg, o) =>
-                  pg.items.filter((d, i) => o === 0 && i < Number(settings.primaryCards)).map((discussion) => m(CardItem, { discussion }))
+                  pg.items.filter((d, i) => o === 0 && i < Number(settings.primaryCards)).map((discussion) => m(CardItem, { key: discussion.id(), discussion }))
                 )}
             </div>
 
@@ -85,8 +85,9 @@ app.initializers.add(
                   const showCard = useListCards && (listCardsCount === 0 || idx < listCardsCount);
 
                   return showCard
-                    ? m(ListItem, { discussion })
+                    ? m(ListItem, { key: discussion.id(), discussion })
                     : m(DiscussionListItem, {
+                        key: discussion.id(),
                         discussion,
                         params: app.search?.state?.params() ?? {},
                       });
@@ -105,6 +106,23 @@ app.initializers.add(
 );
 
 /**
+ * Reload a discussion from the API to get its up-to-date card image URL
+ */
+function refreshCardImage(discussion) {
+  return app.store
+    .find('discussions', discussion.id(), {})
+    .then((freshDiscussion) => {
+      discussion.pushAttributes({
+        cardImageUrl: freshDiscussion.attribute('cardImageUrl') || null,
+      });
+      m.redraw();
+    })
+    .catch((error) => {
+      console.error(app.translator.trans('walsgit_discussion_cards.forum.console.postUpdateCardImageError'), error);
+    });
+}
+
+/**
  * Refresh card image after first post edition
  */
 extend(
@@ -117,30 +135,33 @@ extend(
         return;
       }
 
-      /** @type {Discussion} */
       const discussion = updatedPost.discussion();
 
       if (discussion && discussion.id()) {
-        app.store
-          .find('discussions', discussion.id(), {})
-          .then((newDiscussionModel) => {
-            const newImageUrl = newDiscussionModel.attribute('cardImageUrl');
-
-            if (newImageUrl) {
-              discussion.pushAttributes({
-                cardImageUrl: newImageUrl,
-              });
-              m.redraw();
-            }
-          })
-          .catch((error) => {
-            console.error(app.translator.trans('walsgit_discussion_cards.forum.console.postUpdateCardImageError'), error);
-          });
+        refreshCardImage(discussion);
       }
     });
   },
   100
 );
+
+/**
+ * Refresh card image after first post deletion (when the discussion itself remains)
+ */
+extend(Post.prototype, 'delete', function (promise) {
+  if (this.number() !== 1) {
+    return;
+  }
+
+  const discussion = this.discussion();
+
+  // Same rule as Flarum core: if no post is left, the whole discussion is considered deleted
+  if (!discussion || discussion.postIds().length <= 1) {
+    return;
+  }
+
+  promise.then(() => refreshCardImage(discussion)).catch(() => {});
+});
 
 // Allow flarum to discover modules
 import './forum';
