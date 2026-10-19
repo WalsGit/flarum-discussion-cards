@@ -87,7 +87,6 @@ return [
 
     (new Extend\Event())
         ->listen(\Flarum\Post\Event\Posted::class, \Walsgit\Discussion\Cards\Listener\GenerateCardImageOnDiscussionCreate::class)
-        ->listen(\Flarum\Post\Event\Deleting::class, \Walsgit\Discussion\Cards\Listener\UpdateCardImageOnFirstPostDelete::class)
         ->subscribe(UpdateCardImageOnDiscussionUpdate::class)
         ->subscribe(DeleteCardImageOnDiscussionDelete::class),
 
