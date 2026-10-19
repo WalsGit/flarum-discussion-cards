@@ -1,28 +1,41 @@
-import { extend, override } from 'flarum/common/extend';
-import app from 'flarum/forum/app';
-import DiscussionList from 'flarum/forum/components/DiscussionList';
-import DiscussionListItem from 'flarum/forum/components/DiscussionListItem';
-import IndexPage from 'flarum/forum/components/IndexPage';
-import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
-import Placeholder from 'flarum/common/components/Placeholder';
-import Button from 'flarum/common/components/Button';
-import CardItem from './components/CardItem';
-import ListItem from './components/ListItem';
-import checkOverflowingContent from './helpers/checkOverflowingContent';
-import Post from 'flarum/common/models/Post';
-import Discussion from 'flarum/common/models/Discussion';
+import { extend, override } from "flarum/common/extend";
+import app from "flarum/forum/app";
+import DiscussionList from "flarum/forum/components/DiscussionList";
+import DiscussionListItem from "flarum/forum/components/DiscussionListItem";
+import IndexPage from "flarum/forum/components/IndexPage";
+import LoadingIndicator from "flarum/common/components/LoadingIndicator";
+import Placeholder from "flarum/common/components/Placeholder";
+import Button from "flarum/common/components/Button";
+import CardItem from "./components/CardItem";
+import ListItem from "./components/ListItem";
+import checkOverflowingContent from "./helpers/checkOverflowingContent";
+import Post from "flarum/common/models/Post";
+import Discussion from "flarum/common/models/Discussion";
+
+/**
+ * Parse the allowed tags setting (JSON string) into an array of tag ids as strings.
+ * Returns an empty array if the value is missing or invalid.
+ */
+function parseAllowedTags(value) {
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.map(String) : [];
+  } catch (e) {
+    return [];
+  }
+}
 
 app.initializers.add(
-  'walsgit/discussion/cards',
+  "walsgit/discussion/cards",
   () => {
-    extend(DiscussionList.prototype, 'oncreate', checkOverflowingContent);
-    extend(DiscussionList.prototype, 'onupdate', checkOverflowingContent);
+    extend(DiscussionList.prototype, "oncreate", checkOverflowingContent);
+    extend(DiscussionList.prototype, "onupdate", checkOverflowingContent);
 
-    override(DiscussionList.prototype, 'view', function (original) {
+    override(DiscussionList.prototype, "view", function (original) {
       const settings = {};
       for (const key in app.forum.data.attributes) {
-        if (key.startsWith('walsgitDiscussionCards')) {
-          let newKey = key.replace('walsgitDiscussionCards', '');
+        if (key.startsWith("walsgitDiscussionCards")) {
+          let newKey = key.replace("walsgitDiscussionCards", "");
           newKey = newKey.replace(/^./, newKey.charAt(0).toLowerCase());
           settings[newKey] = app.forum.data.attributes[key];
         }
@@ -35,42 +48,76 @@ app.initializers.add(
       } else if (state.hasNext()) {
         loading = Button.component(
           {
-            className: 'Button',
+            className: "Button",
             onclick: state.loadNext.bind(state),
           },
-          app.translator.trans('core.forum.discussion_list.load_more_button')
+          app.translator.trans("core.forum.discussion_list.load_more_button")
         );
       }
       if (state.isEmpty()) {
-        const text = app.translator.trans('core.forum.discussion_list.empty_text');
+        const text = app.translator.trans(
+          "core.forum.discussion_list.empty_text"
+        );
         return <div className="DiscussionList">{m(Placeholder, { text })}</div>;
       }
-      const isTagPage = m.route.get().split('?')[0].startsWith('/t/');
+      const allowedTags = parseAllowedTags(settings.allowedTags);
+      const isTagPage = m.route.get().split("?")[0].startsWith("/t/");
       let tag = null;
       if (isTagPage) {
-        tag = app.store.all('tags').find((t) => t.slug() === params.tags).data.id;
-        const tagSettings = JSON.parse(app.store.all('tags').find((t) => t.slug() === params.tags).data.attributes.walsgitDiscussionCardsTagSettings);
-        for (const key in tagSettings) {
-          if (settings.hasOwnProperty(key) && tagSettings[key] !== settings[key]) {
-            settings[key] = tagSettings[key];
+        const currentTag = app.store
+          .all("tags")
+          .find((t) => t.slug() === params.tags);
+
+        // If the tag isn't in the store (yet), we simply fall back to Flarum's default list
+        if (currentTag) {
+          tag = String(currentTag.id());
+
+          let tagSettings = null;
+          try {
+            tagSettings = JSON.parse(
+              currentTag.attribute("walsgitDiscussionCardsTagSettings")
+            );
+          } catch (e) {
+            // invalid or missing tag settings: keep the global ones
+          }
+
+          for (const key in tagSettings) {
+            if (
+              settings.hasOwnProperty(key) &&
+              tagSettings[key] !== settings[key]
+            ) {
+              settings[key] = tagSettings[key];
+            }
           }
         }
       }
       if (
         app.current.matches(IndexPage) &&
-        ((settings.allowedTags.length && settings.allowedTags.includes(tag)) || (!params.tags && Number(settings.onIndexPage) === 1))
+        ((tag !== null && allowedTags.includes(tag)) ||
+          (!params.tags && Number(settings.onIndexPage) === 1))
       ) {
         const useListCards = Number(settings.useListCards) === 1;
         const listCardsCount = Number(settings.listCardsCount);
 
         return (
-          <div className={'DiscussionList' + (state.isSearchResults() ? ' DiscussionList--searchResults' : '')}>
+          <div
+            className={
+              "DiscussionList" +
+              (state.isSearchResults() ? " DiscussionList--searchResults" : "")
+            }
+          >
             {/* Card Items (primary card) */}
             <div class="DiscussionList-discussions flexCard">
               {state
                 .getPages()
                 .map((pg, o) =>
-                  pg.items.filter((d, i) => o === 0 && i < Number(settings.primaryCards)).map((discussion) => m(CardItem, { key: discussion.id(), discussion }))
+                  pg.items
+                    .filter(
+                      (d, i) => o === 0 && i < Number(settings.primaryCards)
+                    )
+                    .map((discussion) =>
+                      m(CardItem, { key: discussion.id(), discussion })
+                    )
                 )}
             </div>
 
@@ -78,11 +125,15 @@ app.initializers.add(
             <div class="DiscussionList-discussions">
               {state.getPages().map((pg, o) => {
                 // Skip primary cards
-                const secondaryItems = pg.items.filter((d, i) => !(o === 0 && i < Number(settings.primaryCards)));
+                const secondaryItems = pg.items.filter(
+                  (d, i) => !(o === 0 && i < Number(settings.primaryCards))
+                );
 
                 return secondaryItems.map((discussion, idx) => {
                   // Only if useListCards === 1 && (idx < listCardsCount OR listCardsCount = 0)
-                  const showCard = useListCards && (listCardsCount === 0 || idx < listCardsCount);
+                  const showCard =
+                    useListCards &&
+                    (listCardsCount === 0 || idx < listCardsCount);
 
                   return showCard
                     ? m(ListItem, { key: discussion.id(), discussion })
@@ -110,15 +161,20 @@ app.initializers.add(
  */
 function refreshCardImage(discussion) {
   return app.store
-    .find('discussions', discussion.id(), {})
+    .find("discussions", discussion.id(), {})
     .then((freshDiscussion) => {
       discussion.pushAttributes({
-        cardImageUrl: freshDiscussion.attribute('cardImageUrl') || null,
+        cardImageUrl: freshDiscussion.attribute("cardImageUrl") || null,
       });
       m.redraw();
     })
     .catch((error) => {
-      console.error(app.translator.trans('walsgit_discussion_cards.forum.console.postUpdateCardImageError'), error);
+      console.error(
+        app.translator.trans(
+          "walsgit_discussion_cards.forum.console.postUpdateCardImageError"
+        ),
+        error
+      );
     });
 }
 
@@ -127,7 +183,7 @@ function refreshCardImage(discussion) {
  */
 extend(
   Post.prototype,
-  'save',
+  "save",
   function (promise) {
     promise.then((updatedPost) => {
       // first post only
@@ -148,7 +204,7 @@ extend(
 /**
  * Refresh card image after first post deletion (when the discussion itself remains)
  */
-extend(Post.prototype, 'delete', function (promise) {
+extend(Post.prototype, "delete", function (promise) {
   if (this.number() !== 1) {
     return;
   }
@@ -164,4 +220,4 @@ extend(Post.prototype, 'delete', function (promise) {
 });
 
 // Allow flarum to discover modules
-import './forum';
+import "./forum";
