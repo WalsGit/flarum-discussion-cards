@@ -19,6 +19,7 @@ use Intervention\Image\ImageManager;
 use Intervention\Image\Encoders\WebpEncoder;
 use InvalidArgumentException;
 use Exception;
+use RuntimeException;
 
 class ImageProcessingService
 {
@@ -34,7 +35,12 @@ class ImageProcessingService
         'upscaling' => false,
     ];
 
-    public function __construct(protected Paths $paths, protected Translator $translator, protected Config $config) {}
+    public function __construct(
+        protected Paths $paths,
+        protected Translator $translator,
+        protected Config $config,
+        protected RemoteImageFetcher $fetcher
+    ) {}
 
     /**
      * Uploading images
@@ -80,14 +86,19 @@ class ImageProcessingService
      */
     public function processImage(string $sourcePath, string $targetPath, array $options = []): void
     {
+
         $options = array_merge($this->defaults, $options);
 
         if (!file_exists($sourcePath)) {
             throw new InvalidArgumentException($this->translator->trans('walsgit_discussion_cards.admin.errors.imageProcessingSourceNotFound', ['path' => $sourcePath]));
         }
 
+        $this->assertWebpSupport();
+
         try {
             @ini_set('memory_limit', '256M');
+
+            $this->assertSafeDimensions($sourcePath);
 
             $image = ImageManager::gd()->read($sourcePath);
 
@@ -102,6 +113,129 @@ class ImageProcessingService
         } catch (Exception $e) {
             throw new Exception($this->translator->trans('walsgit_discussion_cards.admin.errors.imageProcessingFailed') . ' ' . $e->getMessage());
         }
+    }
+
+    /** Max pixels allowed before decoding (a decoded image takes about 4 bytes per pixel in memory). */
+    protected const MAX_PIXELS = 20000000;
+
+    /**
+     * Reads only the image header to refuse unreadable files and oversized images before decoding.
+     */
+    protected function assertSafeDimensions(string $path): void
+    {
+        $size = @getimagesize($path);
+
+        if ($size === false) {
+            throw new InvalidArgumentException('Not a readable image file.');
+        }
+
+        [$width, $height] = $size;
+
+        if ($width < 1 || $height < 1 || ($width * $height) > self::MAX_PIXELS) {
+            throw new InvalidArgumentException("Image dimensions too large ({$width}x{$height}).");
+        }
+    }
+
+    /**
+     * True if the GD extension is loaded and able to write WebP images.
+     */
+    public static function isWebpSupported(): bool
+    {
+        return extension_loaded('gd')
+            && function_exists('imagewebp')
+            && !empty(gd_info()['WebP Support']);
+    }
+
+    /**
+     * @throws RuntimeException with a clear message if images cannot be converted to WebP
+     */
+    protected function assertWebpSupport(): void
+    {
+        if (!self::isWebpSupported()) {
+            throw new RuntimeException($this->translator->trans('walsgit_discussion_cards.admin.errors.webpNotSupported'));
+        }
+    }
+
+    /**
+     * True if the URL belongs to this forum (same scheme, host and port, and under the forum's base path).
+     * URLs are compared once parsed, never as plain text: "https://forum.com.evil.tld/" is NOT local.
+     */
+    public function isLocalUrl(string $imageUrl): bool
+    {
+        $base = parse_url(rtrim((string) $this->config->url(), '/')) ?: [];
+        $url = parse_url($imageUrl) ?: [];
+
+        if (!isset($base['host'], $url['host']) || $this->originOf($base) !== $this->originOf($url)) {
+            return false;
+        }
+
+        $basePath = $base['path'] ?? '';
+        $path = $url['path'] ?? '';
+
+        return $path === $basePath || str_starts_with($path, $basePath . '/');
+    }
+
+    /**
+     * Maps a local image URL to the real file on disk.
+     * Returns null if the URL is not local, tries to leave public/, or is not an existing file.
+     */
+    public function resolveLocalPath(string $imageUrl): ?string
+    {
+        $relative = $this->localRelativePath($imageUrl);
+        $real = $relative !== null ? realpath($this->paths->public . $relative) : false;
+
+        return ($real !== false && is_file($real) && $this->isInsideAllowedRoot($real)) ? $real : null;
+    }
+
+    /**
+     * Path of a local URL relative to public/ (starting with "/"), or null if not local or suspicious.
+     */
+    protected function localRelativePath(string $imageUrl): ?string
+    {
+        if (!$this->isLocalUrl($imageUrl)) {
+            return null;
+        }
+
+        $basePath = (string) parse_url(rtrim((string) $this->config->url(), '/'), PHP_URL_PATH);
+        $path = (string) parse_url($imageUrl, PHP_URL_PATH);
+        $relative = rawurldecode(substr($path, strlen($basePath)));
+
+        // Refuse anything that could climb out of public/: NUL bytes, backslashes and ".." segments
+        $suspicious = str_contains($relative, "\0")
+            || str_contains($relative, '\\')
+            || in_array('..', explode('/', $relative), true);
+
+        return $suspicious ? null : $relative;
+    }
+
+    /**
+     * The real path must be inside public/. public/assets is also accepted at its real location,
+     * because it is often a symlink to a shared folder on deployed installations.
+     */
+    protected function isInsideAllowedRoot(string $realPath): bool
+    {
+        $public = rtrim((string) $this->paths->public, '/\\');
+
+        foreach ([$public, $public . '/assets'] as $root) {
+            $realRoot = realpath($root);
+
+            if ($realRoot !== false && str_starts_with($realPath, $realRoot . DIRECTORY_SEPARATOR)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * "scheme://host:port" (lower case) of a parse_url() result.
+     */
+    protected function originOf(array $parts): string
+    {
+        $scheme = strtolower($parts['scheme'] ?? '');
+        $port = $parts['port'] ?? ($scheme === 'https' ? 443 : 80);
+
+        return $scheme . '://' . strtolower($parts['host'] ?? '') . ':' . $port;
     }
 
     /**
@@ -208,65 +342,32 @@ class ImageProcessingService
      */
     public function downloadOrCopyImage(string $imageUrl): ?string
     {
-        $baseUrl = rtrim((string) $this->config->url(), '/');
-
         // 1. Create temp file
         $temp = tempnam(sys_get_temp_dir(), 'cardimg_');
         if (!$temp) {
             return null;
         }
 
-        $maxSize = 5 * 1024 * 1024; // 5 MB max
-
         // --- LOCAL IMAGE -------------------------------------------------------
-        if ($baseUrl && str_starts_with($imageUrl, $baseUrl)) {
-            $localPath = str_replace($baseUrl, $this->paths->public, $imageUrl);
+        if ($this->isLocalUrl($imageUrl)) {
+            $localPath = $this->resolveLocalPath($imageUrl);
+            $size = $localPath !== null ? @filesize($localPath) : false;
 
-            if (!file_exists($localPath)) {
+            // Not a valid file of public/, unreadable or too large → no optimization
+            if ($localPath === null || $size === false || $size > RemoteImageFetcher::MAX_BYTES || !@copy($localPath, $temp)) {
+                @unlink($temp);
                 return null;
             }
 
-            // File too large → fallback (no optimization)
-            $size = @filesize($localPath);
-            if ($size !== false && $size > $maxSize) {
-                unlink($temp);
-                return null;
-            }
-
-            $raw = @file_get_contents($localPath);
-            if ($raw === false) {
-                unlink($temp);
-                return null;
-            }
-
-            file_put_contents($temp, $raw);
             return $temp;
         }
 
         // --- REMOTE IMAGE ------------------------------------------------------
-
-        // Check Content-Length first (if available)
-        $headers = @get_headers($imageUrl, 1);
-
-        if (isset($headers['Content-Length'])) {
-            $size = is_array($headers['Content-Length'])
-                ? end($headers['Content-Length'])
-                : $headers['Content-Length'];
-
-            if (is_numeric($size) && (int)$size > $maxSize) {
-                unlink($temp);
-                return null;
-            }
-        }
-
-        $raw = @file_get_contents($imageUrl);
-
-        if ($raw === false) {
-            unlink($temp);
+        if (!$this->fetcher->download($imageUrl, $temp)) {
+            @unlink($temp);
             return null;
         }
 
-        file_put_contents($temp, $raw);
         return $temp;
     }
 
@@ -277,52 +378,25 @@ class ImageProcessingService
     public function computeEtagHash(string $imageUrl, string $baseUrl): string
     {
         // --- Step 1: check if it's a local image ---
-        if ($baseUrl && str_starts_with($imageUrl, $baseUrl)) {
+        if ($this->isLocalUrl($imageUrl)) {
+            $localPath = $this->resolveLocalPath($imageUrl);
 
-            // Convert public URL to absolute local path
-            $localPath = str_replace($baseUrl, $this->paths->public, $imageUrl);
-
-            if (file_exists($localPath)) {
-                // If file exists → hash based on filemtime
-                $mtime = filemtime($localPath);
-
-                return substr(sha1($mtime), 0, 10);
-            } else {
-                return substr(sha1('missing'), 0, 10);
-            }
+            // Valid file → hash based on filemtime, otherwise a constant
+            return substr(sha1($localPath !== null ? (string) filemtime($localPath) : 'missing'), 0, 10);
         }
 
-        // --- Step 2: HEAD request if it's a remote image ---
-        $headers = @get_headers($imageUrl, 1);
+        // --- Step 2: remote image (one request, cached by the fetcher) ---
+        $info = $this->fetcher->probe($imageUrl);
 
-        // If impossible to get headers → use image url as hash
-        if (!$headers || !isset($headers[0])) {
+        // If the request failed or was refused → use image url as hash
+        if ($info === null) {
             return substr(sha1($imageUrl), 0, 10);
         }
 
-        // Get ETag
-        $etag = $headers['ETag'] ?? '';
-        if (is_array($etag)) {
-            $etag = end($etag);
-        }
-
-        // Get Last-Modified
-        $lastModified = $headers['Last-Modified'] ?? '';
-        if (is_array($lastModified)) {
-            $lastModified = end($lastModified);
-        }
-
-        // Get Content-Length
-        $contentLength = $headers['Content-Length'] ?? '';
-        if (is_array($contentLength)) {
-            $contentLength = end($contentLength);
-        }
-
-        // Create fingerprint
-        $fingerprint = $etag . $lastModified . $contentLength;
+        $fingerprint = $info['etag'] . $info['last_modified'] . ($info['content_length'] ?? '');
 
         // If all 3 values are empty → use image url as hash
-        if (!$fingerprint) {
+        if ($fingerprint === '') {
             return substr(sha1($imageUrl), 0, 10);
         }
 
@@ -370,9 +444,9 @@ class ImageProcessingService
         }
 
         // Local source path
-        $localPath = str_replace($baseUrl, $this->paths->public, $imageUrl);
-        if (!file_exists($localPath)) {
-            return null; // fallback to original
+        $localPath = $this->resolveLocalPath($imageUrl);
+        if ($localPath === null) {
+            return null; // not a usable local file
         }
 
         try {
