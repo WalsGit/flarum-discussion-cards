@@ -111,10 +111,14 @@ class CheckDiscussionService
             $lines = "└ Is the image accessible: " . ($this->resolver->isImageAccessible($firstPostImage) ? "YES" : "NO") . " \n";
             array_push($output, $lines);
 
-            // Check remote image's size
-            $probe = $this->fetcher->probe($firstPostImage);
-            $imageSize = $probe['content_length'] ?? null;
-            $lines = "└ Remote image's size: " . ($imageSize ? $this->humanReadableSize($imageSize) : "N/C") . " \n";
+            // Check image's size (local file, or remote headers)
+            if ($this->imageService->isLocalUrl($firstPostImage)) {
+                $localPath = $this->imageService->resolveLocalPath($firstPostImage);
+                $imageSize = $localPath !== null ? @filesize($localPath) : null;
+            } else {
+                $imageSize = $this->fetcher->probe($firstPostImage)['content_length'] ?? null;
+            }
+            $lines = "└ Image's size: " . ($imageSize ? $this->humanReadableSize($imageSize) : "N/C") . " \n";
             array_push($output, $lines);
 
             // Get the generated filename of the saved card image

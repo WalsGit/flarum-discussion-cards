@@ -153,6 +153,7 @@ walsgit_discussion_cards:
       invalidMime: "Format de fichier non supporté. Formats acceptés : JPEG, PNG, GIF, BMP ou WebP"
       imageProcessingSourceNotFound: "Traitement d'image : source {path} non trouvée !"
       imageProcessingFailed: "Le traitement d'image a échoué !"
+      webpNotSupported: "L'extension PHP GD de votre serveur ne peut pas créer des images WebP (imagewebp() est manquant). Activez GD avec le support de WebP ou demandez à votre hébergeur de le faire."
       deleteFilenameRequired: "Suppression impossible : nom de fichier requis !"
       deleteTargetNotFound: "Rien à supprimer : fichier cible {file} introuvable !"
       filenameTagidMissing: "Impossible de générer le nom de fichier : Tag ID manquant !"

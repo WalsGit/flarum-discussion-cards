@@ -19,6 +19,7 @@ use Intervention\Image\ImageManager;
 use Intervention\Image\Encoders\WebpEncoder;
 use InvalidArgumentException;
 use Exception;
+use RuntimeException;
 
 class ImageProcessingService
 {
@@ -92,6 +93,8 @@ class ImageProcessingService
             throw new InvalidArgumentException($this->translator->trans('walsgit_discussion_cards.admin.errors.imageProcessingSourceNotFound', ['path' => $sourcePath]));
         }
 
+        $this->assertWebpSupport();
+
         try {
             @ini_set('memory_limit', '256M');
 
@@ -131,6 +134,108 @@ class ImageProcessingService
         if ($width < 1 || $height < 1 || ($width * $height) > self::MAX_PIXELS) {
             throw new InvalidArgumentException("Image dimensions too large ({$width}x{$height}).");
         }
+    }
+
+    /**
+     * True if the GD extension is loaded and able to write WebP images.
+     */
+    public static function isWebpSupported(): bool
+    {
+        return extension_loaded('gd')
+            && function_exists('imagewebp')
+            && !empty(gd_info()['WebP Support']);
+    }
+
+    /**
+     * @throws RuntimeException with a clear message if images cannot be converted to WebP
+     */
+    protected function assertWebpSupport(): void
+    {
+        if (!self::isWebpSupported()) {
+            throw new RuntimeException($this->translator->trans('walsgit_discussion_cards.admin.errors.webpNotSupported'));
+        }
+    }
+
+    /**
+     * True if the URL belongs to this forum (same scheme, host and port, and under the forum's base path).
+     * URLs are compared once parsed, never as plain text: "https://forum.com.evil.tld/" is NOT local.
+     */
+    public function isLocalUrl(string $imageUrl): bool
+    {
+        $base = parse_url(rtrim((string) $this->config->url(), '/')) ?: [];
+        $url = parse_url($imageUrl) ?: [];
+
+        if (!isset($base['host'], $url['host']) || $this->originOf($base) !== $this->originOf($url)) {
+            return false;
+        }
+
+        $basePath = $base['path'] ?? '';
+        $path = $url['path'] ?? '';
+
+        return $path === $basePath || str_starts_with($path, $basePath . '/');
+    }
+
+    /**
+     * Maps a local image URL to the real file on disk.
+     * Returns null if the URL is not local, tries to leave public/, or is not an existing file.
+     */
+    public function resolveLocalPath(string $imageUrl): ?string
+    {
+        $relative = $this->localRelativePath($imageUrl);
+        $real = $relative !== null ? realpath($this->paths->public . $relative) : false;
+
+        return ($real !== false && is_file($real) && $this->isInsideAllowedRoot($real)) ? $real : null;
+    }
+
+    /**
+     * Path of a local URL relative to public/ (starting with "/"), or null if not local or suspicious.
+     */
+    protected function localRelativePath(string $imageUrl): ?string
+    {
+        if (!$this->isLocalUrl($imageUrl)) {
+            return null;
+        }
+
+        $basePath = (string) parse_url(rtrim((string) $this->config->url(), '/'), PHP_URL_PATH);
+        $path = (string) parse_url($imageUrl, PHP_URL_PATH);
+        $relative = rawurldecode(substr($path, strlen($basePath)));
+
+        // Refuse anything that could climb out of public/: NUL bytes, backslashes and ".." segments
+        $suspicious = str_contains($relative, "\0")
+            || str_contains($relative, '\\')
+            || in_array('..', explode('/', $relative), true);
+
+        return $suspicious ? null : $relative;
+    }
+
+    /**
+     * The real path must be inside public/. public/assets is also accepted at its real location,
+     * because it is often a symlink to a shared folder on deployed installations.
+     */
+    protected function isInsideAllowedRoot(string $realPath): bool
+    {
+        $public = rtrim((string) $this->paths->public, '/\\');
+
+        foreach ([$public, $public . '/assets'] as $root) {
+            $realRoot = realpath($root);
+
+            if ($realRoot !== false && str_starts_with($realPath, $realRoot . DIRECTORY_SEPARATOR)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * "scheme://host:port" (lower case) of a parse_url() result.
+     */
+    protected function originOf(array $parts): string
+    {
+        $scheme = strtolower($parts['scheme'] ?? '');
+        $port = $parts['port'] ?? ($scheme === 'https' ? 443 : 80);
+
+        return $scheme . '://' . strtolower($parts['host'] ?? '') . ':' . $port;
     }
 
     /**
@@ -237,8 +342,6 @@ class ImageProcessingService
      */
     public function downloadOrCopyImage(string $imageUrl): ?string
     {
-        $baseUrl = rtrim((string) $this->config->url(), '/');
-
         // 1. Create temp file
         $temp = tempnam(sys_get_temp_dir(), 'cardimg_');
         if (!$temp) {
@@ -246,13 +349,12 @@ class ImageProcessingService
         }
 
         // --- LOCAL IMAGE -------------------------------------------------------
-        if ($baseUrl && str_starts_with($imageUrl, $baseUrl)) {
-            $localPath = str_replace($baseUrl, $this->paths->public, $imageUrl);
+        if ($this->isLocalUrl($imageUrl)) {
+            $localPath = $this->resolveLocalPath($imageUrl);
+            $size = $localPath !== null ? @filesize($localPath) : false;
 
-            $size = is_file($localPath) ? @filesize($localPath) : false;
-
-            // Missing, unreadable or too large → fallback (no optimization)
-            if ($size === false || $size > RemoteImageFetcher::MAX_BYTES || !@copy($localPath, $temp)) {
+            // Not a valid file of public/, unreadable or too large → no optimization
+            if ($localPath === null || $size === false || $size > RemoteImageFetcher::MAX_BYTES || !@copy($localPath, $temp)) {
                 @unlink($temp);
                 return null;
             }
@@ -276,19 +378,11 @@ class ImageProcessingService
     public function computeEtagHash(string $imageUrl, string $baseUrl): string
     {
         // --- Step 1: check if it's a local image ---
-        if ($baseUrl && str_starts_with($imageUrl, $baseUrl)) {
+        if ($this->isLocalUrl($imageUrl)) {
+            $localPath = $this->resolveLocalPath($imageUrl);
 
-            // Convert public URL to absolute local path
-            $localPath = str_replace($baseUrl, $this->paths->public, $imageUrl);
-
-            if (file_exists($localPath)) {
-                // If file exists → hash based on filemtime
-                $mtime = filemtime($localPath);
-
-                return substr(sha1($mtime), 0, 10);
-            } else {
-                return substr(sha1('missing'), 0, 10);
-            }
+            // Valid file → hash based on filemtime, otherwise a constant
+            return substr(sha1($localPath !== null ? (string) filemtime($localPath) : 'missing'), 0, 10);
         }
 
         // --- Step 2: remote image (one request, cached by the fetcher) ---
@@ -350,9 +444,9 @@ class ImageProcessingService
         }
 
         // Local source path
-        $localPath = str_replace($baseUrl, $this->paths->public, $imageUrl);
-        if (!file_exists($localPath)) {
-            return null; // fallback to original
+        $localPath = $this->resolveLocalPath($imageUrl);
+        if ($localPath === null) {
+            return null; // not a usable local file
         }
 
         try {

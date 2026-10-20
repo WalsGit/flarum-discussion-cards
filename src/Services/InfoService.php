@@ -33,6 +33,7 @@ class InfoService
             "Folder {$assetsPath} {$assetsPathText} \n",
             "Folder {$logsPath} {$logsPathText} \n",
             "Folder {$tempPath} {$logsPathText} \n",
+            "PHP GD with WebP support: " . (ImageProcessingService::isWebpSupported() ? "YES" : "NO (card images cannot be generated)") . " \n",
         ];
     }
 

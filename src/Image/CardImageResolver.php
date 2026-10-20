@@ -124,10 +124,8 @@ class CardImageResolver
         $blogDefault = $this->settings->get('blog_default_image_path');
         if ($blogDefault) {
             $blogDefaultImageUrl = $this->absoluteUrl('assets/' . $blogDefault);
-            $baseUrl = (string) ($this->config->url() ?? '');
-            $localPath = str_replace($baseUrl, $this->paths->public, $blogDefaultImageUrl);
 
-            if (file_exists($localPath)) {
+            if ($this->imageService->resolveLocalPath($blogDefaultImageUrl) !== null) {
                 return $blogDefaultImageUrl;
             }
         }
@@ -285,12 +283,9 @@ class CardImageResolver
 
     public function isImageAccessible(string $url): bool
     {
-        $baseUrl = (string) ($this->config->url() ?? '');
-
         // Local image
-        if (Str::startsWith($url, $baseUrl)) {
-            $localPath = str_replace($baseUrl, $this->paths->public, $url);
-            return file_exists($localPath);
+        if ($this->imageService->isLocalUrl($url)) {
+            return $this->imageService->resolveLocalPath($url) !== null;
         }
 
         // Remote image
