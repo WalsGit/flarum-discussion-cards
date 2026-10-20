@@ -17,7 +17,7 @@ For full list of changes & new features, please refer to the CHANGELOG.md file.
 ## 📢 IMPORTANT NOTICE
 > Versions `2.x` and up will target Flarum V2.
 
-> Versions `1.4.x` will be the final versions targeting Flarum V1. No more new features will be added, but some bug fixes & security updates will still be provided (if necessary) until full support will be dropped sometime before the end of 2026 or early 2027. All future dev efforts will be for versions `2.x` and up targeting Flarum V2.
+> Version `1.4.4` was the final version targeting Flarum V1. All future dev efforts will be for versions `2.x` and up targeting only Flarum V2.
 
 ### 🧩  3rd party extensions support
 - **Flarum V2**
@@ -43,7 +43,7 @@ All details on how to use them can be found in the extension's wiki on github (S
 ### 💬 Languages
 The extension is natively in English 🇬🇧 & French 🇫🇷;  it's partially translated to other language by the Flarum translation community:
 [![State of translations for Flarum V2](https://weblate.rob006.net/widgets/flarum2/-/walsgit-discussion-cards/multi-auto.svg)](https://weblate.rob006.net/engage/flarum2/)
-You can help translate it to your language via Weblate: [here for Flarum V2](https://weblate.rob006.net/projects/flarum2/walsgit-discussion-cards/) & [here for Flarum V1](https://weblate.rob006.net/projects/flarum/walsgit-discussion-cards/).
+You can help translate it to your language via Weblate: [here for Flarum V2](https://weblate.rob006.net/projects/flarum2/walsgit-discussion-cards/).
 
 ### 🗒️ Notes
 - V2 developed and tested on Flarum 2.0.0-rc.1 (first version released `2.0.0`).
@@ -52,7 +52,7 @@ You can help translate it to your language via Weblate: [here for Flarum V2](htt
 - Thanks to whomever suggested on Discord to use the tags selection component (sorry, we can no longer access the messages on Discord to mention them properly).
 - New settings page inspired by ``Friends of Flarum``'s [Best Answer](https://github.com/FriendsOfFlarum/best-answer) Extension.
 - Additional tags settings based on ``@askvortsov``'s [Discussion Templates](https://github.com/askvortsov1/flarum-discussion-templates) Extension.
-- Developed this with the help of AI (mainly ChatGPT, Gemini & Claude Code using Ollama Cloud models).
+- Developed this with the help of AI (mainly ChatGPT, Gemini, Claude Code using Ollama Cloud models & Claude.ai).
 
 ## 📥️ Installation
 ### ⚠️ IMPORTANT 

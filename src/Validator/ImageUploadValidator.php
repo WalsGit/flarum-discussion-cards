@@ -50,6 +50,17 @@ class ImageUploadValidator extends AbstractValidator
             return $fail($translator->trans('walsgit_discussion_cards.admin.errors.invalidFile'));
         }
 
+        // PHP itself rejected the upload (e.g. upload_max_filesize exceeded): there is no usable stream
+        if ($value->getError() !== UPLOAD_ERR_OK) {
+            $tooBig = in_array($value->getError(), [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true);
+
+            return $fail($translator->trans(
+                $tooBig
+                    ? 'walsgit_discussion_cards.admin.errors.fileSize'
+                    : 'walsgit_discussion_cards.admin.errors.invalidFile'
+            ));
+        }
+
         // Check file size (< 2 Mb)
         $size = $value->getSize();
 
@@ -101,8 +112,8 @@ class ImageUploadValidator extends AbstractValidator
         $translator = resolve(Translator::class);
 
         return [
-            'walsgit_discussion_cards_tag_default_image.required' => $translator->trans('walsgit_discussion_cards.admin.errors.required'),
-            'walsgit_discussion_cards_default_image.required' => $translator->trans('walsgit_discussion_cards.admin.errors.required'),
+            'walsgit_discussion_cards_tag_default_image.required' => $translator->trans('walsgit_discussion_cards.admin.errors.noFileUploaded'),
+            'walsgit_discussion_cards_default_image.required' => $translator->trans('walsgit_discussion_cards.admin.errors.noFileUploaded'),
         ];
     }
 }

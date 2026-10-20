@@ -1,12 +1,12 @@
 /*
  * Component that displays the number of replies on discussion cards (optional)
  */
-import Component from 'flarum/common/Component';
-import Link from 'flarum/common/components/Link';
-import Icon from 'flarum/common/components/Icon';
-import craftRepliesAvatars from '../../utils/craftRepliesAvatars';
-import abbreviateNumber from 'flarum/common/utils/abbreviateNumber';
-import DiscussionLastPost from './DiscussionLastPost';
+import Component from "flarum/common/Component";
+import Link from "flarum/common/components/Link";
+import Icon from "flarum/common/components/Icon";
+import craftRepliesAvatars from "../../utils/craftRepliesAvatars";
+import abbreviateNumber from "flarum/common/utils/abbreviateNumber";
+import DiscussionLastPost from "./DiscussionLastPost";
 
 export default class DiscussionReplies extends Component {
   view(vnode) {
@@ -15,27 +15,36 @@ export default class DiscussionReplies extends Component {
     if (Number(settings.showReplies) !== 1) return null;
 
     const replyText = discussion.unreadCount()
-      ? app.translator.trans('walsgit_discussion_cards.forum.unreadReplies', {
+      ? app.translator.trans("walsgit_discussion_cards.forum.unreadReplies", {
           count: discussion.unreadCount(),
         })
-      : app.translator.trans('walsgit_discussion_cards.forum.replies', {
-          count: discussion.replyCount() || '0',
+      : app.translator.trans("walsgit_discussion_cards.forum.replies", {
+          count: discussion.replyCount() || "0",
         });
 
-    const postCount = discussion.unreadCount() ? discussion.unreadCount() : discussion.replyCount();
+    const postCount = discussion.unreadCount()
+      ? discussion.unreadCount()
+      : discussion.replyCount();
 
     // For Primary Cards layout (shows avatars & number of unread replies or total replies) and list cards layout on mobile
-    if (layout === 'card' || layout === 'mobile') {
+    if (layout === "card" || layout === "mobile") {
       return (
         <div className="cardSpacer">
-          <Link className="Replies" href={app.route.discussion(discussion, discussion.lastPostNumber())}>
+          <Link
+            className="Replies"
+            href={app.route.discussion(discussion, discussion.lastPostNumber())}
+          >
             <div className="Left">
               <div className="Avatars">{craftRepliesAvatars(discussion)}</div>
               <div className="ReplyCount">{replyText}</div>
             </div>
             <div className="Right">
               {/* Optional: Last post (reply) info component */}
-              <DiscussionLastPost discussion={discussion} settings={settings} layout="card" />
+              <DiscussionLastPost
+                discussion={discussion}
+                settings={settings}
+                layout="card"
+              />
               <div className="Arrow">
                 <Icon name="fa-solid fa-angle-right" />
               </div>
@@ -46,19 +55,22 @@ export default class DiscussionReplies extends Component {
     }
 
     // For List cards layout (icon via css + number on the right)
-    if (layout === 'list') {
+    if (layout === "list") {
       return (
         <div className="DiscussionListItem-replyCount">
           <span aria-hidden="true">{abbreviateNumber(postCount)}</span>
           <span className="visually-hidden">
-            {app.translator.trans('core.forum.discussion_list.unread_replies_a11y_label', { count: postCount })}
+            {app.translator.trans(
+              "core.forum.discussion_list.unread_replies_a11y_label",
+              { count: postCount }
+            )}
           </span>
         </div>
       );
     }
 
     // List cards responsive fallback when screen size is reduced to mobile or less (icon + number on the right)
-    if (layout === 'fallback') {
+    if (layout === "fallback") {
       return (
         <div className="imageLabel discussionReplyCount">
           <Icon name="fa-solid fa-comment" className="labelIcon" />

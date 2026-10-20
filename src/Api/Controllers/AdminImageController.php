@@ -3,35 +3,51 @@
 /*
  * This file is part of walsgit/flarum-discussion-cards
  *
- *  Copyright (c) 2025 Wa!id.
- *
- *  For detailed copyright and license information, please view the
- *  LICENSE file that was distributed with this source code.
+ * For detailed copyright and license information, please view the
+ * LICENSE file that was distributed with this source code.
  */
 
 namespace Walsgit\Discussion\Cards\Api\Controllers;
 
+use Flarum\Http\RequestUtil;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\Foundation\Paths;
 use Flarum\Locale\Translator;
+use Illuminate\Validation\ValidationException;
 use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Walsgit\Discussion\Cards\Services\ImageProcessingService;
+use Walsgit\Discussion\Cards\Validator\ImageUploadValidator;
 use Exception;
 
 class AdminImageController implements RequestHandlerInterface
 {
-    public function __construct(protected SettingsRepositoryInterface $settings, protected ImageProcessingService $imageService, protected Paths $paths, protected Translator $translator) {}
+    public function __construct(
+        protected SettingsRepositoryInterface $settings,
+        protected ImageProcessingService $imageService,
+        protected Paths $paths,
+        protected Translator $translator,
+        protected ImageUploadValidator $validator
+    ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
+        RequestUtil::getActor($request)->assertAdmin();
+
         $method = strtoupper($request->getMethod());
 
         try {
             switch ($method) {
                 case 'POST':
+                    $uploadedFiles = $request->getUploadedFiles();
+                    $this->validator->assertValid([
+                        'walsgit_discussion_cards_default_image' => $uploadedFiles['walsgit_discussion_cards_default_image']
+                            ?? $uploadedFiles['file']
+                            ?? null,
+                    ]);
+
                     $result = $this->imageService->handleUpload($request, 'default');
 
                     if (empty($result['path'])) {
@@ -56,8 +72,9 @@ class AdminImageController implements RequestHandlerInterface
                 default:
                     return new JsonResponse(['error' => $this->translator->trans('walsgit_discussion_cards.admin.errors.adminImageUnauthorizedMethod')], 405);
             }
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (Exception $e) {
-            // Messages visibles uniquement côté admin
             return new JsonResponse([
                 'error' => $this->translator->trans('walsgit_discussion_cards.admin.errors.adminImageProcessingError') . $e->getMessage(),
             ], 400);

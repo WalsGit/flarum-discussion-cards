@@ -1,8 +1,8 @@
 /*
  * Component that displays badges on discussion cards (optional)
  */
-import Component from 'flarum/common/Component';
-import craftBadges from '../../utils/craftBadges';
+import Component from "flarum/common/Component";
+import craftBadges from "../../utils/craftBadges";
 
 export default class DiscussionBadges extends Component {
   view(vnode) {

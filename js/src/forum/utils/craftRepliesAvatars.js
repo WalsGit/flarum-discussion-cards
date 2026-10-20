@@ -1,4 +1,4 @@
-import Avatar from 'flarum/common/components/Avatar';
+import Avatar from "flarum/common/components/Avatar";
 
 export default function craftRepliesAvatars(discussion) {
   const participants = [];

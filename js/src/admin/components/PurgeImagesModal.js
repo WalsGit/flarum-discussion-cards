@@ -1,58 +1,80 @@
-import Form from 'flarum/common/components/Form';
-import Modal from 'flarum/common/components/Modal';
-import Button from 'flarum/common/components/Button';
-import app from 'flarum/admin/app';
+import Form from "flarum/common/components/Form";
+import Modal from "flarum/common/components/Modal";
+import Button from "flarum/common/components/Button";
+import app from "flarum/admin/app";
 
 export default class PurgeImagesModal extends Modal {
   oninit(vnode) {
     super.oninit(vnode);
 
     this.loading = false;
-    this.output = '';
+    this.output = "";
     this.commandOutput = [];
   }
 
   className() {
-    return 'PurgeImagesModal Modal--medium';
+    return "PurgeImagesModal Modal--medium";
   }
 
   title() {
-    return app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_title');
+    return app.translator.trans(
+      "walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_title"
+    );
   }
 
   content() {
     return (
       <div className="Modal-body">
         <Form>
-          <p className="helpText">{app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_helpText')}</p>
+          <p className="helpText">
+            {app.translator.trans(
+              "walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_helpText"
+            )}
+          </p>
           <div className="Form-group">
-            <label>{app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteUnusedLabel')}</label>
+            <label>
+              {app.translator.trans(
+                "walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteUnusedLabel"
+              )}
+            </label>
             <div className="helpText">
-              {app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteUnusedHelp')}
+              {app.translator.trans(
+                "walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteUnusedHelp"
+              )}
             </div>
             <Button
               className="Button Button--primary"
               icon="fas fa-trash"
-              loading={this.loading && this.purgeType === 'unused'}
+              loading={this.loading && this.purgeType === "unused"}
               disabled={this.loading}
-              onclick={() => this.purgeImages('unused')}
+              onclick={() => this.purgeImages("unused")}
             >
-              {app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteUnusedBtnText')}
+              {app.translator.trans(
+                "walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteUnusedBtnText"
+              )}
             </Button>
           </div>
           <div className="Form-group">
-            <label>{app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteAllLabel')}</label>
+            <label>
+              {app.translator.trans(
+                "walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteAllLabel"
+              )}
+            </label>
             <div className="helpText">
-              {app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteAllHelp')}
+              {app.translator.trans(
+                "walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteAllHelp"
+              )}
             </div>
             <Button
               className="Button Button--danger"
               icon="fas fa-trash"
-              loading={this.loading && this.purgeType === 'all'}
+              loading={this.loading && this.purgeType === "all"}
               disabled={this.loading}
-              onclick={() => this.purgeImages('all')}
+              onclick={() => this.purgeImages("all")}
             >
-              {app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteAllBtnText')}
+              {app.translator.trans(
+                "walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_deleteAllBtnText"
+              )}
             </Button>
           </div>
           {this.output && (
@@ -79,38 +101,55 @@ export default class PurgeImagesModal extends Modal {
   purgeImages(type) {
     this.purgeType = type;
     this.loading = true;
-    this.output = app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_runningCommand');
+    this.output = app.translator.trans(
+      "walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_runningCommand"
+    );
     this.commandOutput = [];
     m.redraw.sync(); // Force immediate redraw
 
     setTimeout(() => {
       app
         .request({
-          method: 'POST',
-          url: app.forum.attribute('apiUrl') + '/walsgit/discussion-cards/purge-images' + (type === 'all' ? '?all=true' : ''),
+          method: "POST",
+          url:
+            app.forum.attribute("apiUrl") +
+            "/walsgit/discussion-cards/purge-images" +
+            (type === "all" ? "?all=true" : ""),
         })
         .then((result) => {
           this.loading = false;
-          this.output = result.command + '\n';
+          this.output = result.command + "\n";
           this.commandOutput = result.output;
           m.redraw();
 
           // Show success message
           app.alerts.show(
-            { type: 'success' },
-            app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_success')
+            { type: "success" },
+            app.translator.trans(
+              "walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_success"
+            )
           );
         })
         .catch((err) => {
           this.loading = false;
-          this.output = app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_error');
+          this.output = app.translator.trans(
+            "walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_error"
+          );
           this.commandOutput = [
-            err.message || app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_unknownError'),
+            err.message ||
+              app.translator.trans(
+                "walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_unknownError"
+              ),
           ];
           m.redraw();
 
           // Show error message
-          app.alerts.show({ type: 'error' }, app.translator.trans('walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_error'));
+          app.alerts.show(
+            { type: "error" },
+            app.translator.trans(
+              "walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_error"
+            )
+          );
         });
     }, 500); // 500ms delay to see the running message
   }

@@ -3,30 +3,35 @@
 /*
  * This file is part of walsgit/flarum-discussion-cards
  *
- *  Copyright (c) 2025 Wa!id.
- *
- *  For detailed copyright and license information, please view the
- *  LICENSE file that was distributed with this source code.
+ * For detailed copyright and license information, please view the
+ * LICENSE file that was distributed with this source code.
  */
 
 namespace Walsgit\Discussion\Cards\Api\Controllers;
 
-use Flarum\Tags\Tag;
+use Flarum\Http\RequestUtil;
 use Flarum\Locale\Translator;
+use Flarum\Tags\Tag;
 use Illuminate\Support\Arr;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Laminas\Diactoros\Response\JsonResponse;
 use Walsgit\Discussion\Cards\Services\ImageProcessingService;
+use Walsgit\Discussion\Cards\Validator\ImageUploadValidator;
 use Exception;
 
 class TagImageController implements RequestHandlerInterface
 {
-    public function __construct(protected ImageProcessingService $imageService, protected Translator $translator) {}
+    public function __construct(
+        protected ImageProcessingService $imageService,
+        protected Translator $translator,
+        protected ImageUploadValidator $validator
+    ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
+        RequestUtil::getActor($request)->assertAdmin();
         $routeParams = $request->getAttribute('routeParameters', []);
 
         $method = strtoupper($request->getMethod());
@@ -40,6 +45,13 @@ class TagImageController implements RequestHandlerInterface
 
         switch ($method) {
             case 'POST':
+                $uploadedFiles = $request->getUploadedFiles();
+                $this->validator->assertValid([
+                    'walsgit_discussion_cards_tag_default_image' => $uploadedFiles['walsgit_discussion_cards_tag_default_image']
+                        ?? $uploadedFiles['file']
+                        ?? null,
+                ]);
+                
                 $result = $this->imageService->handleUpload($request, 'tag', [
                     'tagId' => $tagId
                 ]);
