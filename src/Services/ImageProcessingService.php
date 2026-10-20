@@ -34,7 +34,12 @@ class ImageProcessingService
         'upscaling' => false,
     ];
 
-    public function __construct(protected Paths $paths, protected Translator $translator, protected Config $config) {}
+    public function __construct(
+        protected Paths $paths,
+        protected Translator $translator,
+        protected Config $config,
+        protected RemoteImageFetcher $fetcher
+    ) {}
 
     /**
      * Uploading images
@@ -80,6 +85,7 @@ class ImageProcessingService
      */
     public function processImage(string $sourcePath, string $targetPath, array $options = []): void
     {
+
         $options = array_merge($this->defaults, $options);
 
         if (!file_exists($sourcePath)) {
@@ -88,6 +94,8 @@ class ImageProcessingService
 
         try {
             @ini_set('memory_limit', '256M');
+
+            $this->assertSafeDimensions($sourcePath);
 
             $image = ImageManager::gd()->read($sourcePath);
 
@@ -101,6 +109,27 @@ class ImageProcessingService
             $encoded->save($targetPath);
         } catch (Exception $e) {
             throw new Exception($this->translator->trans('walsgit_discussion_cards.admin.errors.imageProcessingFailed') . ' ' . $e->getMessage());
+        }
+    }
+
+    /** Max pixels allowed before decoding (a decoded image takes about 4 bytes per pixel in memory). */
+    protected const MAX_PIXELS = 20000000;
+
+    /**
+     * Reads only the image header to refuse unreadable files and oversized images before decoding.
+     */
+    protected function assertSafeDimensions(string $path): void
+    {
+        $size = @getimagesize($path);
+
+        if ($size === false) {
+            throw new InvalidArgumentException('Not a readable image file.');
+        }
+
+        [$width, $height] = $size;
+
+        if ($width < 1 || $height < 1 || ($width * $height) > self::MAX_PIXELS) {
+            throw new InvalidArgumentException("Image dimensions too large ({$width}x{$height}).");
         }
     }
 
@@ -216,57 +245,27 @@ class ImageProcessingService
             return null;
         }
 
-        $maxSize = 5 * 1024 * 1024; // 5 MB max
-
         // --- LOCAL IMAGE -------------------------------------------------------
         if ($baseUrl && str_starts_with($imageUrl, $baseUrl)) {
             $localPath = str_replace($baseUrl, $this->paths->public, $imageUrl);
 
-            if (!file_exists($localPath)) {
+            $size = is_file($localPath) ? @filesize($localPath) : false;
+
+            // Missing, unreadable or too large → fallback (no optimization)
+            if ($size === false || $size > RemoteImageFetcher::MAX_BYTES || !@copy($localPath, $temp)) {
+                @unlink($temp);
                 return null;
             }
 
-            // File too large → fallback (no optimization)
-            $size = @filesize($localPath);
-            if ($size !== false && $size > $maxSize) {
-                unlink($temp);
-                return null;
-            }
-
-            $raw = @file_get_contents($localPath);
-            if ($raw === false) {
-                unlink($temp);
-                return null;
-            }
-
-            file_put_contents($temp, $raw);
             return $temp;
         }
 
         // --- REMOTE IMAGE ------------------------------------------------------
-
-        // Check Content-Length first (if available)
-        $headers = @get_headers($imageUrl, 1);
-
-        if (isset($headers['Content-Length'])) {
-            $size = is_array($headers['Content-Length'])
-                ? end($headers['Content-Length'])
-                : $headers['Content-Length'];
-
-            if (is_numeric($size) && (int)$size > $maxSize) {
-                unlink($temp);
-                return null;
-            }
-        }
-
-        $raw = @file_get_contents($imageUrl);
-
-        if ($raw === false) {
-            unlink($temp);
+        if (!$this->fetcher->download($imageUrl, $temp)) {
+            @unlink($temp);
             return null;
         }
 
-        file_put_contents($temp, $raw);
         return $temp;
     }
 
@@ -292,37 +291,18 @@ class ImageProcessingService
             }
         }
 
-        // --- Step 2: HEAD request if it's a remote image ---
-        $headers = @get_headers($imageUrl, 1);
+        // --- Step 2: remote image (one request, cached by the fetcher) ---
+        $info = $this->fetcher->probe($imageUrl);
 
-        // If impossible to get headers → use image url as hash
-        if (!$headers || !isset($headers[0])) {
+        // If the request failed or was refused → use image url as hash
+        if ($info === null) {
             return substr(sha1($imageUrl), 0, 10);
         }
 
-        // Get ETag
-        $etag = $headers['ETag'] ?? '';
-        if (is_array($etag)) {
-            $etag = end($etag);
-        }
-
-        // Get Last-Modified
-        $lastModified = $headers['Last-Modified'] ?? '';
-        if (is_array($lastModified)) {
-            $lastModified = end($lastModified);
-        }
-
-        // Get Content-Length
-        $contentLength = $headers['Content-Length'] ?? '';
-        if (is_array($contentLength)) {
-            $contentLength = end($contentLength);
-        }
-
-        // Create fingerprint
-        $fingerprint = $etag . $lastModified . $contentLength;
+        $fingerprint = $info['etag'] . $info['last_modified'] . ($info['content_length'] ?? '');
 
         // If all 3 values are empty → use image url as hash
-        if (!$fingerprint) {
+        if ($fingerprint === '') {
             return substr(sha1($imageUrl), 0, 10);
         }
 

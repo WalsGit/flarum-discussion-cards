@@ -16,9 +16,6 @@ use Flarum\Foundation\Config;
 use Flarum\Foundation\Paths;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Walsgit\Discussion\Cards\Image\CardImageResolver;
-use Walsgit\Discussion\Cards\Services\HtmlImageExtractor;
-use Walsgit\Discussion\Cards\Services\ImageProcessingService;
-use Walsgit\Discussion\Cards\Services\TagImageSelector;
 
 class CheckDiscussionService
 {
@@ -30,6 +27,7 @@ class CheckDiscussionService
         protected Config $config,
         protected ImageProcessingService $imageService,
         protected TagImageSelector $tagSelector,
+        protected RemoteImageFetcher $fetcher,
     ) {
         $this->resolver = $resolver;
         $this->htmlImageExtractor = $htmlImageExtractor;
@@ -43,7 +41,9 @@ class CheckDiscussionService
     {
         $discussion = Discussion::with('firstPost')->find($discussionId);
 
-        if (!$discussion) return ["Error: discussion #{$discussionId} doesn't exist!"];
+        if (!$discussion) {
+            return ["Error: discussion #{$discussionId} doesn't exist!"];
+        }
 
         $output = [
             "Discussion id: {$discussionId} \n",
@@ -53,7 +53,9 @@ class CheckDiscussionService
 
         // Get the first post's content
         $firstPostContent = "NOTICE: This discussion doesn't have a first post anymore (it must have been deleted),\nso it will be ignored and skipped during card image resolving process.";
-        if ($discussion->firstPost) $firstPostContent = $discussion->firstPost->formatContent();
+        if ($discussion->firstPost) {
+            $firstPostContent = $discussion->firstPost->formatContent();
+        }
 
         $lines = [
             "================ First post's formatted content ================ \n",
@@ -110,15 +112,8 @@ class CheckDiscussionService
             array_push($output, $lines);
 
             // Check remote image's size
-            $context = stream_context_create(
-                [
-                    'http' => array(
-                        'method' => 'HEAD'
-                    )
-                ]
-            );
-            $headers = get_headers($firstPostImage, true, $context);
-            $imageSize = $headers['Content-Length'] ?? null;
+            $probe = $this->fetcher->probe($firstPostImage);
+            $imageSize = $probe['content_length'] ?? null;
             $lines = "└ Remote image's size: " . ($imageSize ? $this->humanReadableSize($imageSize) : "N/C") . " \n";
             array_push($output, $lines);
 

@@ -19,11 +19,21 @@ use Illuminate\Support\Str;
 use Flarum\Foundation\Paths;
 use Walsgit\Discussion\Cards\Services\ImageProcessingService;
 use Walsgit\Discussion\Cards\Services\HtmlImageExtractor;
+use Walsgit\Discussion\Cards\Services\RemoteImageFetcher;
 use Walsgit\Discussion\Cards\Services\TagImageSelector;
 
 class CardImageResolver
 {
-    public function __construct(protected SettingsRepositoryInterface $settings, protected Config $config, protected Formatter $formatter, protected Paths $paths, protected ImageProcessingService $imageService, protected HtmlImageExtractor $htmlImageExtractor, protected TagImageSelector $tagSelector) {}
+    public function __construct(
+        protected SettingsRepositoryInterface $settings,
+        protected Config $config,
+        protected Formatter $formatter,
+        protected Paths $paths,
+        protected ImageProcessingService $imageService,
+        protected HtmlImageExtractor $htmlImageExtractor,
+        protected TagImageSelector $tagSelector,
+        protected RemoteImageFetcher $fetcher
+    ) {}
 
     /**
      * Main resolver: returns an optimized image URL (absolute) or null.
@@ -32,12 +42,16 @@ class CardImageResolver
     {
         // 1. Support for 3rd party Blog Extension
         if ($image = $this->resolveBlogImage($discussion, $firstPostHtml)) {
-            return $this->getOptimizedCardImage($discussion, $image);
+            if ($optimized = $this->getOptimizedCardImage($discussion, $image)) {
+                return $optimized;
+            }
         }
 
         // 2. First image in first post
         if ($image = $this->resolveFirstPostImage($discussion, $firstPostHtml)) {
-            return $this->getOptimizedCardImage($discussion, $image);
+            if ($optimized = $this->getOptimizedCardImage($discussion, $image)) {
+                return $optimized;
+            }
         }
 
         // 3. Tag default image based on tag priority
@@ -188,9 +202,9 @@ class CardImageResolver
     /**
      * Getting the optimized image for a card
      * Given a discussion and a source image URL (absolute), returns an absolute URL
-     * pointing to the optimized webp asset (or returns the original imageUrl as fallback).
+     * pointing to the optimized webp asset, or null if the image could not be optimized.
      */
-    protected function getOptimizedCardImage(Discussion $discussion, string $imageUrl): string
+    protected function getOptimizedCardImage(Discussion $discussion, string $imageUrl): ?string
     {
         // If this is already one of the default images (global or tag) we uploaded (no need to re-optimize)
         if (Str::endsWith($imageUrl, 'default-card-image.webp')) {
@@ -232,8 +246,8 @@ class CardImageResolver
         $temp = $this->imageService->downloadOrCopyImage($imageUrl);
 
         if (!$temp) {
-            // fail -> fallback to original url
-            return $imageUrl;
+            // fail -> let the resolver use the next fallback (tag / default image)
+            return null;
         }
 
         try {
@@ -244,8 +258,7 @@ class CardImageResolver
                 $this->imageService->getDefaultsFor('discussion')
             );
         } catch (\Throwable $e) {
-            @unlink($temp);
-            return $imageUrl;
+            return null;
         } finally {
             @unlink($temp);
             gc_collect_cycles();
@@ -281,15 +294,6 @@ class CardImageResolver
         }
 
         // Remote image
-        $headers = @get_headers($url, 1);
-        if (!$headers || !isset($headers[0])) {
-            return false;
-        }
-
-        return !(
-            str_contains($headers[0], '404') ||
-            str_contains($headers[0], '403') ||
-            str_contains($headers[0], '500')
-        );
+        return $this->fetcher->isAccessible($url);
     }
 }

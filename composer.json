@@ -23,7 +23,8 @@
     ],
     "require": {
         "flarum/core": "^2.0.0",
-        "flarum/tags": "^2.0.0"
+        "flarum/tags": "^2.0.0",
+        "guzzlehttp/guzzle": "^7.7"
     },
     "autoload": {
         "psr-4": {
