@@ -58,6 +58,8 @@ You can help translate it to your language via Weblate: [here for Flarum V2](htt
 ### ⚠️ IMPORTANT 
 > if you're **installing any version for the first time** or are **updating from a version older than 1.4.0** you will need to _**regenerate card images**_ for all existing discussions after activating the extension as it no longer does it in the frontend on page loads (performance issues). You can run `php flarum discussion-cards:regenerate-images`first to regenerate images for the 20 latest discussion (default) or use the button in the admin settings page (click on _tools > regenerate images_ then on the _Regenerate 20 latest card images_ button. **Don't forget to add a general and/or tag default images first** and if all is OK, you can regenerate card images for ALL discussions using the proper options with the command (see [full documentation here](https://github.com/WalsGit/flarum-discussion-cards/wiki/CLI-Commands#discussion-cardsregenerate-images))
 
+**Requirements:** the PHP `gd` extension with WebP support is needed to generate card images (the Admin Info tool tells you if it's missing).
+
 Install with composer:
 
 ```sh
@@ -74,6 +76,8 @@ _(see [full documentation here](https://github.com/WalsGit/flarum-discussion-car
 
 ## ↕️  Updating
 >ℹ️  If you're updating from version `1.3.0` or earlier TO version `1.4.0` or later not that the `discussion-cards:migrate-images` command will be automatically run to move and convert old images used for cards to new file structure and format (See changelog of version `1.4.0` for more details). You will also need to need to regenerate card images if you updating from those older versions (see post installation instruction above)
+
+> 🔒 Version `2.0.3` is a complementary security release: all `2.x` users are strongly advised to update.
 
 ```sh
 composer update walsgit/flarum-discussion-cards

@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.0.3] - 2026-10-20
+*Complementary security release.*
+
+### Security
+- Backend: Hardened the way remote card images are fetched (single dedicated service, timeouts, size limit, stricter validation of image addresses, redirects and dimensions).
+- Backend: Hardened the detection of images hosted on your own forum, which are now strictly limited to files located in the `public` directory.
+
+### Changed
+- Backend: When an image can't be downloaded or optimized, the card now falls back to the tag's default image, then to the general default image, instead of using the original image address.
+- Admin: The Admin Info tool and the debugging tool now show whether PHP GD supports WebP and the real size of local images.
+- Console: Added a clear error message when the PHP GD extension has no WebP support.
+
 ## [2.0.2] - 2026-10-19
 ### Security
 - Backend: the endpoints to upload/delete the general default image and the tags' default images now require administrator permissions (they were previously accessible to any visitor)
