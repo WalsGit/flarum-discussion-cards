@@ -237,9 +237,6 @@ class CardImageResolver
             return $this->buildAssetUrl($filename);
         }
 
-        // Remove old optimized files for this discussion
-        $this->imageService->cleanupOldDiscussionImages($discussionId);
-
         // Fetch (download or copy) to a temporary file via service
         $temp = $this->imageService->downloadOrCopyImage($imageUrl);
 
@@ -256,11 +253,16 @@ class CardImageResolver
                 $this->imageService->getDefaultsFor('discussion')
             );
         } catch (\Throwable $e) {
+            // Remove a possibly partial file, the previous card image is left untouched
+            @unlink($filepath);
             return null;
         } finally {
             @unlink($temp);
             gc_collect_cycles();
         }
+
+        // The new image exists: the previous ones can now be removed
+        $this->imageService->cleanupOldDiscussionImages($discussionId, $filename);
 
         return $this->buildAssetUrl($filename);
     }

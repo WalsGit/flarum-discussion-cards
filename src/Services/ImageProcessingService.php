@@ -405,14 +405,18 @@ class ImageProcessingService
 
 
     /*
-    * Remove old discussion card images
+    * Remove old discussion card images (the file named $keepFilename is never deleted)
     */
-    public function cleanupOldDiscussionImages(int $discussionId): void
+    public function cleanupOldDiscussionImages(int $discussionId, ?string $keepFilename = null): void
     {
         $path = $this->paths->public . '/assets/extensions/walsgit-discussion-cards';
         $pattern = $path . "/discussion-{$discussionId}-*.webp";
 
-        foreach (glob($pattern) as $old) {
+        foreach (glob($pattern) ?: [] as $old) {
+            if ($keepFilename !== null && basename($old) === $keepFilename) {
+                continue;
+            }
+
             @unlink($old);
         }
     }
