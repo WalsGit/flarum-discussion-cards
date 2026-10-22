@@ -85,7 +85,7 @@ class ImageMigrationService
                             $targetFilename
                         );
 
-                        echo $this->translator->trans('walsgit_discussion_cards.admin.console.imageMigrationServiceGeneralImageSuccess', ['oldfilename' => $oldGeneralFilename, 'newfilepath' => $targetPath]) . "\n";
+                        echo $this->translator->trans('walsgit_discussion_cards.admin.console.imageMigrationServiceGeneralImageSuccess', ['filename' => $oldGeneralFilename, 'newfilepath' => $targetPath]) . "\n";
                         $this->logger->info("Successfully migrated general default image: {$oldGeneralFilename} -> {$targetFilename}");
                         $this->logger->info("Successfully set {$targetFilename} as the new general default image in the settings (DB)");
                         $migratedCount++;
@@ -148,7 +148,7 @@ class ImageMigrationService
                         $tag->walsgit_discussion_cards_tag_default_image = 'tags/' . $targetFilename;
                         $tag->save();
 
-                        echo $this->translator->trans('walsgit_discussion_cards.admin.console.imageMigrationServiceTagImageSuccess', ['oldfilename' => $oldTagFilename, 'tagid' => $tag->id, 'newfilepath' => $targetPath]) . "\n";
+                        echo $this->translator->trans('walsgit_discussion_cards.admin.console.imageMigrationServiceTagImageSuccess', ['filename' => $oldTagFilename, 'tagid' => $tag->id, 'newfilepath' => $targetPath]) . "\n";
                         $this->logger->info("Successfully migrated tag {$tag->id} default image: {$oldTagFilename} -> {$targetFilename}");
                         $this->logger->info("Successfully set {$targetFilename} as the new tag {$tag->id} default image in the tag settings (DB)");
                         $migratedCount++;
@@ -180,7 +180,7 @@ class ImageMigrationService
             $this->cleanupLegacyPngs($assetsDir);
         } else {
             $this->logger->info("Skipping cleanup due to {$this->failedMigrationCount} failed migrations");
-            echo $this->translator->trans('walsgit-discussion-cards.admin.console.imageMigrationServiceNoCleanup', ['failedMigrations' => $this->failedMigrationCount]);
+            echo $this->translator->trans('walsgit_discussion_cards.admin.console.imageMigrationServiceNoCleanup', ['failedMigrations' => $this->failedMigrationCount]) . "\n";
         }
 
         $this->logger->info("Migration process completed. Total migrated images: {$migratedCount}, Failed: {$this->failedMigrationCount}");

@@ -32,7 +32,7 @@ For full list of changes & new features, please refer to the CHANGELOG.md file.
 
 ### 🖥️ Console Commands (CLI)
 As of version `1.4.0` new CLI commands have been added to manage card images:
-- `php flarum discussion-cards:migrate-images` (runs automatically on update).
+- `php flarum discussion-cards:migrate-images` to migrate old default images (pre `1.4.0`). It is **not** run automatically: run it manually after updating if you come from `1.3.0` or earlier.
 - `php flarum discussion-cards:purge-images` to delete unused or all card images from server.
 - `php flarum discussion-cards:regenerate-images` to regenerate card images or generate missing card images.
 All details on how to use them can be found in the extension's wiki on github (See Documentation in the Links section below or in the Admin Settings Page). You can also add the `--help` flag to each command to list options.
@@ -72,10 +72,8 @@ php flarum discussion-cards:regenerate-images -w [Number]
 ```
 _(see [full documentation here](https://github.com/WalsGit/flarum-discussion-cards/wiki/CLI-Commands#discussion-cardsregenerate-images) for more options on the command)_
 
-ℹ️ _Note that, as of versions `2.0.1` (V2) & `1.4.4` (V1), right after the installation, an automatic command will run to generate card images for the 20 latest, top & newest discussions_
-
 ## ↕️  Updating
->ℹ️  If you're updating from version `1.3.0` or earlier TO version `1.4.0` or later not that the `discussion-cards:migrate-images` command will be automatically run to move and convert old images used for cards to new file structure and format (See changelog of version `1.4.0` for more details). You will also need to need to regenerate card images if you updating from those older versions (see post installation instruction above)
+>ℹ️  If you're updating from version `1.3.0` or earlier TO version `1.4.0` or later, run `php flarum discussion-cards:migrate-images` manually after `php flarum migrate`: it moves and converts the old images used for cards to the new file structure and format (see the changelog of version `1.4.0` for details). You will also need to regenerate card images (see the post installation instructions above).
 
 > 🔒 Version `2.0.3` is a complementary security release: all `2.x` users are strongly advised to update.
 

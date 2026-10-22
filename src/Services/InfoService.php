@@ -32,7 +32,7 @@ class InfoService
         return [
             "Folder {$assetsPath} {$assetsPathText} \n",
             "Folder {$logsPath} {$logsPathText} \n",
-            "Folder {$tempPath} {$logsPathText} \n",
+            "Folder {$tempPath} {$tempPathText} \n",
             "PHP GD with WebP support: " . (ImageProcessingService::isWebpSupported() ? "YES" : "NO (card images cannot be generated)") . " \n",
         ];
     }
@@ -49,7 +49,7 @@ class InfoService
 
 
         return $exists
-            ? "exists " . ($writable ? "and is writable" : "but is NOT writable (permissions: {$permissions}")
+            ? "exists " . ($writable ? "and is writable" : "but is NOT writable (permissions: {$permissions})")
             : "doesn't exist";
     }
 }

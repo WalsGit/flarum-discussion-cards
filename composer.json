@@ -42,17 +42,6 @@
             }
         }
     },
-    "scripts": {
-        "post-install-cmd": [
-            "test -f flarum && php flarum discussion-cards:regenerate-images -l -t -N || echo \"(Discussion Cards card images generation ignored: Not in Flarum folder)\""
-        ],
-        "post-update-cmd": [
-            "@migrate-discussion-cards"
-        ],
-        "migrate-discussion-cards": [
-            "test -f flarum && php flarum discussion-cards:migrate-images || echo \"(Discussion Cards image migration ignored: Not in Flarum folder)\""
-        ]
-    },
     "support": {
         "issues": "https://github.com/WalsGit/flarum-discussion-cards/issues",
         "forum": "https://discuss.flarum.org/d/36343-flarum-discussion-cards",
