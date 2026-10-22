@@ -20,7 +20,7 @@ class LoggingService
     public function __construct(protected Paths $paths, protected string $prefix = 'general')
     {
         // Create log directory
-        $this->logDirectory = $this->paths->base . '/storage/logs/walsgit-discussion-cards';
+        $this->logDirectory = $this->paths->storage . '/logs/walsgit-discussion-cards';
         if (!is_dir($this->logDirectory)) {
             @mkdir($this->logDirectory, 0775, true);
         }
