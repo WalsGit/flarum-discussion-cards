@@ -99,13 +99,16 @@ class RegenerateImagesCommand extends AbstractCommand
 
         $dryRun    = (bool) $this->input->getOption('dry-run');
         $all       = (bool) $this->input->getOption('all');
-        $without   = $this->input->getOption('without');
         $batchSize = max(1, (int) $this->input->getOption('batch-size'));
 
-        // Handle --without option with --all
-        if ($all && $without !== 'false') {
-            $limit = is_numeric($without) ? max(1, (int) $without) : null;
-            return $this->processAllWithoutImages($limit, $batchSize, $dryRun);
+        // --without: 'false' when not used, null when used without a number
+        $without      = $this->input->getOption('without');
+        $useWithout   = $without !== 'false';
+        $withoutLimit = is_numeric($without) ? max(1, (int) $without) : null;
+
+        // --all --without
+        if ($all && $useWithout) {
+            return $this->processAllWithoutImages($withoutLimit, $batchSize, $dryRun);
         }
 
         // --all
@@ -131,24 +134,21 @@ class RegenerateImagesCommand extends AbstractCommand
             return Command::FAILURE;
         }
 
-        $discussionIds = $this->collectDiscussionIds();
+        if (!$this->hasExplicitSelection()) {
+            // No selection flag: latest discussions, or latest discussions without images with --without
+            $discussionIds = $useWithout
+                ? $this->regenerator->getDiscussionIdsWithoutImages($withoutLimit ?? self::DEFAULT_LIMIT)
+                : $this->regenerator->getDiscussionIds('latest', self::DEFAULT_LIMIT);
+        } else {
+            $discussionIds = $this->collectDiscussionIds();
 
-        // Special case: if --without is used alone and we have no discussions from collectDiscussionIds,
-        // we need to get discussions without images directly
-        if ($without !== 'false' && empty($discussionIds) && !$this->hasAnySortingFlag()) {
-            // Get latest discussions without images directly
-            $limit = is_numeric($without) ? max(1, (int) $without) : self::DEFAULT_LIMIT;
-            $discussionIds = $this->regenerator->getDiscussionIdsWithoutImages($limit);
-        }
+            // --without combined with other flags: keep only the discussions without images
+            if ($useWithout) {
+                $discussionIds = $this->filterDiscussionsWithoutImages($discussionIds);
 
-        // Apply --without filter if specified and we have discussions from collectDiscussionIds
-        if ($without !== 'false' && !empty($discussionIds)) {
-            $discussionIds = $this->filterDiscussionsWithoutImages($discussionIds);
-
-            // Limit the number of discussions if a limit is specified with --without
-            if (is_numeric($without)) {
-                $limit = max(1, (int) $without);
-                $discussionIds = array_slice($discussionIds, 0, $limit);
+                if ($withoutLimit !== null) {
+                    $discussionIds = array_slice($discussionIds, 0, $withoutLimit);
+                }
             }
         }
 
@@ -184,21 +184,12 @@ class RegenerateImagesCommand extends AbstractCommand
         }
 
         // Sorting-based selection (cumulative)
-        $hasSortingFlag = false;
         foreach (['latest', 'top', 'newest', 'oldest', 'popular', 'unpopular'] as $type) {
             if ($this->hasSelectionFlag($type)) {
                 $raw   = $this->input->getOption($type);
                 $limit = is_numeric($raw) ? max(1, (int) $raw) : self::DEFAULT_LIMIT;
                 $ids   = array_merge($ids, $this->regenerator->getDiscussionIds($type, $limit));
-                $hasSortingFlag = true;
             }
-        }
-
-        // Default behavior: if no sorting flag is specified, process latest discussions
-        // Exception: if --without is specified alone, we still want to process latest discussions
-        $without = $this->input->getOption('without');
-        if (!$hasSortingFlag && empty($ids) && $without !== false) {
-            $ids = array_merge($ids, $this->regenerator->getDiscussionIds('latest', self::DEFAULT_LIMIT));
         }
 
         return array_values(array_unique($ids));
@@ -268,12 +259,14 @@ class RegenerateImagesCommand extends AbstractCommand
             return [];
         }
 
-        // Get discussions that have walsgit_card_image_url as NULL
-        return Discussion::query()
+        $withoutImages = Discussion::query()
             ->whereIn('id', $discussionIds)
             ->whereNull('walsgit_card_image_url')
             ->pluck('id')
+            ->map(fn($id) => (int) $id)
             ->all();
+
+        return array_values(array_intersect($discussionIds, $withoutImages));
     }
 
     private function hasAnySortingFlag(): bool
@@ -286,6 +279,15 @@ class RegenerateImagesCommand extends AbstractCommand
         return false;
     }
 
+    /**
+     * True if the user chose which discussions to process (--discussion, --tag or a sorting flag).
+     */
+    private function hasExplicitSelection(): bool
+    {
+        return $this->input->hasParameterOption(['--discussion', '-d'])
+            || $this->input->hasParameterOption('--tag')
+            || $this->hasAnySortingFlag();
+    }
 
     /**
      * =====================
@@ -384,73 +386,67 @@ class RegenerateImagesCommand extends AbstractCommand
 
     private function processAllWithoutImages(?int $limit, int $batchSize, bool $dryRun): int
     {
-        // Get count of discussions without images
-        $query = Discussion::query()->whereNull('walsgit_card_image_url');
-        $total = $limit ? min($limit, $query->count()) : $query->count();
+        $total = Discussion::query()->whereNull('walsgit_card_image_url')->count();
+
+        if ($limit !== null) {
+            $total = min($limit, $total);
+        }
 
         if ($total === 0) {
             $this->info($this->trans('NothingToDo'));
             return Command::SUCCESS;
         }
 
-        $success = 0;
-        $errors  = 0;
-        $offset  = 0;
-        $processed = 0;
-
         $this->info($this->trans('StartAllWithout', ['count' => $total]));
 
         $bar = new ProgressBar($this->output, $total);
         $bar->start();
 
-        do {
-            $query = Discussion::query()
+        $processed = 0;
+        $success   = 0;
+        $errors    = 0;
+        $lastId    = 0;
+
+        while ($limit === null || $processed < $limit) {
+            $take = $limit === null ? $batchSize : min($batchSize, $limit - $processed);
+
+            // Keyset pagination: processed rows may leave the whereNull set, so no offset
+            $ids = Discussion::query()
                 ->whereNull('walsgit_card_image_url')
+                ->where('id', '>', $lastId)
                 ->orderBy('id')
-                ->offset($offset)
-                ->limit($batchSize);
-
-            // Apply limit if specified
-            if ($limit !== null && ($processed + $batchSize) > $limit) {
-                $remaining = $limit - $processed;
-                if ($remaining <= 0) {
-                    break;
-                }
-                $query->limit($remaining);
-            }
-
-            $ids = $query->pluck('id')->all();
+                ->limit($take)
+                ->pluck('id')
+                ->map(fn($id) => (int) $id)
+                ->all();
 
             if (empty($ids)) {
                 break;
             }
 
-            foreach ($ids as $id) {
-                if ($limit !== null && $processed >= $limit) {
-                    break 2;
-                }
-
-                try {
-                    if (!$dryRun) {
-                        $this->regenerator->regenerateDiscussion($id);
+            $result = $this->regenerator->processIds(
+                $ids,
+                $dryRun,
+                null,
+                function (int $id, ?string $error) use ($bar) {
+                    if ($error !== null) {
+                        $this->error(
+                            $this->trans('Error', [
+                                'id'      => $id,
+                                'message' => $error,
+                            ])
+                        );
                     }
-                    $success++;
-                    $processed++;
-                } catch (\Throwable $e) {
-                    $errors++;
-                    $this->error(
-                        $this->trans('Error', [
-                            'id'      => $id,
-                            'message' => $e->getMessage(),
-                        ])
-                    );
+
+                    $bar->advance();
                 }
+            );
 
-                $bar->advance();
-            }
-
-            $offset += $batchSize;
-        } while (($limit === null || $processed < $limit) && !empty($ids));
+            $success   += $result['success'];
+            $errors    += $result['errors'];
+            $processed += count($ids);
+            $lastId     = max($ids);
+        }
 
         $bar->finish();
         $this->output->writeln('');
