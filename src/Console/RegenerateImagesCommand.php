@@ -11,7 +11,7 @@
 
 /**
  * This adds a CLI command discussion-cards:regenerate-images to re-analyse discussions' first posts and re-generate their card images.
- * 
+ *
  * discussion-cards:regenerate-images
  *      > will regenerate card images for the "Latest" 20 discussions (default)
  * discussion-cards:regenerate-images -l | --latest [number of discussions]
@@ -38,7 +38,7 @@
  *      > will set a custom batch size for the number of discussions to be processed at once (default is 100)
  * discussion-cards:regenerate-images --dry-run
  *      > will simulate without regenerating anything
- * 
+ *
  * ======== 3rd party extensions support ========
  * > If fof/discussion-views or michaelbelgium/flarum-discussion-views is installed and activated:
  * discussion-cards:regenerate-images -p | --popular [number of discussions]
@@ -51,19 +51,15 @@ namespace Walsgit\Discussion\Cards\Console;
 
 use Flarum\Console\AbstractCommand;
 use Flarum\Discussion\Discussion;
-use Flarum\Extension\ExtensionManager;
 use Flarum\Locale\Translator;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\Tags\Tag;
-use Illuminate\Database\Eloquent\Builder;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Exception\InvalidOptionException;
-use Walsgit\Discussion\Cards\Services\CardImageRegenerationService;
-use Exception;
-
+use Walsgit\Discussion\Cards\Services\RegenerateImagesService;
 
 class RegenerateImagesCommand extends AbstractCommand
 {
@@ -71,9 +67,8 @@ class RegenerateImagesCommand extends AbstractCommand
     private const DEFAULT_BATCH_SIZE = 100;
 
     public function __construct(
-        protected CardImageRegenerationService $regenerator,
+        protected RegenerateImagesService $regenerator,
         protected Translator $translator,
-        protected ExtensionManager $extensionManager,
         protected SettingsRepositoryInterface $settings
     ) {
         parent::__construct();
@@ -143,7 +138,7 @@ class RegenerateImagesCommand extends AbstractCommand
         if ($without !== 'false' && empty($discussionIds) && !$this->hasAnySortingFlag()) {
             // Get latest discussions without images directly
             $limit = is_numeric($without) ? max(1, (int) $without) : self::DEFAULT_LIMIT;
-            $discussionIds = $this->getDiscussionsWithoutImages($limit);
+            $discussionIds = $this->regenerator->getDiscussionIdsWithoutImages($limit);
         }
 
         // Apply --without filter if specified and we have discussions from collectDiscussionIds
@@ -194,7 +189,7 @@ class RegenerateImagesCommand extends AbstractCommand
             if ($this->hasSelectionFlag($type)) {
                 $raw   = $this->input->getOption($type);
                 $limit = is_numeric($raw) ? max(1, (int) $raw) : self::DEFAULT_LIMIT;
-                $ids   = array_merge($ids, $this->getDiscussions($type, $limit));
+                $ids   = array_merge($ids, $this->regenerator->getDiscussionIds($type, $limit));
                 $hasSortingFlag = true;
             }
         }
@@ -203,79 +198,10 @@ class RegenerateImagesCommand extends AbstractCommand
         // Exception: if --without is specified alone, we still want to process latest discussions
         $without = $this->input->getOption('without');
         if (!$hasSortingFlag && empty($ids) && $without !== false) {
-            $ids = array_merge($ids, $this->getDiscussions('latest', self::DEFAULT_LIMIT));
+            $ids = array_merge($ids, $this->regenerator->getDiscussionIds('latest', self::DEFAULT_LIMIT));
         }
 
         return array_values(array_unique($ids));
-    }
-
-    private function getDiscussions(string $type, int $limit): array
-    {
-        $query = Discussion::query();
-
-        switch ($type) {
-            case 'latest':
-                $query->orderByDesc('last_posted_at');
-                break;
-
-            case 'top':
-                $query->orderByDesc('comment_count');
-                break;
-
-            case 'newest':
-                $query->orderByDesc('created_at');
-                break;
-
-            case 'oldest':
-                $query->orderBy('created_at');
-                break;
-
-            case 'popular':
-                $this->applyViewsOrder($query, 'desc');
-                break;
-
-            case 'unpopular':
-                $this->applyViewsOrder($query, 'asc');
-                break;
-
-            default:
-                return [];
-        }
-
-        return $query
-            ->limit($limit)
-            ->pluck('id')
-            ->all();
-    }
-
-    private function applyViewsOrder(Builder $query, string $direction): void
-    {
-        // 3rd party extension support for fof/discussion-views
-        if ($this->extensionManager->isEnabled('fof-discussion-views')) {
-            $query->orderBy('view_count', $direction);
-            return;
-        }
-
-        // 3rd party extension support for michaelbelgium/flarum-discussion-views
-        if ($this->extensionManager->isEnabled('michaelbelgium-discussion-views')) {
-            $query
-                ->leftJoin(
-                    'discussion_views',
-                    'discussion_views.discussion_id',
-                    '=',
-                    'discussions.id'
-                )
-                ->select('discussions.id')
-                ->groupBy('discussions.id')
-                ->orderByRaw('COUNT(discussion_views.id) ' . strtoupper($direction))
-                ->orderByRaw('MAX(discussion_views.visited_at) DESC')
-                ->orderBy('discussions.id', 'DESC');
-
-            return;
-        }
-
-        // No results if neither is active
-        $query->whereRaw('1 = 0');
     }
 
     private function getDiscussionsByTags(): array
@@ -350,16 +276,6 @@ class RegenerateImagesCommand extends AbstractCommand
             ->all();
     }
 
-    private function getDiscussionsWithoutImages(int $limit): array
-    {
-        return Discussion::query()
-            ->whereNull('walsgit_card_image_url')
-            ->orderByDesc('last_posted_at')
-            ->limit($limit)
-            ->pluck('id')
-            ->all();
-    }
-
     private function hasAnySortingFlag(): bool
     {
         foreach (['latest', 'top', 'newest', 'oldest', 'popular', 'unpopular'] as $type) {
@@ -379,40 +295,35 @@ class RegenerateImagesCommand extends AbstractCommand
 
     private function processDiscussionIds(array $ids, int $batchSize, bool $dryRun): int
     {
-        $total   = count($ids);
-        $success = 0;
-        $errors  = 0;
+        $total = count($ids);
 
         $this->info($this->trans('Start', ['count' => $total]));
 
         $bar = new ProgressBar($this->output, $total);
         $bar->start();
 
-        foreach (array_chunk($ids, $batchSize) as $batch) {
-            foreach ($batch as $id) {
-                try {
-                    if (!$dryRun) {
-                        $this->regenerateDiscussion($id);
-                    }
-                    $success++;
-                } catch (\Throwable $e) {
-                    $errors++;
+        $result = $this->regenerator->processIds(
+            $ids,
+            $dryRun,
+            null,
+            function (int $id, ?string $error) use ($bar) {
+                if ($error !== null) {
                     $this->error(
                         $this->trans('Error', [
                             'id'      => $id,
-                            'message' => $e->getMessage(),
+                            'message' => $error,
                         ])
                     );
                 }
 
                 $bar->advance();
             }
-        }
+        );
 
         $bar->finish();
         $this->output->writeln('');
 
-        $this->printSummary($total, $success, $errors, $dryRun);
+        $this->printSummary($total, $result['success'], $result['errors'], $dryRun);
 
         return Command::SUCCESS;
     }
@@ -444,7 +355,7 @@ class RegenerateImagesCommand extends AbstractCommand
             foreach ($ids as $id) {
                 try {
                     if (!$dryRun) {
-                        $this->regenerateDiscussion($id);
+                        $this->regenerator->regenerateDiscussion($id);
                     }
                     $success++;
                 } catch (\Throwable $e) {
@@ -521,7 +432,7 @@ class RegenerateImagesCommand extends AbstractCommand
 
                 try {
                     if (!$dryRun) {
-                        $this->regenerateDiscussion($id);
+                        $this->regenerator->regenerateDiscussion($id);
                     }
                     $success++;
                     $processed++;
@@ -547,24 +458,6 @@ class RegenerateImagesCommand extends AbstractCommand
         $this->printSummary($processed, $success, $errors, $dryRun);
 
         return Command::SUCCESS;
-    }
-
-    /**
-     * =====================
-     * REGENERATION
-     * =====================
-     */
-
-    private function regenerateDiscussion(int $discussionId): void
-    {
-        $discussion = Discussion::with('firstPost')->find($discussionId);
-        if (!$discussion) {
-            throw new Exception("Discussion doesn't exist!");
-        }
-
-        $html = ($discussion->firstPost) ? $discussion->firstPost->formatContent() : NULL;
-
-        $this->regenerator->regenerate($discussion, $html, true);
     }
 
     /**
