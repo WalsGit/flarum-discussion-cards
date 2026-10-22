@@ -12,11 +12,11 @@
 namespace Walsgit\Discussion\Cards\Listener;
 
 use Flarum\Post\Event\Posted;
-use Walsgit\Discussion\Cards\Image\CardImageResolver;
+use Walsgit\Discussion\Cards\Services\CardImageRegenerationService;
 
 class GenerateCardImageOnDiscussionCreate
 {
-    public function __construct(protected CardImageResolver $resolver) {}
+    public function __construct(protected CardImageRegenerationService $regenerator) {}
 
     public function handle(Posted $event)
     {
@@ -27,24 +27,10 @@ class GenerateCardImageOnDiscussionCreate
             return;
         }
 
-        $discussion = $post->discussion;
+        $html = method_exists($post, 'formatContent')
+            ? $post->formatContent()
+            : null;
 
-        // Get the formatted HTML content
-        if (method_exists($post, 'formatContent')) {
-            $html = $post->formatContent();
-        } else {
-            $html = null;
-        }
-
-        try {
-            $url = $this->resolver->resolve($discussion, $html);
-
-            if ($url) {
-                $discussion->walsgit_card_image_url = $url;
-                $discussion->save();
-            }
-        } catch (\Throwable $e) {
-            // Don't block post creation
-        }
+        $this->regenerator->tryRegenerate($post->discussion, $html);
     }
 }

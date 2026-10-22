@@ -87,7 +87,7 @@ class RegenerateImagesService
 
         $html = $discussion->firstPost ? $discussion->firstPost->formatContent() : null;
 
-        $this->regenerator->regenerate($discussion, $html, true);
+        $this->regenerator->regenerate($discussion, $html);
     }
 
     /**

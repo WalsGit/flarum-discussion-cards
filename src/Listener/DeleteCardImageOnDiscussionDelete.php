@@ -15,11 +15,11 @@ use Flarum\Post\Event\Deleting as PostDeleting;
 use Flarum\Foundation\Paths;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Str;
-use Walsgit\Discussion\Cards\Image\CardImageResolver;
+use Walsgit\Discussion\Cards\Services\CardImageRegenerationService;
 
 class DeleteCardImageOnDiscussionDelete
 {
-    public function __construct(protected Paths $paths, protected CardImageResolver $resolver) {}
+    public function __construct(protected Paths $paths, protected CardImageRegenerationService $regenerator) {}
 
     public function subscribe(Dispatcher $events): void
     {
@@ -57,25 +57,8 @@ class DeleteCardImageOnDiscussionDelete
         }
 
         $this->deleteImageFile($discussion);
-        $this->regenerateCardImage($discussion);
-    }
-
-    /**
-     * Regenerate the card image without taking the (being deleted) first post into account.
-     */
-    protected function regenerateCardImage(Discussion $discussion): void
-    {
-        try {
-            // Non empty string: makes the resolver skip the first post lookup (see resolveFirstPostImage())
-            $url = $this->resolver->resolve($discussion, 'deleted post');
-
-            if ($url !== $discussion->walsgit_card_image_url) {
-                $discussion->walsgit_card_image_url = $url;
-                $discussion->save();
-            }
-        } catch (\Throwable $e) {
-            // Never block post deletion
-        }
+        // Non empty string: makes the resolver skip the first post lookup (see resolveFirstPostImage())
+        $this->regenerator->tryRegenerate($discussion, 'deleted post');
     }
 
     /**

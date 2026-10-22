@@ -11,16 +11,15 @@
 
 namespace Walsgit\Discussion\Cards\Listener;
 
-use Flarum\Discussion\Discussion;
 use Flarum\Post\Event\Revised;
 use Flarum\Tags\Event\DiscussionWasTagged;
 use Illuminate\Events\Dispatcher;
-use Walsgit\Discussion\Cards\Image\CardImageResolver;
+use Walsgit\Discussion\Cards\Services\CardImageRegenerationService;
 use V17Development\FlarumBlog\Event\BlogMetaSaving;
 
 class UpdateCardImageOnDiscussionUpdate
 {
-    public function __construct(protected CardImageResolver $resolver) {}
+    public function __construct(protected CardImageRegenerationService $regenerator) {}
 
     public function subscribe(Dispatcher $events): void
     {
@@ -40,13 +39,11 @@ class UpdateCardImageOnDiscussionUpdate
             return;
         }
 
-        $discussion = $post->discussion;
-
         $html = method_exists($post, 'formatContent')
             ? $post->formatContent()
             : null;
 
-        $this->regenerateCardImage($discussion, $html);
+        $this->regenerator->tryRegenerate($post->discussion, $html);
     }
 
     /**
@@ -61,7 +58,7 @@ class UpdateCardImageOnDiscussionUpdate
             ? $first->formatContent()
             : null;
 
-        $this->regenerateCardImage($discussion, $html);
+        $this->regenerator->tryRegenerate($discussion, $html);
     }
 
     /**
@@ -93,22 +90,6 @@ class UpdateCardImageOnDiscussionUpdate
             ? $first->formatContent()
             : null;
 
-        $this->regenerateCardImage($discussion, $html);
-    }
-
-    /**
-     * Regenerate card images
-     */
-    protected function regenerateCardImage(Discussion $discussion, ?string $html)
-    {
-        try {
-            $url = $this->resolver->resolve($discussion, $html);
-            if ($url && $url !== $discussion->walsgit_card_image_url) {
-                $discussion->walsgit_card_image_url = $url;
-                $discussion->save();
-            }
-        } catch (\Throwable $e) {
-            // Don't block post edition
-        }
+        $this->regenerator->tryRegenerate($discussion, $html);
     }
 }

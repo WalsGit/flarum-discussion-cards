@@ -21,30 +21,20 @@ class CardImageRegenerationService
     ) {}
 
     /**
-     * Regenerates and persists the discussion card image.
+     * Resolves the discussion card image and saves it (null included) if it changed.
+     * Exceptions are not caught: use tryRegenerate() where errors must never block.
      *
-     * - Uses CardImageResolver to determine the image URL
-     * - Persists the resolved image on the discussion
-     * - Returns true if an image has been applied, false otherwise
-     *
-     * @param Discussion   $discussion
-     * @param string|null  $firstPostHtml  Rendered HTML of the first post (optional)
-     * @param bool         $force          Force regeneration even if an image already exists
+     * @param string|null $firstPostHtml Rendered HTML of the first post (optional)
+     * @return bool true if the saved card image changed
      */
-    public function regenerate(Discussion $discussion, ?string $firstPostHtml = null, bool $force = false): bool
+    public function regenerate(Discussion $discussion, ?string $firstPostHtml = null): bool
     {
-        // Do not regenerate unless forced
-        if (!$force && !empty($discussion->walsgit_card_image_url)) {
-            return false;
-        }
-
         $imageUrl = $this->resolver->resolve($discussion, $firstPostHtml);
 
-        if (!$imageUrl) {
+        if ($imageUrl === $discussion->walsgit_card_image_url) {
             return false;
         }
 
-        // Persist resolved image
         $discussion->walsgit_card_image_url = $imageUrl;
         $discussion->save();
 
@@ -52,11 +42,14 @@ class CardImageRegenerationService
     }
 
     /**
-     * Clears the current card image (used before a forced regeneration).
+     * Same as regenerate(), but never throws (for listeners, which must not block post actions).
      */
-    public function clear(Discussion $discussion): void
+    public function tryRegenerate(Discussion $discussion, ?string $firstPostHtml = null): bool
     {
-        $discussion->walsgit_card_image_url = null;
-        $discussion->save();
+        try {
+            return $this->regenerate($discussion, $firstPostHtml);
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 }
