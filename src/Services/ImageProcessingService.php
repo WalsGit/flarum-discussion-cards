@@ -403,7 +403,7 @@ class ImageProcessingService
      * Download a remote image OR copy a local one into a temporary file.
      * Returns the path to the temporary file, or null on failure.
      */
-    public function downloadOrCopyImage(string $imageUrl): ?string
+    public function downloadOrCopyImage(string $imageUrl, bool $interactive = false): ?string
     {
         // 1. Create temp file
         $temp = tempnam(sys_get_temp_dir(), 'cardimg_');
@@ -426,7 +426,7 @@ class ImageProcessingService
         }
 
         // --- REMOTE IMAGE ------------------------------------------------------
-        if (!$this->fetcher->download($imageUrl, $temp)) {
+        if (!$this->fetcher->download($imageUrl, $temp, $interactive)) {
             @unlink($temp);
             return null;
         }
@@ -438,7 +438,7 @@ class ImageProcessingService
      * Generate Hash that will be used to check if image has changed
      * before (downloading &) processing it. The hash will be saved in the filename for futur checks
      */
-    public function computeEtagHash(string $imageUrl, string $baseUrl): string
+    public function computeEtagHash(string $imageUrl, string $baseUrl, bool $interactive = false): string
     {
         // --- Step 1: check if it's a local image ---
         if ($this->isLocalUrl($imageUrl)) {
@@ -449,7 +449,7 @@ class ImageProcessingService
         }
 
         // --- Step 2: remote image (one request, cached by the fetcher) ---
-        $info = $this->fetcher->probe($imageUrl);
+        $info = $this->fetcher->probe($imageUrl, $interactive);
 
         // If the request failed or was refused → use image url as hash
         if ($info === null) {

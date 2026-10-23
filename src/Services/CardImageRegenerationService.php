@@ -25,11 +25,12 @@ class CardImageRegenerationService
      * Exceptions are not caught: use tryRegenerate() where errors must never block.
      *
      * @param string|null $firstPostHtml Rendered HTML of the first post (optional)
+     * @param bool        $interactive   true when a user is waiting for the response (short network timeouts)
      * @return bool true if the saved card image changed
      */
-    public function regenerate(Discussion $discussion, ?string $firstPostHtml = null): bool
+    public function regenerate(Discussion $discussion, ?string $firstPostHtml = null, bool $interactive = false): bool
     {
-        $imageUrl = $this->resolver->resolve($discussion, $firstPostHtml);
+        $imageUrl = $this->resolver->resolve($discussion, $firstPostHtml, $interactive);
 
         if ($imageUrl === $discussion->walsgit_card_image_url) {
             return false;
@@ -42,12 +43,13 @@ class CardImageRegenerationService
     }
 
     /**
-     * Same as regenerate(), but never throws (for listeners, which must not block post actions).
+     * Same as regenerate(), but never throws and uses short network timeouts
+     * (for listeners: they run while a user waits and must not block post actions).
      */
     public function tryRegenerate(Discussion $discussion, ?string $firstPostHtml = null): bool
     {
         try {
-            return $this->regenerate($discussion, $firstPostHtml);
+            return $this->regenerate($discussion, $firstPostHtml, true);
         } catch (\Throwable $e) {
             return false;
         }

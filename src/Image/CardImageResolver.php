@@ -36,19 +36,21 @@ class CardImageResolver
 
     /**
      * Main resolver: returns an optimized image URL (absolute) or null.
+     *
+     * @param bool $interactive true when a user is waiting (short network timeouts)
      */
-    public function resolve(Discussion $discussion, ?string $firstPostHtml = null): ?string
+    public function resolve(Discussion $discussion, ?string $firstPostHtml = null, bool $interactive = false): ?string
     {
         // 1. Support for 3rd party Blog Extension
-        if ($image = $this->resolveBlogImage($discussion, $firstPostHtml)) {
-            if ($optimized = $this->getOptimizedCardImage($discussion, $image)) {
+        if ($image = $this->resolveBlogImage($discussion, $firstPostHtml, $interactive)) {
+            if ($optimized = $this->getOptimizedCardImage($discussion, $image, $interactive)) {
                 return $optimized;
             }
         }
 
         // 2. First image in first post
-        if ($image = $this->resolveFirstPostImage($discussion, $firstPostHtml)) {
-            if ($optimized = $this->getOptimizedCardImage($discussion, $image)) {
+        if ($image = $this->resolveFirstPostImage($discussion, $firstPostHtml, $interactive)) {
+            if ($optimized = $this->getOptimizedCardImage($discussion, $image, $interactive)) {
                 return $optimized;
             }
         }
@@ -72,7 +74,7 @@ class CardImageResolver
      * Priority: featured image > first image in blog post > blog-default image
      * Returns an absolute image URL or null.
      */
-    public function resolveBlogImage(Discussion $discussion, ?string $firstPostHtml = null): ?string
+    public function resolveBlogImage(Discussion $discussion, ?string $firstPostHtml = null, bool $interactive = false): ?string
     {
         $useBlogImages = (int) $this->settings->get('walsgit_discussion_cards_useBlogImages');
 
@@ -104,7 +106,7 @@ class CardImageResolver
         if (!empty($firstPostHtml)) {
             // 2-1. use provided first post HTML (only for create/update)
             $imageUrl = $this->htmlImageExtractor->extract($firstPostHtml);
-            if ($imageUrl && $this->isImageAccessible($imageUrl)) {
+            if ($imageUrl && $this->isImageAccessible($imageUrl, $interactive)) {
                 return $imageUrl;
             }
         } else {
@@ -113,7 +115,7 @@ class CardImageResolver
             if ($firstPost && method_exists($firstPost, 'formatContent')) {
                 $rendered = $firstPost->formatContent();
                 $imageUrl = $this->htmlImageExtractor->extract($rendered);
-                if ($imageUrl && $this->isImageAccessible($imageUrl)) {
+                if ($imageUrl && $this->isImageAccessible($imageUrl, $interactive)) {
                     return $imageUrl;
                 }
             }
@@ -136,14 +138,14 @@ class CardImageResolver
      * Resolve the first image found in the discussion's first post
      * Returns absolute URL or null.
      */
-    protected function resolveFirstPostImage(Discussion $discussion, ?string $firstPostHtml = null): ?string
+    protected function resolveFirstPostImage(Discussion $discussion, ?string $firstPostHtml = null, bool $interactive = false): ?string
     {
         $firstPost = $discussion->firstPost;
 
         if (!empty($firstPostHtml)) {
             // Use provided first post HTML (only for create/update)
             $imageUrl = $this->htmlImageExtractor->extract($firstPostHtml);
-            if ($imageUrl && $this->isImageAccessible($imageUrl)) {
+            if ($imageUrl && $this->isImageAccessible($imageUrl, $interactive)) {
                 return $imageUrl;
             }
             return null;
@@ -157,7 +159,7 @@ class CardImageResolver
         $rendered = $firstPost->formatContent();
         $imageUrl = $this->htmlImageExtractor->extract($rendered);
 
-        if ($imageUrl && $this->isImageAccessible($imageUrl)) {
+        if ($imageUrl && $this->isImageAccessible($imageUrl, $interactive)) {
             return $imageUrl;
         }
 
@@ -201,7 +203,7 @@ class CardImageResolver
      * Given a discussion and a source image URL (absolute), returns an absolute URL
      * pointing to the optimized webp asset, or null if the image could not be optimized.
      */
-    protected function getOptimizedCardImage(Discussion $discussion, string $imageUrl): ?string
+    protected function getOptimizedCardImage(Discussion $discussion, string $imageUrl, bool $interactive = false): ?string
     {
         // If it's one of the extension's own default images (local file): no need to re-optimize
         if ($defaultImage = $this->imageService->resolveExtensionDefaultImage($imageUrl)) {
@@ -226,7 +228,7 @@ class CardImageResolver
         $urlHash = substr(sha1($imageUrl), 0, 10);
 
         // Compute ETag-like fingerprint via service (10 chars)
-        $etagHash = $this->imageService->computeEtagHash($imageUrl, $baseUrl);
+        $etagHash = $this->imageService->computeEtagHash($imageUrl, $baseUrl, $interactive);
 
         $filename = "discussion-{$discussionId}-{$urlHash}-{$etagHash}.webp";
         $filepath = $assetsPath . '/' . $filename;
@@ -237,7 +239,7 @@ class CardImageResolver
         }
 
         // Fetch (download or copy) to a temporary file via service
-        $temp = $this->imageService->downloadOrCopyImage($imageUrl);
+        $temp = $this->imageService->downloadOrCopyImage($imageUrl, $interactive);
 
         if (!$temp) {
             // fail -> let the resolver use the next fallback (tag / default image)
@@ -282,7 +284,7 @@ class CardImageResolver
         return rtrim((string) $this->config->url(), '/') . '/assets/extensions/walsgit-discussion-cards/' . ltrim($filename, '/');
     }
 
-    public function isImageAccessible(string $url): bool
+    public function isImageAccessible(string $url, bool $interactive = false): bool
     {
         // Local image
         if ($this->imageService->isLocalUrl($url)) {
@@ -290,6 +292,6 @@ class CardImageResolver
         }
 
         // Remote image
-        return $this->fetcher->isAccessible($url);
+        return $this->fetcher->isAccessible($url, $interactive);
     }
 }
