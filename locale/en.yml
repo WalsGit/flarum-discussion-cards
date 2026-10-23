@@ -166,6 +166,7 @@ walsgit_discussion_cards:
       tagImageNoTagId: "No tagId provided!"
       tagImageUnsupportedMethod: "Unsupported method ({method})"
       tagSettingsNoTagId: "No tagId provided!"
+      tagSettingsInvalid: "Invalid tag settings data!"
       debugModalDiscussionId: "Discussion ID number must be a positive number (1 or greater)"
     console:
       migrateImagesStart: "➡ Migrating old Discussion Cards default images..."
