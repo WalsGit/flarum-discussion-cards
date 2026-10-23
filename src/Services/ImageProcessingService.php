@@ -188,6 +188,30 @@ class ImageProcessingService
     }
 
     /**
+     * If the URL points to one of the extension's own default images (general, tag or blog default),
+     * returns its path relative to the extension's assets folder (ex.: "tags/tag-3-default-card-image.webp").
+     * Returns null for anything else (external URL, other local file...).
+     */
+    public function resolveExtensionDefaultImage(string $imageUrl): ?string
+    {
+        $prefix = '/assets/extensions/walsgit-discussion-cards/';
+        $relative = $this->localRelativePath($imageUrl);
+
+        if ($relative === null || !str_starts_with($relative, $prefix)) {
+            return null;
+        }
+
+        $inner = substr($relative, strlen($prefix));
+
+        if (!preg_match('#^(?:tags/)?(?:[a-z0-9-]+-)?default-card-image\.webp$#', $inner)) {
+            return null;
+        }
+
+        // The file must really exist inside public/
+        return $this->resolveLocalPath($imageUrl) !== null ? $inner : null;
+    }
+
+    /**
      * Path of a local URL relative to public/ (starting with "/"), or null if not local or suspicious.
      */
     protected function localRelativePath(string $imageUrl): ?string

@@ -15,7 +15,6 @@ use Flarum\Discussion\Discussion;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\Foundation\Config;
 use Flarum\Formatter\Formatter;
-use Illuminate\Support\Str;
 use Flarum\Foundation\Paths;
 use Walsgit\Discussion\Cards\Services\ImageProcessingService;
 use Walsgit\Discussion\Cards\Services\HtmlImageExtractor;
@@ -204,9 +203,9 @@ class CardImageResolver
      */
     protected function getOptimizedCardImage(Discussion $discussion, string $imageUrl): ?string
     {
-        // If this is already one of the default images (global or tag) we uploaded (no need to re-optimize)
-        if (Str::endsWith($imageUrl, 'default-card-image.webp')) {
-            return $imageUrl;
+        // If it's one of the extension's own default images (local file): no need to re-optimize
+        if ($defaultImage = $this->imageService->resolveExtensionDefaultImage($imageUrl)) {
+            return $this->buildAssetUrl($defaultImage);
         }
 
         $assetsPath = $this->paths->public . '/assets/extensions/walsgit-discussion-cards';
