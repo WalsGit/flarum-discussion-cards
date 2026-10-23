@@ -96,8 +96,7 @@ class ImageProcessingService
         $this->assertWebpSupport();
 
         try {
-            @ini_set('memory_limit', '256M');
-
+            $this->ensureMemoryLimit();
             $this->assertSafeDimensions($sourcePath);
 
             $image = ImageManager::gd()->read($sourcePath);
@@ -134,6 +133,46 @@ class ImageProcessingService
         if ($width < 1 || $height < 1 || ($width * $height) > self::MAX_PIXELS) {
             throw new InvalidArgumentException("Image dimensions too large ({$width}x{$height}).");
         }
+    }
+
+        /** Memory (in bytes) needed to decode images up to MAX_PIXELS. */
+    protected const REQUIRED_MEMORY = 256 * 1024 * 1024;
+
+    /**
+     * Raises memory_limit to 256M only if it is currently lower (never lowers it).
+     */
+    protected function ensureMemoryLimit(): void
+    {
+        $current = $this->parseMemoryLimit((string) ini_get('memory_limit'));
+
+        // -1 = unlimited
+        if ($current === -1 || $current >= self::REQUIRED_MEMORY) {
+            return;
+        }
+
+        @ini_set('memory_limit', '256M');
+    }
+
+    /**
+     * Converts a php.ini memory value ("128M", "1G", "512K", "-1", "1048576") to bytes.
+     * Returns -1 for unlimited (or if the value can't be read, so we never touch it).
+     */
+    protected function parseMemoryLimit(string $value): int
+    {
+        $value = trim($value);
+
+        if ($value === '' || $value === '-1') {
+            return -1;
+        }
+
+        $number = (int) $value;
+
+        return match (strtolower(substr($value, -1))) {
+            'g' => $number * 1024 ** 3,
+            'm' => $number * 1024 ** 2,
+            'k' => $number * 1024,
+            default => $number,
+        };
     }
 
     /**
@@ -478,7 +517,6 @@ class ImageProcessingService
         }
 
         try {
-            @ini_set('memory_limit', '256M');
             $this->processImage($localPath, $filepath, $this->getDefaultsFor('discussion'));
         } catch (\Throwable $e) {
             return null;
