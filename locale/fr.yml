@@ -156,8 +156,6 @@ walsgit_discussion_cards:
       imageProcessingSourceNotFound: "Traitement d'image : source {path} non trouvée !"
       imageProcessingFailed: "Le traitement d'image a échoué !"
       webpNotSupported: "L'extension PHP GD de votre serveur ne peut pas créer des images WebP (imagewebp() est manquant). Activez GD avec le support de WebP ou demandez à votre hébergeur de le faire."
-      deleteFilenameRequired: "Suppression impossible : nom de fichier requis !"
-      deleteTargetNotFound: "Rien à supprimer : fichier cible {file} introuvable !"
       filenameTagidMissing: "Impossible de générer le nom de fichier : Tag ID manquant !"
       filenameInvalidOrigin: "Impossible de générer le nom de fichier : n'a pas pu déterminer le contexte {origin}"
       adminImageNoPath: "Le service n’a pas renvoyé de nom de fichier."
