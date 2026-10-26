@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+### Changed
+- Forum: primary card widths (global and per-tag) are now applied through CSS variables set by the forum JavaScript, instead of being compiled into the stylesheet.
+
+### Fixed
+- Backend: the forum stylesheet no longer loads every tag from the database at compile time, and no longer needs recompiling when a tag's card width changes.
+
 ## [2.0.3] - 2026-10-20
 *Complementary security release.*
 

@@ -42,18 +42,6 @@ return [
 
     (new Extend\Locales(__DIR__ . '/locale')),
 
-    (new Extend\Theme())
-        ->addCustomLessVariable('desktop-card-width', function () {
-            $settings = resolve('flarum.settings');
-            return $settings->get('walsgit_discussion_cards_desktopCardWidth') . '%';
-        })
-        ->addCustomLessVariable('tablet-card-width', function () {
-            $settings = resolve('flarum.settings');
-            return $settings->get('walsgit_discussion_cards_tabletCardWidth') . '%';
-        }),
-
-    new Extenders\RegisterLessVariables(),
-
     (new Extend\ApiResource(Resource\DiscussionResource::class))
         ->endpoint(['index'], function (Endpoint\Index $endpoint) {
             return $endpoint->addDefaultInclude(['firstPost', 'tags']);

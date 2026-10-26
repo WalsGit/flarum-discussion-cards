@@ -25,6 +25,17 @@ function parseAllowedTags(value) {
   }
 }
 
+/**
+ * Return a card width (percentage) usable in a CSS variable, or undefined
+ * if the value is missing or outside the 10-100 range (the LESS fallback applies).
+ */
+function cardWidthVar(value) {
+  const width = Number(value);
+  return Number.isFinite(width) && width >= 10 && width <= 100
+    ? width + "%"
+    : undefined;
+}
+
 app.initializers.add(
   "walsgit/discussion/cards",
   () => {
@@ -107,7 +118,15 @@ app.initializers.add(
             }
           >
             {/* Card Items (primary card) */}
-            <div class="DiscussionList-discussions flexCard">
+            <div
+              class="DiscussionList-discussions flexCard"
+              style={{
+                "--dc-desktop-card-width": cardWidthVar(
+                  settings.desktopCardWidth
+                ),
+                "--dc-tablet-card-width": cardWidthVar(settings.tabletCardWidth),
+              }}
+            >
               {state
                 .getPages()
                 .map((pg, o) =>

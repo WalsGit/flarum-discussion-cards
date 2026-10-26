@@ -445,11 +445,11 @@
 .CardsListItem {
   &.Card {
     @media @desktop-up {
-      width: @desktop-card-width;
+      width: var(--dc-desktop-card-width, 49%);
     }
 
     @media @tablet {
-      width: @tablet-card-width;
+      width: var(--dc-tablet-card-width, 49%);
     }
 
     @media @phone {

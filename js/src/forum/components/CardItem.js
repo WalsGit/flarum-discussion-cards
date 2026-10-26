@@ -14,13 +14,11 @@ export default class CardItem extends BaseItem {
     const discussion = this.discussion;
     const settings = this.settings;
     const jumpTo = this.getJumpTo();
-    const currentTagId = app?.currentActiveTag?.id() ?? "";
 
     return (
       <div
         key={discussion.id()}
         data-id={discussion.id()}
-        data-tag-id={currentTagId}
         className={this.getItemClasses("CardsListItem Card")}
       >
         {DiscussionControls.controls(discussion, this).toArray().length
