@@ -13,7 +13,9 @@ export default function extendEditTagModal() {
       let allowedTags = JSON.parse(
         app.forum.attribute("walsgitDiscussionCardsAllowedTags")
       );
-      let isActivatedForTag = allowedTags.includes(this.tag.id());
+      let isActivatedForTag = allowedTags
+        .map(String)
+        .includes(String(this.tag.id()));
 
       let activationBtnClasses = isActivatedForTag
         ? "dc-activation-btn Button dc-activated"

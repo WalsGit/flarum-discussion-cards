@@ -29,6 +29,8 @@
 - Admin: the Info tool no longer fails when listing folder status (non-static method called statically).
 - Forum: the `phone` and `tablet` media queries in the stylesheet were invalid and are now applied.
 - Backend: the forum stylesheet no longer loads every tag from the database at compile time, and no longer needs recompiling when a tag's card width changes.
+- Admin: the "extension active" check now parses the enabled extensions list and compares exact ids, instead of searching the raw setting string (an extension with a similar name was reported as enabled; a missing or invalid value no longer breaks the page).
+- Admin: the per-tag activation state in the tag edit modal now compares tag ids as strings.
 
 ## [2.0.3] - 2026-10-20
 *Complementary security release.*

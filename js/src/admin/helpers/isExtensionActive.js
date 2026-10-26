@@ -1,6 +1,11 @@
 export default function isExtensionActive(extensionName) {
-  if (app.data.settings.extensions_enabled.includes(extensionName)) {
-    return true;
+  let enabled;
+
+  try {
+    enabled = JSON.parse(app.data.settings.extensions_enabled);
+  } catch (e) {
+    return false;
   }
-  return false;
+
+  return Array.isArray(enabled) && enabled.includes(extensionName);
 }
