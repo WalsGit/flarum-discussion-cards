@@ -3,11 +3,11 @@
 namespace Walsgit\Discussion\Cards;
 
 use Flarum\Extend;
-use Flarum\Api\Context;
 use Flarum\Api\Endpoint;
 use Flarum\Api\Resource;
 use Flarum\Api\Schema;
 use Flarum\Discussion\Discussion;
+use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\Tags\Api\Resource\TagResource;
 
 use Walsgit\Discussion\Cards\Api\Controllers\AdminImageController;
@@ -44,26 +44,15 @@ return [
 
     (new Extend\ApiResource(Resource\DiscussionResource::class))
         ->endpoint(['index'], function (Endpoint\Index $endpoint) {
-            return $endpoint->addDefaultInclude(['firstPost', 'tags']);
-        }),
+            // firstPost is only needed for the text preview (global setting, no per-tag override).
+            $settings = resolve(SettingsRepositoryInterface::class);
 
-    (new Extend\ApiResource(Resource\PostResource::class))
-        ->fields(function () {
-            return [
-                Schema\Str::make('contentHtml')
-                    ->visible(function ($post, Context $context) {
-                        return $post instanceof \Flarum\Post\CommentPost;
-                    })
-                    ->get(function ($post) {
-                        if ($post instanceof \Flarum\Post\CommentPost) {
-                            return $post->formatContent();
-                        }
-                        return null;
-                    }),
-            ];
-        }),
+            if ((int) $settings->get('walsgit_discussion_cards_previewText') === 1) {
+                $endpoint->addDefaultInclude(['firstPost']);
+            }
 
-    (new Extend\ApiResource(Resource\DiscussionResource::class))
+            return $endpoint;
+        })
         ->fields(function () {
             return [
                 Schema\Str::make('cardImageUrl')

@@ -4,6 +4,8 @@
 ### Changed
 - Forum: primary card widths (global and per-tag) are now applied through CSS variables set by the forum JavaScript, instead of being compiled into the stylesheet.
 
+- Backend: the discussion list only loads the first post when the text preview setting is enabled, and no longer declares its own `tags` include or `contentHtml` field (both are already provided by Flarum).
+
 ### Fixed
 - Backend: the forum stylesheet no longer loads every tag from the database at compile time, and no longer needs recompiling when a tag's card width changes.
 
