@@ -37,11 +37,11 @@ export default class Settings extends ExtensionPage {
     const imagePath = baseUrl + "/assets/extensions/walsgit-discussion-cards/";
 
     return (
-      <div className="DiscussionCardsSettings">
+      <div className="dc-settings">
         <div className="container">
           <StatsToolsBanner />
 
-          <div className="DiscussionCardsSettings--content">
+          <div className="dc-settings--content">
             {/* ============== WHERE? SECTION ============== */}
             <h3>
               {app.translator.trans(
@@ -53,7 +53,7 @@ export default class Settings extends ExtensionPage {
                 "walsgit_discussion_cards.admin.settings.general.where_info"
               )}
             </p>
-            <div className="Section">
+            <div className="dc-section">
               {this.buildSettingComponent({
                 type: "flarum-tags.select-tags",
                 setting: "walsgit_discussion_cards_allowedTags",
@@ -90,10 +90,10 @@ export default class Settings extends ExtensionPage {
                 "walsgit_discussion_cards.admin.settings.general.primaryCardOptions_info"
               )}
             </p>
-            <div className="Section">
+            <div className="dc-section">
               {this.buildSettingComponent({
                 type: "number",
-                className: "DC-Number",
+                className: "dc-number",
                 setting: "walsgit_discussion_cards_primaryCards",
                 label: app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.primaryCards_label"
@@ -107,7 +107,7 @@ export default class Settings extends ExtensionPage {
               })}
               {this.buildSettingComponent({
                 type: "number",
-                className: "DC-Number",
+                className: "dc-number",
                 setting: "walsgit_discussion_cards_desktopCardWidth",
                 label: app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.desktopCardWidth_label"
@@ -122,7 +122,7 @@ export default class Settings extends ExtensionPage {
               })}
               {this.buildSettingComponent({
                 type: "number",
-                className: "DC-Number",
+                className: "dc-number",
                 setting: "walsgit_discussion_cards_tabletCardWidth",
                 label: app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.tabletCardWidth_label"
@@ -148,7 +148,7 @@ export default class Settings extends ExtensionPage {
                 "walsgit_discussion_cards.admin.settings.general.listCardOptions_info"
               )}
             </p>
-            <div className="Section">
+            <div className="dc-section">
               {this.buildSettingComponent({
                 type: "switch",
                 setting: "walsgit_discussion_cards_useListCards",
@@ -161,7 +161,7 @@ export default class Settings extends ExtensionPage {
               })}
               {this.buildSettingComponent({
                 type: "number",
-                className: "DC-Number",
+                className: "dc-number",
                 setting: "walsgit_discussion_cards_listCardsCount",
                 label: app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.listCardsCount_label"
@@ -187,9 +187,9 @@ export default class Settings extends ExtensionPage {
                 "walsgit_discussion_cards.admin.settings.general.cardOptions_info"
               )}
             </p>
-            <div className="Section">
-              <div className="DC-DefaultImageSettings">
-                <label className="DC-DefaultImageTitle">
+            <div className="dc-section">
+              <div className="dc-default-image-settings">
+                <label className="dc-default-image-title">
                   {app.translator.trans(
                     "walsgit_discussion_cards.admin.settings.general.defaultImage_title"
                   )}
@@ -201,7 +201,7 @@ export default class Settings extends ExtensionPage {
                 </p>
                 {app.forum.attribute("walsgitDiscussionCardsDefaultImage") ===
                 null ? (
-                  <div className="imgStub"></div>
+                  <div className="dc-img-stub"></div>
                 ) : (
                   ""
                 )}
@@ -220,7 +220,7 @@ export default class Settings extends ExtensionPage {
                     imagePath +
                     app.forum.attribute("walsgitDiscussionCardsDefaultImage")
                   }
-                  className="DC-UploadImageBtn"
+                  className="dc-upload-image-btn"
                 />
               </div>
               {this.buildSettingComponent({
@@ -302,7 +302,7 @@ export default class Settings extends ExtensionPage {
               )}
             </h3>
             <AlertWidget
-              className="DebugWarningWidget"
+              className="dc-debug-warning-widget"
               alert={{
                 type: "warning",
                 dismissible: false,
@@ -322,7 +322,7 @@ export default class Settings extends ExtensionPage {
               )}
             </p>
             {/* fof/discussion-views OR michaelbelgium/flarum-ext-discussion-views */}
-            <div className="Section">
+            <div className="dc-section">
               <h4>
                 {app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.showViews_title_start"

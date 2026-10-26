@@ -13,7 +13,7 @@ export default class PurgeImagesModal extends Modal {
   }
 
   className() {
-    return "PurgeImagesModal Modal--medium";
+    return "dc-modal dc-purge-modal Modal--medium";
   }
 
   title() {
@@ -79,14 +79,14 @@ export default class PurgeImagesModal extends Modal {
           </div>
           {this.output && (
             <div className="Form-group">
-              <div className="PurgeImages-output">
+              <div className="dc-purge-output">
                 <pre>{this.output}</pre>
               </div>
             </div>
           )}
           {this.summary && (
             <div className="Form-group">
-              <div className="PurgeImages-summary">
+              <div className="dc-purge-summary">
                 {app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_summary",
                   {

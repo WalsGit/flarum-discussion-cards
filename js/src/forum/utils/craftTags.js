@@ -7,7 +7,7 @@ export default function craftTags(tags) {
       sortTags(tags).map(function (tag) {
         return [
           <Link
-            className="cardTag"
+            className="dc-card-tag"
             style={{ backgroundColor: tag.color() }}
             href={app.route("tag", { tags: tag.slug() })}
           >

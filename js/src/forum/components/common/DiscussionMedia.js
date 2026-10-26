@@ -14,7 +14,8 @@ export default class DiscussionMedia extends Component {
     // optional data to show on top of image
     const attrs = {
       className:
-        "wrapImg" + (Number(settings.showAuthor) === 1 ? " After" : ""),
+        "dc-wrap-img" +
+        (Number(settings.showAuthor) === 1 ? " dc-wrap-img--shade" : ""),
     };
 
     // 3rd party "views" extensions support
@@ -39,8 +40,8 @@ export default class DiscussionMedia extends Component {
         {(isViewsSet || isViewCountSet) &&
           Number(settings.showViews) === 1 &&
           !isNaN(viewsCount) && (
-            <div className="imageLabel discussionViews">
-              <Icon name="fas fa-eye" className="labelIcon" />
+            <div className="dc-image-label dc-image-label--views">
+              <Icon name="fas fa-eye" className="dc-label-icon" />
               {viewsCount}
             </div>
           )}
@@ -48,19 +49,19 @@ export default class DiscussionMedia extends Component {
         {imageUrl ? (
           <img
             src={imageUrl}
-            className="previewCardImg"
+            className="dc-preview-card-img"
             alt={discussion.title()}
             loading="lazy"
           />
         ) : (
           // fallback to Discussion Cards' extension default image
-          <div className="imgStub" />
+          <div className="dc-img-stub" />
         )}
         {/* Optional: show author & date */}
         {Number(settings.showAuthor) === 1 && (
-          <div className="cardFoot">
-            <div className="Author">{username(discussion.user())}</div>
-            <div className="Date">{humanTime(discussion.createdAt())}</div>
+          <div className="dc-card-footer">
+            <div className="dc-author">{username(discussion.user())}</div>
+            <div className="dc-date">{humanTime(discussion.createdAt())}</div>
           </div>
         )}
       </div>

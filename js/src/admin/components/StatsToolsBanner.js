@@ -56,7 +56,7 @@ export default class StatsToolsBanner extends Component {
 
   view() {
     return (
-      <div className="DashboardWidget Widget StatusWidget DiscussionCardsSettings--content">
+      <div className="DashboardWidget Widget StatusWidget dc-settings--content">
         <ul>
           <li className="StatsWidget-item">
             <span className="StatsWidget-label">

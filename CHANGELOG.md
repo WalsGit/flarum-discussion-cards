@@ -6,6 +6,24 @@
 
 - Backend: the discussion list only loads the first post when the text preview setting is enabled, and no longer declares its own `tags` include or `contentHtml` field (both are already provided by Flarum).
 
+- Forum/Admin: all CSS classes added by the extension are now prefixed with `dc-` (kebab-case) so they no longer collide with other themes or extensions. **If you have custom CSS targeting the old class names, update it** (the old name is noted next to each renamed selector in `less/forum.less` and `less/admin.less`; these notes will be removed in a later version). Main renames:
+
+  | Old | New |
+  | --- | --- |
+  | `.CardsListItem` / `.Card` / `.List` | `.dc-item` / `.dc-item--card` / `.dc-item--list` |
+  | `.flexCard` | `.dc-primary-cards` |
+  | `.cardLink`, `.cardTitle`, `.cardTags`, `.cardTag`, `.cardBadges`, `.cardBadge`, `.cardSpacer`, `.cardGrid` | `.dc-card-link`, `.dc-card-title`, `.dc-card-tags`, `.dc-card-tag`, `.dc-card-badges`, `.dc-card-badge`, `.dc-card-spacer`, `.dc-card-grid` |
+  | `.cardFoot` | `.dc-card-footer` |
+  | `.wrapImg` / `.After` / `.imgStub` | `.dc-wrap-img` / `.dc-wrap-img--shade` / `.dc-img-stub` |
+  | `.previewPost` / `.previewCardImg` / `.terminalPost` | `.dc-preview-post` / `.dc-preview-card-img` / `.dc-terminal-post` |
+  | `.Replies`, `.Left`, `.Right`, `.Avatars`, `.Arrow`, `.ReplyCount`, `.Avatar--mini` | `.dc-replies`, `.dc-replies-left`, `.dc-replies-right`, `.dc-replies-avatars`, `.dc-replies-arrow`, `.dc-reply-count`, `.dc-avatar-mini` |
+  | `.flexBox`, `.rowSpan-*`, `.colSpan-*` | `.dc-flex-box`, `.dc-row-span-*`, `.dc-col-span-*` |
+  | `.imageLabel`, `.discussionViews`, `.discussionReplyCount`, `.labelIcon` | `.dc-image-label`, `.dc-image-label--views`, `.dc-image-label--replies`, `.dc-label-icon` |
+  | `.Hidden` (cards) / `.overflowing` / `h2.title` | `.dc-item--hidden` / `.dc-overflowing` / `h2.dc-card-heading` |
+  | `.Author` / `.Date` (card footer) | `.dc-author` / `.dc-date` |
+  | `@keyframes scroll` | `@keyframes dc-scroll` |
+
+- Admin: the stylesheet no longer styles every modal of the admin panel (`.Modal-body`), it now only targets the extension's own modals. Admin class names (`DC-*`, `DiscussionCardsSettings`, `Debug-discussion`, …) were normalized to `dc-*` as well.
 ### Fixed
 - Admin: the "extension not fully supported" message for the Blog and Repost options now uses an existing translation key.
 - Admin: the Info tool no longer fails when listing folder status (non-static method called statically).

@@ -69,7 +69,7 @@ export default class WdcTagSettingsModal extends FormModal {
     this.tagSettings.listCardsCount = Stream(this.tagSettings.listCardsCount);
   }
   className() {
-    return "WdcTagSettingsModal Modal--large";
+    return "dc-modal dc-tag-settings-modal Modal--large";
   }
 
   title() {
@@ -114,7 +114,7 @@ export default class WdcTagSettingsModal extends FormModal {
             <input
               type="number"
               name="primaryCards"
-              className="FormControl DC-Number"
+              className="FormControl dc-number"
               bidi={this.tagSettings.primaryCards}
             />
           </div>
@@ -135,7 +135,7 @@ export default class WdcTagSettingsModal extends FormModal {
             <input
               type="number"
               name="desktopCardWidth"
-              className="FormControl DC-Number"
+              className="FormControl dc-number"
               bidi={this.tagSettings.desktopCardWidth}
             />
           </div>
@@ -156,7 +156,7 @@ export default class WdcTagSettingsModal extends FormModal {
             <input
               type="number"
               name="tabletCardWidth"
-              className="FormControl DC-Number"
+              className="FormControl dc-number"
               bidi={this.tagSettings.tabletCardWidth}
             />
           </div>
@@ -202,7 +202,7 @@ export default class WdcTagSettingsModal extends FormModal {
             <input
               type="number"
               name="listCardsCount"
-              className="FormControl DC-Number"
+              className="FormControl dc-number"
               bidi={this.tagSettings.listCardsCount}
             />
           </div>

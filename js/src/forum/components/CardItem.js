@@ -19,7 +19,7 @@ export default class CardItem extends BaseItem {
       <div
         key={discussion.id()}
         data-id={discussion.id()}
-        className={this.getItemClasses("CardsListItem Card")}
+        className={this.getItemClasses("dc-item dc-item--card")}
       >
         {DiscussionControls.controls(discussion, this).toArray().length
           ? m(
@@ -36,7 +36,7 @@ export default class CardItem extends BaseItem {
 
         <Link
           href={app.route.discussion(discussion, jumpTo)}
-          className="cardLink"
+          className="dc-card-link"
         >
           {/* Optional: Badges component */}
           <DiscussionBadges discussion={discussion} settings={settings} />
@@ -48,7 +48,7 @@ export default class CardItem extends BaseItem {
           <DiscussionTags discussion={discussion} />
 
           {/* Title component */}
-          <div className="cardTitle">
+          <div className="dc-card-title">
             <DiscussionTitle discussion={discussion} settings={settings} />
           </div>
 

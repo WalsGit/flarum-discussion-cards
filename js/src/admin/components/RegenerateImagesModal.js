@@ -14,7 +14,7 @@ export default class RegenerateImagesModal extends Modal {
   }
 
   className() {
-    return "RegenerateImagesModal Modal--medium";
+    return "dc-modal dc-regenerate-modal Modal--medium";
   }
 
   title() {
@@ -113,14 +113,14 @@ export default class RegenerateImagesModal extends Modal {
           {/* ==== OUTPUT ==== */}
           {this.output && (
             <div className="Form-group">
-              <div className="RegenerateImages-output">
+              <div className="dc-regenerate-output">
                 <pre>{this.output}</pre>
               </div>
             </div>
           )}
           {this.summary && (
             <div className="Form-group">
-              <div className="RegenerateImages-summary">
+              <div className="dc-regenerate-summary">
                 {app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_summary",
                   {
@@ -134,7 +134,7 @@ export default class RegenerateImagesModal extends Modal {
           )}
           {this.failures.length > 0 && (
             <div className="Form-group">
-              <div className="RegenerateImages-error">
+              <div className="dc-regenerate-error">
                 {this.failures.map((failure) => (
                   <div key={failure.id}>
                     {app.translator.trans(

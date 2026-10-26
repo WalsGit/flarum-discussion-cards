@@ -13,7 +13,7 @@ export default class DiscussionLastPost extends Component {
 
     if (layout === "card") {
       return (
-        <div className="terminalPost">
+        <div className="dc-terminal-post">
           <TerminalPost
             discussion={discussion}
             lastPost={discussion.lastPostNumber()}
@@ -24,7 +24,7 @@ export default class DiscussionLastPost extends Component {
 
     if (layout === "list") {
       return (
-        <div className="terminalPost">
+        <div className="dc-terminal-post">
           <TerminalPost
             discussion={discussion}
             lastPost={discussion.lastPostNumber()}

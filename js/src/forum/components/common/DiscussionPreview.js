@@ -17,7 +17,7 @@ export default class DiscussionPreview extends Component {
       return null;
 
     return (
-      <div className="previewPost">
+      <div className="dc-preview-post">
         {truncate(discussion.firstPost().contentPlain(), maxLength)}
       </div>
     );

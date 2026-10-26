@@ -16,7 +16,7 @@ export default class DiscussionTitle extends Component {
     const maxLength = 80;
 
     return (
-      <h2 title={discussion.title()} className="title">
+      <h2 title={discussion.title()} className="dc-card-heading">
         {Number(settings.allowRepostLinks) === 1 &&
         repostActivated &&
         repostUrl ? (

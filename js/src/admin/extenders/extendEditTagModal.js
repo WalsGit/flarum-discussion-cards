@@ -16,11 +16,11 @@ export default function extendEditTagModal() {
       let isActivatedForTag = allowedTags.includes(this.tag.id());
 
       let activationBtnClasses = isActivatedForTag
-        ? "DC-ActivationBtn Button activated"
-        : "DC-ActivationBtn Button Button--primary";
+        ? "dc-activation-btn Button dc-activated"
+        : "dc-activation-btn Button Button--primary";
       let DcTagSettingsClasses = isActivatedForTag
-        ? "DC-TagSettings"
-        : "DC-TagSettings DC-Hidden";
+        ? "dc-tag-settings"
+        : "dc-tag-settings dc-hidden";
       let activationBtnText = isActivatedForTag
         ? app.translator.trans(
             "walsgit_discussion_cards.admin.tags.deactivation_button"
@@ -60,11 +60,11 @@ export default function extendEditTagModal() {
 
             isActivatedForTag = !isActivatedForTag;
             activationBtnClasses = isActivatedForTag
-              ? "DC-ActivationBtn Button activated"
-              : "DC-ActivationBtn Button Button--primary";
+              ? "dc-activation-btn Button dc-activated"
+              : "dc-activation-btn Button Button--primary";
             DcTagSettingsClasses = isActivatedForTag
-              ? "DC-TagSettings"
-              : "DC-TagSettings DC-Hidden";
+              ? "dc-tag-settings"
+              : "dc-tag-settings dc-hidden";
             activationBtnText = isActivatedForTag
               ? app.translator.trans(
                   "walsgit_discussion_cards.admin.tags.deactivation_button"
@@ -78,7 +78,7 @@ export default function extendEditTagModal() {
 
       items.add(
         "tag-discussion-cards-options",
-        <fieldset className="DC-Fieldset">
+        <fieldset className="dc-fieldset">
           <legend>
             {app.translator.trans(
               "walsgit_discussion_cards.admin.tags.options_heading"
@@ -94,7 +94,7 @@ export default function extendEditTagModal() {
           </Button>
 
           <div className={DcTagSettingsClasses}>
-            <div className="DC-TagDefaultImageSettings">
+            <div className="dc-tag-default-image-settings">
               <h4>
                 {app.translator.trans(
                   "walsgit_discussion_cards.admin.tags.defaultImage_title"
@@ -112,7 +112,7 @@ export default function extendEditTagModal() {
                 }
                 value={tagDefaultImage ? ImageFolderUrl + tagDefaultImage : ""}
                 url={ImageFolderUrl + tagDefaultImage}
-                className="DC-UploadTagImageBtn"
+                className="dc-upload-tag-image-btn"
               />
             </div>
             <Button

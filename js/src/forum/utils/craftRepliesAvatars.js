@@ -21,7 +21,7 @@ export default function craftRepliesAvatars(discussion) {
 
   return finalParticipants.map((user) => (
     <>
-      <Avatar user={user} className="Avatar--mini" />
+      <Avatar user={user} className="dc-avatar-mini" />
     </>
   ));
 }

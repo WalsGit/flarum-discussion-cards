@@ -119,7 +119,7 @@ app.initializers.add(
           >
             {/* Card Items (primary card) */}
             <div
-              class="DiscussionList-discussions flexCard"
+              class="DiscussionList-discussions dc-primary-cards"
               style={{
                 "--dc-desktop-card-width": cardWidthVar(
                   settings.desktopCardWidth
