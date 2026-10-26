@@ -7,6 +7,9 @@
 - Backend: the discussion list only loads the first post when the text preview setting is enabled, and no longer declares its own `tags` include or `contentHtml` field (both are already provided by Flarum).
 
 ### Fixed
+- Admin: the "extension not fully supported" message for the Blog and Repost options now uses an existing translation key.
+- Admin: the Info tool no longer fails when listing folder status (non-static method called statically).
+- Forum: the `phone` and `tablet` media queries in the stylesheet were invalid and are now applied.
 - Backend: the forum stylesheet no longer loads every tag from the database at compile time, and no longer needs recompiling when a tag's card width changes.
 
 ## [2.0.3] - 2026-10-20
