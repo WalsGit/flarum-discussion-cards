@@ -15,6 +15,7 @@ use Flarum\Discussion\Discussion;
 use Flarum\Foundation\Config;
 use Flarum\Foundation\Paths;
 use Flarum\Settings\SettingsRepositoryInterface;
+use Walsgit\Discussion\Cards\Image\CardImageDecision;
 use Walsgit\Discussion\Cards\Image\CardImageResolver;
 
 class CheckDiscussionService
@@ -94,11 +95,7 @@ class CheckDiscussionService
             $lines = "└ Blog's default image: {$blogDefault} \n";
             array_push($output, $lines);
 
-            // Resolver's result
-            $lines = [
-                "└ Resolver's picked image: {$blogPostImage} \n",
-                "└ Card image filename: " . $this->cardImageName($discussionId, $blogPostImage) . " \n",
-            ];
+            $lines = "└ Blog's candidate image: {$blogPostImage} \n";
             array_push($output, $lines);
         }
 
@@ -120,38 +117,38 @@ class CheckDiscussionService
             }
             $lines = "└ Image's size: " . ($imageSize ? $this->humanReadableSize($imageSize) : "N/C") . " \n";
             array_push($output, $lines);
-
-            // Get the generated filename of the saved card image
-            $filename = $this->cardImageName($discussionId, $firstPostImage);
-            $lines = "└ Card image filename: {$filename} \n";
-            array_push($output, $lines);
         }
 
-        /** FALLBACKS */
-        if (!$blogPostImage && !$firstPostImage) {
-            // 3. Check Tag priority
+        /** FINAL DECISION (same code path as the real card image generation) */
+        $decision = $this->resolver->resolveWithDecision($discussion);
+
+        array_push($output, "3. Resolver's decision (note: this check may generate the card image file) \n");
+
+        foreach ($decision->skipped as $skipped) {
+            $image = $skipped['image'] ? " ({$skipped['image']})" : "";
+            array_push($output, "└ Skipped {$skipped['source']}: {$skipped['reason']}{$image} \n");
+        }
+
+        $sourceDetails = "";
+        if ($decision->source === CardImageDecision::SOURCE_TAG) {
             $tags = $discussion->tags()
                 ->select('id', 'name', 'walsgit_discussion_cards_tag_default_image')
                 ->get();
-            $tagImage = $this->tagSelector->selectTagImage($tags);
-            $tagName = null;
-            foreach ($tags as $tag) {
+            $tag = $tags->first(fn($t) => $decision->file === 'tags/' . basename((string) $t->walsgit_discussion_cards_tag_default_image));
+            $sourceDetails = $tag ? " [from tag: {$tag->name}]" : "";
+        }
 
-                if ($tag->walsgit_discussion_cards_tag_default_image == $tagImage) {
-                    $tagName = $tag->name;
-                    break;
-                }
-            }
+        array_push($output, "└ Source picked: {$decision->source}{$sourceDetails} ({$decision->reason}) \n");
 
-            $lines = "3. Tag default image fallback: " . ($tagImage ? "[from: {$tagName}] {$tagImage}" : "NONE") . " \n";
-            array_push($output, $lines);
+        if ($decision->sourceImage) {
+            array_push($output, "└ Source image: {$decision->sourceImage} \n");
+        }
 
-            // 4. Check general default image
-            if (!$tagImage) {
-                $defaultImage = $this->settings->get('walsgit_discussion_cards_default_image_path');
-                $lines = "4. Global default image fallback: " . ($defaultImage ?: "NONE SET, Stub will be used.") . " \n";
-                array_push($output, $lines);
-            }
+        if ($decision->url === null) {
+            array_push($output, "└ Card image: NONE (no global default image set, the stub will be used) \n");
+        } else {
+            array_push($output, "└ Card image URL: {$decision->url} \n");
+            array_push($output, "└ Card image file: {$decision->file} \n");
         }
 
         return $output;
@@ -164,16 +161,5 @@ class CheckDiscussionService
         $i = $sizeInBytes ? floor(log($sizeInBytes, 1024)) : 1;
 
         return round($sizeInBytes / pow(1024, $i), 2) . ' ' . $units[$i];
-    }
-
-    protected function cardImageName(int $discussionId, string $imageURL): string
-    {
-        // Get the generated filename of the saved card image
-        $baseUrl = rtrim((string) $this->config->url(), '/');
-        $urlHash = substr(sha1($imageURL), 0, 10);
-        $etagHash = $this->imageService->computeEtagHash($imageURL, $baseUrl);
-        $filename = "discussion-{$discussionId}-{$urlHash}-{$etagHash}.webp";
-
-        return $filename;
     }
 }

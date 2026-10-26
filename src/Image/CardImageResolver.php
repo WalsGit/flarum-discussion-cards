@@ -41,30 +41,66 @@ class CardImageResolver
      */
     public function resolve(Discussion $discussion, ?string $firstPostHtml = null, bool $interactive = false): ?string
     {
+        return $this->resolveWithDecision($discussion, $firstPostHtml, $interactive)->url;
+    }
+
+    /**
+     * Same process as resolve() (it is the only implementation), but also reports
+     * which source was chosen, the file used and the sources skipped on the way.
+     */
+    public function resolveWithDecision(Discussion $discussion, ?string $firstPostHtml = null, bool $interactive = false): CardImageDecision
+    {
+        $skipped = [];
+
         // 1. Support for 3rd party Blog Extension
         if ($image = $this->resolveBlogImage($discussion, $firstPostHtml, $interactive)) {
             if ($optimized = $this->getOptimizedCardImage($discussion, $image, $interactive)) {
-                return $optimized;
+                return $this->decision($optimized, CardImageDecision::SOURCE_BLOG, null, $image, $skipped);
             }
+            $skipped[] = ['source' => CardImageDecision::SOURCE_BLOG, 'reason' => CardImageDecision::SKIP_OPTIMIZATION_FAILED, 'image' => $image];
         }
 
         // 2. First image in first post
-        if ($image = $this->resolveFirstPostImage($discussion, $firstPostHtml, $interactive)) {
-            if ($optimized = $this->getOptimizedCardImage($discussion, $image, $interactive)) {
-                return $optimized;
-            }
+        $image = $this->extractFirstPostImage($discussion, $firstPostHtml);
+        if ($image === null) {
+            $skipped[] = ['source' => CardImageDecision::SOURCE_FIRST_POST, 'reason' => CardImageDecision::SKIP_NO_IMAGE, 'image' => null];
+        } elseif (!$this->isImageAccessible($image, $interactive)) {
+            $skipped[] = ['source' => CardImageDecision::SOURCE_FIRST_POST, 'reason' => CardImageDecision::SKIP_NOT_ACCESSIBLE, 'image' => $image];
+        } elseif ($optimized = $this->getOptimizedCardImage($discussion, $image, $interactive)) {
+            return $this->decision($optimized, CardImageDecision::SOURCE_FIRST_POST, null, $image, $skipped);
+        } else {
+            $skipped[] = ['source' => CardImageDecision::SOURCE_FIRST_POST, 'reason' => CardImageDecision::SKIP_OPTIMIZATION_FAILED, 'image' => $image];
         }
 
         // 3. Tag default image based on tag priority
         if ($image = $this->resolveTagImage($discussion)) {
-            return $image; // already a buildAssetUrl() result
+            // already a buildAssetUrl() result
+            return $this->decision($image, CardImageDecision::SOURCE_TAG, CardImageDecision::REASON_TAG, null, $skipped);
         }
 
         // 4. Fallback to global default image
         if ($image = $this->resolveGlobalDefault()) {
-            return $this->buildAssetUrl($image);
+            return $this->decision($this->buildAssetUrl($image), CardImageDecision::SOURCE_GLOBAL, CardImageDecision::REASON_GLOBAL, null, $skipped);
         }
-        return null;
+
+        return new CardImageDecision(null, CardImageDecision::SOURCE_NONE, CardImageDecision::REASON_NONE, null, null, $skipped);
+    }
+
+    /**
+     * Builds the decision for a chosen asset URL. Without an explicit $reason, it is deduced from the file name.
+     */
+    protected function decision(string $url, string $source, ?string $reason, ?string $sourceImage, array $skipped): CardImageDecision
+    {
+        $prefix = $this->buildAssetUrl('');
+        $file = str_starts_with($url, $prefix) ? substr($url, strlen($prefix)) : null;
+
+        $reason ??= match (true) {
+            $file !== null && str_starts_with($file, 'discussion-') => CardImageDecision::REASON_OPTIMIZED,
+            $file === 'blog-default-card-image.webp' => CardImageDecision::REASON_BLOG_DEFAULT,
+            default => CardImageDecision::REASON_EXTENSION_DEFAULT,
+        };
+
+        return new CardImageDecision($url, $source, $reason, $file, $sourceImage, $skipped);
     }
 
     // ====== Sub-resolvers ======
@@ -135,35 +171,26 @@ class CardImageResolver
     }
 
     /**
-     * Resolve the first image found in the discussion's first post
+     * Extract the first image URL found in the discussion's first post (no accessibility check).
      * Returns absolute URL or null.
      */
-    protected function resolveFirstPostImage(Discussion $discussion, ?string $firstPostHtml = null, bool $interactive = false): ?string
+    protected function extractFirstPostImage(Discussion $discussion, ?string $firstPostHtml = null): ?string
     {
-        $firstPost = $discussion->firstPost;
-
         if (!empty($firstPostHtml)) {
             // Use provided first post HTML (only for create/update)
             $imageUrl = $this->htmlImageExtractor->extract($firstPostHtml);
-            if ($imageUrl && $this->isImageAccessible($imageUrl, $interactive)) {
-                return $imageUrl;
-            }
-            return null;
-            // Use the saved post in other cases
         } else {
+            // Use the saved post in other cases
+            $firstPost = $discussion->firstPost;
+
             if (! $firstPost || ! method_exists($firstPost, 'formatContent')) {
                 return null;
             }
+
+            $imageUrl = $this->htmlImageExtractor->extract($firstPost->formatContent());
         }
 
-        $rendered = $firstPost->formatContent();
-        $imageUrl = $this->htmlImageExtractor->extract($rendered);
-
-        if ($imageUrl && $this->isImageAccessible($imageUrl, $interactive)) {
-            return $imageUrl;
-        }
-
-        return null;
+        return $imageUrl ?: null;
     }
 
     /**

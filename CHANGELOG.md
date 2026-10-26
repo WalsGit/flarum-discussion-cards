@@ -24,6 +24,7 @@
   | `@keyframes scroll` | `@keyframes dc-scroll` |
 
 - Admin: the stylesheet no longer styles every modal of the admin panel (`.Modal-body`), it now only targets the extension's own modals. Admin class names (`DC-*`, `DiscussionCardsSettings`, `Debug-discussion`, …) were normalized to `dc-*` as well.
+- Admin: the discussion check in the debug modal now reports the real decision of the card image resolver (source picked, reason, actual file, skipped sources with their reason) instead of always showing a computed `discussion-*.webp` name, which was wrong for default images and for rejected or failed external images. Note: this check can generate the card image file, like a regeneration.
 ### Fixed
 - Admin: the "extension not fully supported" message for the Blog and Repost options now uses an existing translation key.
 - Admin: the Info tool no longer fails when listing folder status (non-static method called statically).
