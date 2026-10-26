@@ -65,7 +65,7 @@ class UpdateCardImageOnDiscussionUpdate
      * 3. 3rd party Blog Extension support:
      * Regenerate card image when a blog post is edited/modified (mainly for featured image changes)
      */
-    public function onBlogMetaSaving(Dispatcher $event)
+    public function onBlogMetaSaving(BlogMetaSaving $event)
     {
         if (!isset($event->blogMeta) || !is_object($event->blogMeta)) {
             return;

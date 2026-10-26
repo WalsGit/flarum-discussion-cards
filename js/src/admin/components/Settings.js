@@ -413,7 +413,7 @@ export default class Settings extends ExtensionPage {
                           { icon: warningIcon }
                         )
                       : app.translator.trans(
-                          "walsgit_discussion_cards.admin.settings.general.blogExtension_tempExtensionMessage",
+                          "walsgit_discussion_cards.admin.settings.general.tempExtension_Message",
                           { icon: warningIcon }
                         ) /* Remove and replace with '' when fully supported for V2 */
                   }
@@ -472,7 +472,7 @@ export default class Settings extends ExtensionPage {
                           { icon: warningIcon }
                         )
                       : app.translator.trans(
-                          "walsgit_discussion_cards.admin.settings.general.blogExtension_tempExtensionMessage",
+                          "walsgit_discussion_cards.admin.settings.general.tempExtension_Message",
                           { icon: warningIcon }
                         ) /* Remove and replace with '' when fully supported for V2 */
                   }
