@@ -196,7 +196,7 @@ walsgit_discussion_cards:
       regenerateImagesCancelled: "❌ Action annulée."
       regenerateImagesInvalidTagOption: "--tag doit être suivi par un ou plusieurs IDs d'étiquettes (nombres) et/ou des slugs entre guillemets (ex.: \"slug-1\", \"slug-2\"), séparé par des virgules."
       regenerateImagesNothingToDo: "Aucune discussion à traiter."
-      regenerateImagesViewsExtensionRequired: "{option} nécessite que l'extension Discussion Views (fof/discussion-views) soit installée et activée : aucune discussion n'a été sélectionnée par cette option."
+      regenerateImagesViewsExtensionRequired: "{option} nécessite que l'une des extensions Discussion Views (fof/discussion-views ou michaelbelgium/flarum-discussion-views) soit installée et activée : aucune discussion n'a été sélectionnée par cette option."
       regenerateImagesStart: "➡ Démarrage du traitement de(s) {count} discussion(s)..."
       regenerateImagesError: "❌ Erreur lors du traitement de la discussion #{id}: {message}"
       regenerateImagesStartAll: "➡ Démarrage du traitement de TOUTES les [{count}] discussions..."

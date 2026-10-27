@@ -180,28 +180,10 @@ class RegenerateImagesService
 
     protected function applyViewsOrder(Builder $query, string $direction): void
     {
-        // 3rd party extension support for fof/discussion-views
-        if ($this->extensionManager->isEnabled('fof-discussion-views')) {
+        // fof/discussion-views & michaelbelgium/flarum-discussion-views both use discussions.view_count
+        if ($this->isViewsSortAvailable()) {
             // id DESC breaks ties so the most recent discussions come first
             $query->orderBy('view_count', $direction)->orderByDesc('id');
-            return;
-        }
-
-        // 3rd party extension support for michaelbelgium/flarum-discussion-views
-        if ($this->extensionManager->isEnabled('michaelbelgium-discussion-views')) {
-            $query
-                ->leftJoin(
-                    'discussion_views',
-                    'discussion_views.discussion_id',
-                    '=',
-                    'discussions.id'
-                )
-                ->select('discussions.id')
-                ->groupBy('discussions.id')
-                ->orderByRaw('COUNT(discussion_views.id) ' . strtoupper($direction))
-                ->orderByRaw('MAX(discussion_views.visited_at) DESC')
-                ->orderBy('discussions.id', 'DESC');
-
             return;
         }
 

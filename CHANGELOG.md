@@ -1,7 +1,12 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+- Forum/Admin: support for `michaelbelgium/flarum-discussion-views` (views count on cards).
+
 ### Changed
+- Console: `--popular [-p]` and `--unpopular [-u]` now read `discussions.view_count` with `michaelbelgium/flarum-discussion-views` as well.
+
 - Forum: primary card widths (global and per-tag) are now applied through CSS variables set by the forum JavaScript, instead of being compiled into the stylesheet.
 
 - Backend: the discussion list only loads the first post when the text preview setting is enabled, and no longer declares its own `tags` include or `contentHtml` field (both are already provided by Flarum).

@@ -196,7 +196,7 @@ walsgit_discussion_cards:
       regenerateImagesCancelled: "❌ Action cancelled"
       regenerateImagesInvalidTagOption: "--tag must be followed by one or more (comma separated) tag IDs (numbers) and/or quoted tag slugs (ex.: \"slug-1\", \"slug-2\")."
       regenerateImagesNothingToDo: "No discussions to process"
-      regenerateImagesViewsExtensionRequired: "{option} needs the Discussion Views extension (fof/discussion-views) to be installed and activated: no discussions were selected by this option."
+      regenerateImagesViewsExtensionRequired: "{option} needs one of the supported Discussion Views extensions (fof/discussion-views or michaelbelgium/flarum-discussion-views) to be installed and activated: no discussions were selected by this option."
       regenerateImagesStart: "➡ Starting to process {count} discussions..."
       regenerateImagesError: "❌ Error while processing discussion #{id}: {message}"
       regenerateImagesStartAll: "➡ Starting to process ALL [{count}] discussions..."

@@ -21,7 +21,8 @@ For full list of changes & new features, please refer to the CHANGELOG.md file.
 
 ### 🧩  3rd party extensions support
 - **Flarum V2**
-    - As of version `2.0.0` only `fof/discussion-views`is supported. The other extensions that where supported in V1 have yet to be ported for Flarum V2 as of the latest release. Support will be added once they'll be ported or it will be dropped unless an alternative is released.
+    - As of version `2.1.0` `michaelbelgium/flarum-discussion-views` is supported again for views count on cards. The other extensions that where supported in V1 have yet to be ported for Flarum V2 as of the latest release. Support will be added once they'll be ported or it will be dropped unless an alternative is released.
+    - As of version `2.0.0` `fof/discussion-views` is supported for views count on cards.
 
 - **Flarum V1**
     - Until version `1.3.0` `flarumite/simple-discussion-views` was supported to show discussion views count on cards (see replacement below)
