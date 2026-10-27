@@ -7,6 +7,7 @@ use Flarum\Api\Endpoint;
 use Flarum\Api\Resource;
 use Flarum\Api\Schema;
 use Flarum\Discussion\Discussion;
+use Flarum\Extension\ExtensionManager;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\Tags\Api\Resource\TagResource;
 
@@ -30,6 +31,7 @@ use Walsgit\Discussion\Cards\Console\PurgeImagesCommand;
 use Walsgit\Discussion\Cards\Console\RegenerateImagesCommand;
 use Walsgit\Discussion\Cards\Listener\UpdateCardImageOnDiscussionUpdate;
 use Walsgit\Discussion\Cards\Listener\DeleteCardImageOnDiscussionDelete;
+use Walsgit\Discussion\Cards\Middleware\RefreshBlogDefaultImage;
 
 return [
     (new Extend\Frontend('forum'))
@@ -49,6 +51,12 @@ return [
 
             if ((int) $settings->get('walsgit_discussion_cards_previewText') === 1) {
                 $endpoint->addDefaultInclude(['firstPost']);
+
+                // blogMeta (3rd party blog extension) is only needed for the blog posts' summary used as preview text.
+                if ((int) $settings->get('walsgit_discussion_cards_useBlogSummary') === 1
+                    && resolve(ExtensionManager::class)->isEnabled('fof-blog')) {
+                    $endpoint->addDefaultInclude(['blogMeta']);
+                }
             }
 
             return $endpoint;
@@ -105,6 +113,10 @@ return [
 
     (new Extend\Validator(TagSettingsValidator::class)),
     (new Extend\Validator(ImageUploadValidator::class)),
+
+    // 3rd party extension fof/blog fires no event on its default image upload: refresh our optimized copy afterwards
+    (new Extend\Middleware('api'))
+        ->add(RefreshBlogDefaultImage::class),
 
     new Extend\ServiceProvider(ImageProcessingProvider::class),
     new Extend\ServiceProvider(HtmlImageExtractorProvider::class),

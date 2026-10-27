@@ -74,12 +74,18 @@ class CheckDiscussionService
 
         /**1. Check if blog post */
         $blogPostImage = $this->resolver->resolveBlogImage($discussion);
+        $blogMeta = $discussion->isRelation('blogMeta') ? $discussion->blogMeta : null;
 
-        $lines = "1. Is it a blog post: " . ($blogPostImage ? "YES" : "NO") . " \n";
+        if ($blogMeta) {
+            $lines = "1. Is it a blog post: YES (blog extension article)" . ($blogPostImage ? "" : ", but no blog image to use (option disabled or no image found)") . " \n";
+        } elseif ($discussion->isRelation('blogMeta') && $this->hasBlogTag($discussion)) {
+            $lines = "1. Is it a blog post: NO (regular discussion with a blog tag, it has no blog meta: usual resolving) \n";
+        } else {
+            $lines = "1. Is it a blog post: NO \n";
+        }
         array_push($output, $lines);
 
-        if ($blogPostImage) {
-            $blogMeta = $discussion->blogMeta;
+        if ($blogMeta && $blogPostImage) {
 
             // Feature image
             $featuredImage = $blogMeta->getAttribute('featured_image');
@@ -152,6 +158,20 @@ class CheckDiscussionService
         }
 
         return $output;
+    }
+
+    /**
+     * Debug only: does the discussion carry one of the tags set as blog tags in the blog extension settings?
+     */
+    protected function hasBlogTag(Discussion $discussion): bool
+    {
+        $blogTags = array_filter(explode('|', (string) $this->settings->get('blog_tags', '')), 'is_numeric');
+
+        if (empty($blogTags) || !$discussion->isRelation('tags')) {
+            return false;
+        }
+
+        return $discussion->tags->whereIn('id', $blogTags)->isNotEmpty();
     }
 
     protected function humanReadableSize(int $sizeInBytes): string

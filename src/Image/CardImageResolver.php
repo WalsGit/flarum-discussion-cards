@@ -123,8 +123,9 @@ class CardImageResolver
             ? $discussion->getRelation('blogMeta')
             : null;
 
-        // if not, load the old one
-        if (!$blogMeta) {
+        // if not, load it, but only when the blog extension is enabled (the relation is defined by it).
+        // A discussion without blog meta (ex.: native discussion with a blog tag) follows the usual resolving.
+        if (!$blogMeta && $discussion->isRelation('blogMeta')) {
             $blogMeta = $discussion->blogMeta;
         }
 
@@ -293,6 +294,24 @@ class CardImageResolver
         $this->imageService->cleanupOldDiscussionImages($discussionId, $filename);
 
         return $this->buildAssetUrl($filename);
+    }
+
+    /**
+     * 3rd party Blog Extension support: (re)generate blog-default-card-image.webp from the blog's current
+     * default image. The file is only rebuilt if the source is newer (see ImageProcessingService).
+     */
+    public function refreshBlogDefaultImage(): void
+    {
+        $blogDefault = $this->settings->get('blog_default_image_path');
+
+        if (!$blogDefault) {
+            return;
+        }
+
+        $this->imageService->optimizeBlogDefaultImage(
+            $this->absoluteUrl('assets/' . $blogDefault),
+            rtrim((string) $this->config->url(), '/')
+        );
     }
 
     // ====== helpers ======

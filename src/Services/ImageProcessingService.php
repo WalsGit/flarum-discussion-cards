@@ -337,10 +337,10 @@ class ImageProcessingService
      */
     public function generateFilename(string $origin, $context = null): string
     {
-        // Special case for 3rd party BLOG Extension: blog-default-{hash}.png will generate blog-default-card-image.webp
+        // Special case for 3rd party Blog Extension: blog_default_image-{hash}.png will generate blog-default-card-image.webp
         if ($origin === 'discussion' && $context && $context->getParsedBody()['filename'] ?? null) {
             $filename = $context->getParsedBody()['filename'];
-            if (preg_match('/^blog\-default\-[a-z0-9]+\.png$/i', $filename)) {
+            if (preg_match('/^blog_default_image-[a-z0-9]+\.png$/i', $filename)) {
                 return 'blog-default-card-image.webp';
             }
         }
@@ -486,13 +486,13 @@ class ImageProcessingService
 
     /**
      * 3rd party Blog Extension support:
-     * Optimize the "blog-default-{hash}.png" image provided by the blog extension.
-     * Returns the optimized WebP filename, or null if the URL is not a blog-default image.
+     * Optimize the "blog_default_image-{hash}.png" image provided by the blog extension (fof/blog).
+     * Returns the optimized WebP filename, or null if the URL is not a blog default image.
      */
     public function optimizeBlogDefaultImage(string $imageUrl, string $baseUrl): ?string
     {
-        // Match URLs like:  baseurl/assets/blog-default-xxxx.png|jpg|gif|webp
-        if (!preg_match('#^' . preg_quote($baseUrl, '#') . '/assets/blog-default-([a-z0-9]+)\.(jpe?g|png|gif|webp)$#i', $imageUrl, $m)) {
+        // Match URLs like:  baseurl/assets/blog_default_image-xxxx.png|jpg|gif|webp
+        if (!preg_match('#^' . preg_quote($baseUrl, '#') . '/assets/blog_default_image-([a-z0-9]+)\.(jpe?g|png|gif|webp)$#i', $imageUrl, $m)) {
             return null; // Not a blog-default image
         }
 
@@ -505,14 +505,17 @@ class ImageProcessingService
 
         $filepath = $assetsPath . '/' . $filename;
 
-        // If already optimized return filename
-        if (file_exists($filepath)) {
-            return $filename;
-        }
-
         // Local source path
         $localPath = $this->resolveLocalPath($imageUrl);
-        if ($localPath === null) {
+
+        // If already optimized and not older than the source, return filename.
+        // The 3rd party blog extension gives a new file name to its default image at each upload,
+        // so a source newer than our WebP means the default image has been replaced.
+        if (file_exists($filepath)) {
+            if ($localPath === null || (int) @filemtime($filepath) >= (int) @filemtime($localPath)) {
+                return $filename;
+            }
+        } elseif ($localPath === null) {
             return null; // not a usable local file
         }
 

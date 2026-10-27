@@ -65,19 +65,15 @@ export default class DebugModal extends FormModal {
               }
 
               if (key === "useBlogImages") {
-                const blogExtensionInstalled = isExtensionInstalled(
-                  "v17development-blog"
-                )
+                const blogExtensionInstalled = isExtensionInstalled("fof-blog")
                   ? "is"
                   : "is not";
-                const blogExtensionActivated = isExtensionActive(
-                  "v17development-blog"
-                )
+                const blogExtensionActivated = isExtensionActive("fof-blog")
                   ? "is"
                   : "not";
                 settingLine =
                   settingLine +
-                  `\n └ [v17development/blog ${blogExtensionInstalled} installed & ${blogExtensionActivated} activated]`;
+                  `\n └ [fof/blog ${blogExtensionInstalled} installed & ${blogExtensionActivated} activated]`;
               }
 
               if (key === "allowRepostLinks") {

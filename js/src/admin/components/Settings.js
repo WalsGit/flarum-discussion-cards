@@ -22,9 +22,9 @@ export default class Settings extends ExtensionPage {
       url: "https://github.com/MichaelBelgium/flarum-discussion-views",
     };
     const blogExtension = {
-      id: "v17development-blog",
-      name: "Flarum Blog",
-      url: "https://discuss.flarum.org/d/33038-blog-adds-a-blog-section-to-your-community",
+      id: "fof-blog",
+      name: "FoF Blog",
+      url: "https://discuss.flarum.org/d/39435-fof-blog",
     };
     const repostExtension = {
       id: "shebaoting-repost",
@@ -383,7 +383,7 @@ export default class Settings extends ExtensionPage {
                     : true,
               })}
               <hr></hr>
-              {/* v17development/flarum-blog */}
+              {/* fof/blog */}
               <h4>
                 {app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.blogExtension_title_start"
@@ -401,22 +401,17 @@ export default class Settings extends ExtensionPage {
               </h4>
               <div className="helpText">
                 <em>
-                  {
-                    !isExtensionInstalled(blogExtension.id)
-                      ? app.translator.trans(
-                          "walsgit_discussion_cards.admin.settings.general.blogExtension_notInstalled",
-                          { icon: warningIcon }
-                        )
-                      : !isExtensionActive(blogExtension.id)
-                      ? app.translator.trans(
-                          "walsgit_discussion_cards.admin.settings.general.blogExtension_notActivated",
-                          { icon: warningIcon }
-                        )
-                      : app.translator.trans(
-                          "walsgit_discussion_cards.admin.settings.general.tempExtension_Message",
-                          { icon: warningIcon }
-                        ) /* Remove and replace with '' when fully supported for V2 */
-                  }
+                  {!isExtensionInstalled(blogExtension.id)
+                    ? app.translator.trans(
+                        "walsgit_discussion_cards.admin.settings.general.blogExtension_notInstalled",
+                        { icon: warningIcon }
+                      )
+                    : !isExtensionActive(blogExtension.id)
+                    ? app.translator.trans(
+                        "walsgit_discussion_cards.admin.settings.general.blogExtension_notActivated",
+                        { icon: warningIcon }
+                      )
+                    : ""}
                 </em>
               </div>
               {this.buildSettingComponent({
@@ -428,7 +423,7 @@ export default class Settings extends ExtensionPage {
                 help: app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.useBlogImages_help"
                 ),
-                disabled: true /* When V2 compatible: isExtensionActive(blogExtension.id) ? false : true, */,
+                disabled: !isExtensionActive(blogExtension.id),
               })}
               {this.buildSettingComponent({
                 type: "switch",
@@ -439,7 +434,7 @@ export default class Settings extends ExtensionPage {
                 help: app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.useBlogSummary_help"
                 ),
-                disabled: true /* When V2 compatible: isExtensionActive(blogExtension.id) ? false : true, */,
+                disabled: !isExtensionActive(blogExtension.id),
               })}
               <hr></hr>
               {/* shebaoting/repost */}
@@ -460,22 +455,17 @@ export default class Settings extends ExtensionPage {
               </h4>
               <div className="helpText">
                 <em>
-                  {
-                    !isExtensionInstalled(repostExtension.id)
-                      ? app.translator.trans(
-                          "walsgit_discussion_cards.admin.settings.general.repostExtension_notInstalled",
-                          { icon: warningIcon }
-                        )
-                      : !isExtensionActive(repostExtension.id)
-                      ? app.translator.trans(
-                          "walsgit_discussion_cards.admin.settings.general.repostExtension_notActivated",
-                          { icon: warningIcon }
-                        )
-                      : app.translator.trans(
-                          "walsgit_discussion_cards.admin.settings.general.tempExtension_Message",
-                          { icon: warningIcon }
-                        ) /* Remove and replace with '' when fully supported for V2 */
-                  }
+                  {!isExtensionInstalled(repostExtension.id)
+                    ? app.translator.trans(
+                        "walsgit_discussion_cards.admin.settings.general.repostExtension_notInstalled",
+                        { icon: warningIcon }
+                      )
+                    : !isExtensionActive(repostExtension.id)
+                    ? app.translator.trans(
+                        "walsgit_discussion_cards.admin.settings.general.repostExtension_notActivated",
+                        { icon: warningIcon }
+                      )
+                    : ""}
                 </em>
               </div>
               {this.buildSettingComponent({

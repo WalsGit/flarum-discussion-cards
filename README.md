@@ -21,7 +21,7 @@ For full list of changes & new features, please refer to the CHANGELOG.md file.
 
 ### 🧩  3rd party extensions support
 - **Flarum V2**
-    - As of version `2.1.0` `michaelbelgium/flarum-discussion-views` is supported again for views count on cards. The other extensions that where supported in V1 have yet to be ported for Flarum V2 as of the latest release. Support will be added once they'll be ported or it will be dropped unless an alternative is released.
+    - As of version `2.1.0` `michaelbelgium/flarum-discussion-views` is supported again for views count on cards, as well as `fof/blog` (successor of the abandoned `v17development/flarum-blog`) for blog post cards. The other extension that was supported in V1 (`shebaoting/repost`) has yet to be ported for Flarum V2 as of the latest release. Support will be added once it is ported or it will be dropped unless an alternative is released.
     - As of version `2.0.0` `fof/discussion-views` is supported for views count on cards.
 
 - **Flarum V1**
