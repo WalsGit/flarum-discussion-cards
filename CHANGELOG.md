@@ -32,6 +32,8 @@
 - Backend: the forum stylesheet no longer loads every tag from the database at compile time, and no longer needs recompiling when a tag's card width changes.
 - Admin: the "extension active" check now parses the enabled extensions list and compares exact ids, instead of searching the raw setting string (an extension with a similar name was reported as enabled; a missing or invalid value no longer breaks the page).
 - Admin: the per-tag activation state in the tag edit modal now compares tag ids as strings.
+- Console: `--popular [-p]` / `--unpopular [-u]` now break ties in view counts by discussion id (most recent first).
+- Console: `--popular [-p]` / `--unpopular [-u]` now show a warning when no "Discussion Views" extension is enabled, instead of only showing "No discussions to process".
 
 ## [2.0.3] - 2026-10-20
 *Complementary security release.*

@@ -169,11 +169,21 @@ class RegenerateImagesService
             ->all();
     }
 
+    /**
+     * Checks if a supported "views" extension is enabled (needed for the popular / unpopular sorting).
+     */
+    public function isViewsSortAvailable(): bool
+    {
+        return $this->extensionManager->isEnabled('fof-discussion-views')
+            || $this->extensionManager->isEnabled('michaelbelgium-discussion-views');
+    }
+
     protected function applyViewsOrder(Builder $query, string $direction): void
     {
         // 3rd party extension support for fof/discussion-views
         if ($this->extensionManager->isEnabled('fof-discussion-views')) {
-            $query->orderBy('view_count', $direction);
+            // id DESC breaks ties so the most recent discussions come first
+            $query->orderBy('view_count', $direction)->orderByDesc('id');
             return;
         }
 

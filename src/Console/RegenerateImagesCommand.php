@@ -186,6 +186,10 @@ class RegenerateImagesCommand extends AbstractCommand
         // Sorting-based selection (cumulative)
         foreach (['latest', 'top', 'newest', 'oldest', 'popular', 'unpopular'] as $type) {
             if ($this->hasSelectionFlag($type)) {
+                if (in_array($type, ['popular', 'unpopular'], true) && !$this->regenerator->isViewsSortAvailable()) {
+                    $this->output->writeln('<comment>' . $this->trans('ViewsExtensionRequired', ['option' => '--' . $type]) . '</comment>');
+                }
+
                 $raw   = $this->input->getOption($type);
                 $limit = is_numeric($raw) ? max(1, (int) $raw) : self::DEFAULT_LIMIT;
                 $ids   = array_merge($ids, $this->regenerator->getDiscussionIds($type, $limit));
