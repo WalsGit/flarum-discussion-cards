@@ -1,22 +1,32 @@
 # Changelog
 
 ## [Unreleased]
+### Security
+- Backend: remote card images are now also validated for IPv6 NAT64 addresses (the embedded IPv4 address must be public), and redirects are re-validated.
+- Backend: the shortcut that reuses `default-card-image.webp` is now limited to the extension's own local files and can no longer be triggered by arbitrary image URLs.
+- Backend: the tag settings and allowed tags endpoints now check for admin rights first, then validate the submitted JSON and only accept known keys.
+- Backend: the allowed tags setting is validated and normalized when saved.
+
 ### Added
 - Forum/Admin: support for `michaelbelgium/flarum-discussion-views` (views count on cards).
 - Forum/Admin: support for `shebaoting/flarum-repost` (formerly `shebaoting/repost`): the title of a card opens the discussion's source url in a new tab.
 - Forum/Admin: two new options added to the `shebaoting/flarum-repost` support to show a link icon before the title and/or the source URL's domain after it.
-- Forum/Admin: support for `fof/blog`, the Flarum 2 successor of the abandoned `v17development/flarum-blog`
+- Forum/Admin: support for `fof/blog`, the Flarum 2 successor of the abandoned `v17development/flarum-blog` (blog images and blog post summary as preview text on cards).
 - Backend: the card copy of the blog's default image is refreshed when the image is uploaded in `fof/blog` and deleted when it is removed. Note that card images are not regenerated automatically: images regeneration is needed after a deletion without replacement.
 
 ### Changed
+- Backend: card images are generated with short network timeouts (2s to connect, 4s in total) when a user is waiting for a post to be created or edited; console and admin tools keep longer ones.
+- Admin: the "Purge images" and "Regenerate images" admin tools now call the extension's services directly instead of running `php flarum` commands in a subprocess. The regenerate tool works with a per-request time limit and the purge modal displays a summary of what was done.
+- Backend: the post and discussion listeners now share a single image regeneration service, and the resolved image is always saved.
+- Backend: the previous card image of a discussion is now deleted only after the new one has been created.
+- Backend: PHP's `memory_limit` is only raised (to 256M) during image processing when it is lower, and never lowered.
+- Backend: the extension's logs now use the forum's configured storage path.
+- Backend: removed the Composer `post-install-cmd` / `post-update-cmd` scripts, which never run when the extension is installed as a dependency. After updating from `1.3.0` or earlier, run `php flarum discussion-cards:migrate-images` manually (see README).
+- Admin: removed the "extensions missing Flarum V2 compatibility" warning of the settings page: all supported 3rd party extensions are now ported.
 - Admin: the discussion check in the debug modal tells whether the discussion is a blog article, a regular discussion with a blog tag, or neither.
-
 - Console: `--popular [-p]` and `--unpopular [-u]` now read `discussions.view_count` with `michaelbelgium/flarum-discussion-views` as well.
-
 - Forum: primary card widths (global and per-tag) are now applied through CSS variables set by the forum JavaScript, instead of being compiled into the stylesheet.
-
 - Backend: the discussion list only loads the first post when the text preview setting is enabled, and no longer declares its own `tags` include or `contentHtml` field (both are already provided by Flarum).
-
 - Forum/Admin: all CSS classes added by the extension are now prefixed with `dc-` (kebab-case) so they no longer collide with other themes or extensions. **If you have custom CSS targeting the old class names, update it** (the old name is noted next to each renamed selector in `less/forum.less` and `less/admin.less`; these notes will be removed in a later version). Main renames:
 
   | Old | New |
@@ -33,11 +43,12 @@
   | `.Hidden` (cards) / `.overflowing` / `h2.title` | `.dc-item--hidden` / `.dc-overflowing` / `h2.dc-card-heading` |
   | `.Author` / `.Date` (card footer) | `.dc-author` / `.dc-date` |
   | `@keyframes scroll` | `@keyframes dc-scroll` |
-
 - Admin: the stylesheet no longer styles every modal of the admin panel (`.Modal-body`), it now only targets the extension's own modals. Admin class names (`DC-*`, `DiscussionCardsSettings`, `Debug-discussion`, …) were normalized to `dc-*` as well.
 - Admin: the discussion check in the debug modal now reports the real decision of the card image resolver (source picked, reason, actual file, skipped sources with their reason) instead of always showing a computed `discussion-*.webp` name, which was wrong for default images and for rejected or failed external images. Note: this check can generate the card image file, like a regeneration.
 ### Fixed
-- Admin: the "extension not fully supported" message for the Blog and Repost options now uses an existing translation key.
+- Console: `regenerate-images` pagination and the `--without [-w]` selection (including when used alone) now work properly.
+- Console: `migrate-images` used translation keys that did not exist (with dashes instead of underscores).
+- Backend: tag default image file names are now built from the loaded tag instead of the route parameter.
 - Admin: the Info tool no longer fails when listing folder status (non-static method called statically).
 - Forum: the `phone` and `tablet` media queries in the stylesheet were invalid and are now applied.
 - Backend: the forum stylesheet no longer loads every tag from the database at compile time, and no longer needs recompiling when a tag's card width changes.

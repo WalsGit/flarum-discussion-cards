@@ -1,7 +1,6 @@
 import ExtensionPage from "flarum/admin/components/ExtensionPage";
 import app from "flarum/admin/app";
 import UploadImageButton from "flarum/common/components/UploadImageButton";
-import AlertWidget from "flarum/admin/components/AlertWidget";
 import isExtensionInstalled from "../helpers/isExtensionInstalled";
 import isExtensionActive from "../helpers/isExtensionActive";
 import Icon from "flarum/common/components/Icon";
@@ -304,27 +303,12 @@ export default class Settings extends ExtensionPage {
                 "walsgit_discussion_cards.admin.settings.general.otherOptions_title"
               )}
             </h3>
-            <AlertWidget
-              className="dc-debug-warning-widget"
-              alert={{
-                type: "warning",
-                dismissible: false,
-                title: app.translator.trans(
-                  "walsgit_discussion_cards.admin.settings.general.otherOptions_warningLabel"
-                ),
-                icon: "fas fa-exclamation-triangle",
-              }}
-            >
-              {app.translator.trans(
-                "walsgit_discussion_cards.admin.settings.general.otherOptions_warningText"
-              )}
-            </AlertWidget>
             <p className="helpText">
               {app.translator.trans(
                 "walsgit_discussion_cards.admin.settings.general.otherOptions_info"
               )}
             </p>
-            {/* fof/discussion-views OR michaelbelgium/flarum-ext-discussion-views */}
+            {/* fof/discussion-views OR michaelbelgium/flarum-discussion-views */}
             <div className="dc-section">
               <h4>
                 {app.translator.trans(
@@ -440,7 +424,7 @@ export default class Settings extends ExtensionPage {
                 disabled: !isExtensionActive(blogExtension.id),
               })}
               <hr></hr>
-              {/* shebaoting/repost */}
+              {/* shebaoting/flarum-repost */}
               <h4>
                 {app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.repostExtension_title_start"

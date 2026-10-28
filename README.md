@@ -21,7 +21,10 @@ For full list of changes & new features, please refer to the CHANGELOG.md file.
 
 ### 🧩  3rd party extensions support
 - **Flarum V2**
-    - As of version `2.1.0` `michaelbelgium/flarum-discussion-views` for views count on cards, `fof/blog` (successor of the abandoned `v17development/flarum-blog`) for blog post cards and `shebaoting/flarum-repost` (formerly `shebaoting/repost`) for "link sharing" are now supported again (with two new optional settings for Repost users, to add a link icon before the card title and the url's domain after it).
+    - As of version `2.1.0`, supported again:
+        - `michaelbelgium/flarum-discussion-views` for views count on cards.
+        - `fof/blog` (successor of the abandoned `v17development/flarum-blog`) for blog post cards.
+        - `shebaoting/flarum-repost` (formerly `shebaoting/repost`) for "link sharing", with two new optional settings to add a link icon before the card title and the url's domain after it.
     - As of version `2.0.0` `fof/discussion-views` is supported for views count on cards.
 
 - **Flarum V1**
@@ -47,9 +50,9 @@ The extension is natively in English 🇬🇧 & French 🇫🇷;  it's partially
 You can help translate it to your language via Weblate: [here for Flarum V2](https://weblate.rob006.net/projects/flarum2/walsgit-discussion-cards/).
 
 ### 🗒️ Notes
-- V2 developed and tested on Flarum 2.0.0-rc.1 (first version released `2.0.0`).
+- Latest release developed and tested on Flarum 2.0.2 (first V2 version released `2.0.0`).
 - V1 developed and tested on Flarum 1.8.7 (first version released `1.0.0`) and last version `1.4.4` was developed and tested on Flarum 1.8.16.
-- As of version `1.4.0` it requires a Flarum minimum version of 1.8.0.
+- V1: as of version `1.4.0` it requires a Flarum minimum version of 1.8.0.
 - Thanks to whomever suggested on Discord to use the tags selection component (sorry, we can no longer access the messages on Discord to mention them properly).
 - New settings page inspired by ``Friends of Flarum``'s [Best Answer](https://github.com/FriendsOfFlarum/best-answer) Extension.
 - Additional tags settings based on ``@askvortsov``'s [Discussion Templates](https://github.com/askvortsov1/flarum-discussion-templates) Extension.
