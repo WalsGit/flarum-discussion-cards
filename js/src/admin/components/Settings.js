@@ -31,6 +31,10 @@ export default class Settings extends ExtensionPage {
       url: "https://discuss.flarum.org/d/35420-repost",
     };
 
+    const repostLinksEnabled =
+      isExtensionActive(repostExtension.id) &&
+      Number(this.setting("walsgit_discussion_cards_allowRepostLinks")()) === 1;
+
     const warningIcon = <Icon name="fas fa-exclamation-triangle" />;
     const baseUrl = app.forum.attribute("baseUrl");
     const imagePath = baseUrl + "/assets/extensions/walsgit-discussion-cards/";
@@ -477,6 +481,28 @@ export default class Settings extends ExtensionPage {
                   "walsgit_discussion_cards.admin.settings.general.allowRepostLinks_help"
                 ),
                 disabled: !isExtensionActive(repostExtension.id),
+              })}
+              {this.buildSettingComponent({
+                type: "switch",
+                setting: "walsgit_discussion_cards_showRepostIcon",
+                label: app.translator.trans(
+                  "walsgit_discussion_cards.admin.settings.general.showRepostIcon_label"
+                ),
+                help: app.translator.trans(
+                  "walsgit_discussion_cards.admin.settings.general.showRepostIcon_help"
+                ),
+                disabled: !repostLinksEnabled,
+              })}
+              {this.buildSettingComponent({
+                type: "switch",
+                setting: "walsgit_discussion_cards_showRepostDomain",
+                label: app.translator.trans(
+                  "walsgit_discussion_cards.admin.settings.general.showRepostDomain_label"
+                ),
+                help: app.translator.trans(
+                  "walsgit_discussion_cards.admin.settings.general.showRepostDomain_help"
+                ),
+                disabled: !repostLinksEnabled,
               })}
             </div>
             {this.submitButton()}

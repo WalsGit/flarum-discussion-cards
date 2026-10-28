@@ -121,6 +121,10 @@ walsgit_discussion_cards:
         repostExtension_notActivated: "{icon} Cette extension doit être activée pour que cette option fonctionne."
         allowRepostLinks_label: "Activez les liens Repost sur les cartes"
         allowRepostLinks_help: "Si l'option est activée (avec l'extension Repost), les cartes des discussions qui commencent par une url ouvriront cette url dans un nouvel onglet lorsque l'on clique sur le titre de la carte, tandis que ce sera la discussion qui s'ouvrira, comme d'habitude, lorsque que l'on cliquera sur n'importe quelle autre partie de la carte."
+        showRepostIcon_label: "Afficher une icône de lien avant le titre"
+        showRepostIcon_help: "Nécessite d'activer les liens Repost sur les cartes (ci-dessus). Ajoute une icône de lien avant le titre des cartes dont la discussion commence par une url."
+        showRepostDomain_label: "Afficher le domaine de l'URL après le titre"
+        showRepostDomain_help: "Nécessite d'activer les liens Repost sur les cartes (ci-dessus). Ajoute le domaine de l'url après le titre des cartes dont la discussion commence par une url."
     tags:
       options_heading: "Discussion Cards"
       activation_button: "Activez pour cette étiquette"

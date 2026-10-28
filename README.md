@@ -21,7 +21,7 @@ For full list of changes & new features, please refer to the CHANGELOG.md file.
 
 ### 🧩  3rd party extensions support
 - **Flarum V2**
-    - As of version `2.1.0` `michaelbelgium/flarum-discussion-views` for views count on cards, `fof/blog` (successor of the abandoned `v17development/flarum-blog`) for blog post cards and `shebaoting/flarum-repost` (formerly `shebaoting/repost`) for "link sharing" are now supported again.
+    - As of version `2.1.0` `michaelbelgium/flarum-discussion-views` for views count on cards, `fof/blog` (successor of the abandoned `v17development/flarum-blog`) for blog post cards and `shebaoting/flarum-repost` (formerly `shebaoting/repost`) for "link sharing" are now supported again (with two new optional settings for Repost users, to add a link icon before the card title and the url's domain after it).
     - As of version `2.0.0` `fof/discussion-views` is supported for views count on cards.
 
 - **Flarum V1**

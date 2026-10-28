@@ -94,6 +94,8 @@ return [
         ->serializeToForum('walsgitDiscussionCardsShowRepliesOnRight', 'walsgit_discussion_cards_showRepliesOnRight')
         ->serializeToForum('walsgitDiscussionCardsShowLastPostInfo', 'walsgit_discussion_cards_showLastPostInfo')
         ->serializeToForum('walsgitDiscussionCardsAllowRepostLinks', 'walsgit_discussion_cards_allowRepostLinks')
+        ->serializeToForum('walsgitDiscussionCardsShowRepostIcon', 'walsgit_discussion_cards_showRepostIcon')
+        ->serializeToForum('walsgitDiscussionCardsShowRepostDomain', 'walsgit_discussion_cards_showRepostDomain')
         ->serializeToForum('walsgitDiscussionCardsUseListCards', 'walsgit_discussion_cards_useListCards')
         ->serializeToForum('walsgitDiscussionCardsListCardsCount', 'walsgit_discussion_cards_listCardsCount'),
     
