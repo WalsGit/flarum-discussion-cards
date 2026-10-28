@@ -89,7 +89,7 @@ export default class DebugModal extends FormModal {
                   : "not";
                 settingLine =
                   settingLine +
-                  `\n └ [shebaoting/repost ${repostExtensionInstalled} installed & ${repostExtensionActivated} activated]`;
+                  `\n └ [shebaoting/flarum-repost ${repostExtensionInstalled} installed & ${repostExtensionActivated} activated]`;
               }
 
               return settingLine + "\n";
@@ -214,9 +214,9 @@ export default class DebugModal extends FormModal {
   }
 
   checkDiscussion() {
-    const discussionId = parseInt(this.discussionId);
+    const discussionId = Number.parseInt(this.discussionId);
 
-    if (isNaN(discussionId) || discussionId < 1) {
+    if (Number.isNaN(discussionId) || discussionId < 1) {
       app.alerts.show(
         { type: "error" },
         app.translator.trans(

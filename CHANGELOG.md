@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Added
 - Forum/Admin: support for `michaelbelgium/flarum-discussion-views` (views count on cards).
+- Forum/Admin: support for `shebaoting/flarum-repost` (formerly `shebaoting/repost`): the title of a card opens the discussion's source url in a new tab.
 - Forum/Admin: support for `fof/blog`, the Flarum 2 successor of the abandoned `v17development/flarum-blog`
 - Backend: the card copy of the blog's default image is refreshed when the image is uploaded in `fof/blog` and deleted when it is removed. Note that card images are not regenerated automatically: images regeneration is needed after a deletion without replacement.
 

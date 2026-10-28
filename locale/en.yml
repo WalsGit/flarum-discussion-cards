@@ -120,7 +120,7 @@ walsgit_discussion_cards:
         repostExtension_notInstalled: "{icon} This extension needs to be installed & activated for this setting to work."
         repostExtension_notActivated: "{icon} This extension needs to be activated for this setting to work."
         allowRepostLinks_label: "Allow Repost links behavior on cards"
-        allowRepostLinks_help: "If this option is enabled (along with the Repost extension), cards for discussions that starts with a url, will open the url when the title of the card is clicked on, whereas the discussion will open, as usual, if any other part of the card is clicked on."
+        allowRepostLinks_help: "If this option is enabled (along with the Repost extension), cards for discussions that start with a url will open that url in a new tab when the title of the card is clicked on, whereas the discussion will open, as usual, if any other part of the card is clicked on."
     tags:
       options_heading: "Discussion Cards"
       activation_button: "Activate for this tag"

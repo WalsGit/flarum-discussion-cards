@@ -2,7 +2,6 @@ import ExtensionPage from "flarum/admin/components/ExtensionPage";
 import app from "flarum/admin/app";
 import UploadImageButton from "flarum/common/components/UploadImageButton";
 import AlertWidget from "flarum/admin/components/AlertWidget";
-import Link from "flarum/common/components/Link";
 import isExtensionInstalled from "../helpers/isExtensionInstalled";
 import isExtensionActive from "../helpers/isExtensionActive";
 import Icon from "flarum/common/components/Icon";
@@ -477,7 +476,7 @@ export default class Settings extends ExtensionPage {
                 help: app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.allowRepostLinks_help"
                 ),
-                disabled: true /* When V2 compatible: isExtensionActive(repostExtension.id) ? false : true, */,
+                disabled: !isExtensionActive(repostExtension.id),
               })}
             </div>
             {this.submitButton()}

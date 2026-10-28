@@ -10,17 +10,27 @@ export default class DiscussionTitle extends Component {
 
     // Optional: support for 3rg party extension Repost
     const repostActivated = "shebaoting-repost" in flarum.extensions;
-    const repostUrl = discussion.data.attributes.original_url || null;
+    const originalUrl = repostActivated
+      ? discussion.attribute("originalUrl")
+      : null;
+    // Only http(s) urls are used as link target
+    const repostUrl =
+      typeof originalUrl === "string" && /^https?:\/\//i.test(originalUrl)
+        ? originalUrl
+        : null;
 
     // Title max length (default: 80)
     const maxLength = 80;
 
     return (
       <h2 title={discussion.title()} className="dc-card-heading">
-        {Number(settings.allowRepostLinks) === 1 &&
-        repostActivated &&
-        repostUrl ? (
-          <a href={repostUrl} onclick={(e) => e.stopPropagation()}>
+        {Number(settings.allowRepostLinks) === 1 && repostUrl ? (
+          <a
+            href={repostUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onclick={(e) => e.stopPropagation()}
+          >
             {truncate(discussion.title(), maxLength)}
           </a>
         ) : (
