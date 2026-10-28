@@ -56,6 +56,7 @@
 - Admin: the per-tag activation state in the tag edit modal now compares tag ids as strings.
 - Console: `--popular [-p]` / `--unpopular [-u]` now break ties in view counts by discussion id (most recent first).
 - Console: `--popular [-p]` / `--unpopular [-u]` now show a warning when no "Discussion Views" extension is enabled, instead of only showing "No discussions to process".
+- Forum: a card image that cannot be loaded (deleted file, changed domain...) is now replaced by the extension's placeholder image instead of a broken image. Admins also get a single short warning alert with a "Details" button that opens a list of the affected discussions.
 
 ## [2.0.3] - 2026-10-20
 *Complementary security release.*
