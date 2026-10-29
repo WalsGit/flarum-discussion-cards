@@ -5,7 +5,7 @@ walsgit_discussion_cards:
     console:
       postUpdateCardImageError: "Discussion Cards> Error while refreshing updated card image for this discussion: "
       brokenCardImage: "Discussion Cards> Card image of discussion #{id} could not be loaded, a placeholder (stub image) was displayed."
-      brokenCardImageDetails: "Image URL: {url}. The file may be missing or unreachable. Check or regenerate the image for this discussion."
+      brokenCardImageDetails: "Image URL: {url}. The file may be missing or unreachable. If it is missing, use the \"Repair broken images\" admin tool or php flarum discussion-cards:repair-images."
     brokenImagesAlert: "Some discussion card images could not be loaded."
     brokenImagesDetails: "Details"
     brokenImagesModal:
@@ -14,7 +14,7 @@ walsgit_discussion_cards:
       listTitle: "At least {count} discussion(s) concerned:"
       more: "...and {count} more."
       partial: "Only the discussions displayed on the pages you visited are detected: other discussions may be concerned too."
-      action: "Please check these images (see console for details on broken image urls), or regenerate them from the extension's admin tools or CLI commands."
+      action: "Please check these images (see the console for details on broken image URLs), then use the \"Repair broken images\" tool in the Tools menu of the extension's admin page, or the CLI command php flarum discussion-cards:repair-images."
   admin:
     settings:
       statsToolsBanner:
