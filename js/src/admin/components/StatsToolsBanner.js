@@ -4,6 +4,7 @@ import Button from "flarum/common/components/Button";
 import app from "flarum/admin/app";
 import PurgeImagesModal from "./PurgeImagesModal";
 import RegenerateImagesModal from "./RegenerateImagesModal";
+import RepairBrokenImagesModal from "./RepairBrokenImagesModal";
 import DebugModal from "./DebugModal";
 
 export default class StatsToolsBanner extends Component {
@@ -106,6 +107,18 @@ export default class StatsToolsBanner extends Component {
             </strong>
           </li>
 
+          <li className="StatsWidget-item">
+            <span className="StatsWidget-label">
+              {app.translator.trans(
+                "walsgit_discussion_cards.admin.settings.statsToolsBanner.statBrokenImagesTitle"
+              )}
+            </span>
+            <br />
+            <strong className="StatsWidget-value">
+              {this.loading ? "…" : this.stats.brokenImages ?? "…"}
+            </strong>
+          </li>
+
           {/* ==== Tools menu ==== */}
           <li className="item-tools">
             <Dropdown
@@ -131,6 +144,12 @@ export default class StatsToolsBanner extends Component {
               <Button onclick={() => app.modal.show(RegenerateImagesModal)}>
                 {app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.statsToolsBanner.toolsMenuRegenerateImages"
+                )}
+              </Button>
+
+              <Button onclick={() => app.modal.show(RepairBrokenImagesModal)}>
+                {app.translator.trans(
+                  "walsgit_discussion_cards.admin.settings.statsToolsBanner.toolsMenuRepairImages"
                 )}
               </Button>
 

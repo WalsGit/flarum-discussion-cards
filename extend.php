@@ -20,6 +20,8 @@ use Walsgit\Discussion\Cards\Api\Controllers\RefreshStatsController;
 use Walsgit\Discussion\Cards\Api\Controllers\PurgeImagesController;
 use Walsgit\Discussion\Cards\Api\Controllers\RegenerateImagesController;
 use Walsgit\Discussion\Cards\Api\Controllers\ShowInfoController;
+use Walsgit\Discussion\Cards\Api\Controllers\ScanBrokenImagesController;
+use Walsgit\Discussion\Cards\Api\Controllers\ResetBrokenImagesController;
 use Walsgit\Discussion\Cards\Api\Controllers\CheckDiscussionController;
 use Walsgit\Discussion\Cards\Validator\TagSettingsValidator;
 use Walsgit\Discussion\Cards\Validator\ImageUploadValidator;
@@ -29,6 +31,7 @@ use Walsgit\Discussion\Cards\Providers\TagImageSelectorProvider;
 use Walsgit\Discussion\Cards\Console\MigrateImagesCommand;
 use Walsgit\Discussion\Cards\Console\PurgeImagesCommand;
 use Walsgit\Discussion\Cards\Console\RegenerateImagesCommand;
+use Walsgit\Discussion\Cards\Console\RepairImagesCommand;
 use Walsgit\Discussion\Cards\Listener\UpdateCardImageOnDiscussionUpdate;
 use Walsgit\Discussion\Cards\Listener\DeleteCardImageOnDiscussionDelete;
 use Walsgit\Discussion\Cards\Middleware\RefreshBlogDefaultImage;
@@ -135,11 +138,14 @@ return [
         ->post('/walsgit/discussion-cards/image-stats/refresh', 'walsgit.discussion-cards.image-stats.refresh', RefreshStatsController::class)
         ->post('/walsgit/discussion-cards/purge-images', 'walsgit.discussion-cards.purge-images', PurgeImagesController::class)
         ->post('/walsgit/discussion-cards/regenerate-images', 'walsgit.discussion-cards.regenerate-images', RegenerateImagesController::class)
+        ->get('/walsgit/discussion-cards/broken-images', 'walsgit.discussion-cards.broken-images', ScanBrokenImagesController::class)
+        ->post('/walsgit/discussion-cards/broken-images/reset', 'walsgit.discussion-cards.broken-images.reset', ResetBrokenImagesController::class)
         ->get('/walsgit/discussion-cards/info', 'walsgit.discussion-cards.info', ShowInfoController::class)
         ->get('/walsgit/discussion-cards/check-discussion/{id}', 'walsgit.discussion-cards.check-discussion', CheckDiscussionController::class),
     
     (new Extend\Console())
         ->command(MigrateImagesCommand::class)
         ->command(PurgeImagesCommand::class)
-        ->command(RegenerateImagesCommand::class),
+        ->command(RegenerateImagesCommand::class)
+        ->command(RepairImagesCommand::class),
 ];
