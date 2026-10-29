@@ -124,12 +124,22 @@ export default class RegenerateImagesModal extends Modal {
                 {app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_summary",
                   {
-                    total: this.summary.success + this.summary.errors,
-                    success: this.summary.success,
+                    total: this.summary.done,
+                    regenerated: this.summary.regenerated,
+                    unchanged: this.summary.unchanged,
+                    noImage: this.summary.noImage,
                     errors: this.summary.errors,
                   }
                 )}
               </div>
+              {this.summary.noImage > 0 && (
+                <div className="helpText">
+                  {app.translator.trans(
+                    "walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_noImageHint",
+                    { count: this.summary.noImage }
+                  )}
+                </div>
+              )}
             </div>
           )}
           {this.failures.length > 0 && (
@@ -151,7 +161,7 @@ export default class RegenerateImagesModal extends Modal {
     );
   }
 
-    regenerateImages(type) {
+  regenerateImages(type) {
     this.regenerateType = type;
     this.loading = true;
     this.summary = null;
@@ -161,7 +171,14 @@ export default class RegenerateImagesModal extends Modal {
     );
     m.redraw.sync(); // Force immediate redraw
 
-    const totals = { selected: 0, done: 0, success: 0, errors: 0 };
+    const totals = {
+      selected: 0,
+      done: 0,
+      regenerated: 0,
+      unchanged: 0,
+      noImage: 0,
+      errors: 0,
+    };
 
     // One request processes as many discussions as its time budget allows,
     // then we call again with the ids left over until nothing remains
@@ -179,7 +196,9 @@ export default class RegenerateImagesModal extends Modal {
             totals.selected = result.selected;
           }
 
-          totals.success += result.success;
+          totals.regenerated += result.regenerated;
+          totals.unchanged += result.unchanged;
+          totals.noImage += result.noImage;
           totals.errors += result.errors;
           totals.done += result.success + result.errors;
           this.failures = this.failures.concat(result.failures);

@@ -30,6 +30,9 @@
  *      > when combined with other flags, filters those discussions to only include those without images
  *      > when used with --all, regenerates images for ALL discussions without images
  *      > if a number is specified, limits processing to that many discussions without images
+ *      > used alone (or with a number), it always takes the latest discussions still without images: those that no image can be
+ *        found for (no image in the first post, no tag or general default image) are taken again at each run;
+ *        use --all --without to go through every discussion without images once
  * discussion-cards:regenerate-images -d | --discussion [discussion.id]
  *      > will regenerate card images of specific discussion ids (comma separated)
  * discussion-cards:regenerate-images --tag [tag.id OR tag.slug]
@@ -87,7 +90,7 @@ class RegenerateImagesCommand extends AbstractCommand
             ->addOption('unpopular', 'u', InputOption::VALUE_OPTIONAL, 'Regenerate card images for the N number of unpopular discussions (default is 20)')
             ->addOption('discussion', 'd', InputOption::VALUE_OPTIONAL, 'Regenerate card images for specified discussion id(s) (comma separated)')
             ->addOption('all', 'a', InputOption::VALUE_NONE, 'Regenerate card images for all discussions')
-            ->addOption('without', 'w', InputOption::VALUE_OPTIONAL, 'Regenerate card images only for discussions without images (walsgit_card_image_url is NULL)', 'false')
+            ->addOption('without', 'w', InputOption::VALUE_OPTIONAL, 'Regenerate card images only for discussions without images (walsgit_card_image_url is NULL). Alone, it takes the latest ones; with --all, it goes through all of them once', 'false')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Simulate without changing or saving anything')
             ->addOption('batch-size', 'b', InputOption::VALUE_OPTIONAL, 'Set a custom batch size for the number of discussions to process at a time', self::DEFAULT_BATCH_SIZE)
             ->addOption('tag', null, InputOption::VALUE_OPTIONAL, 'Regenerate card images for all discussions of specified tag id(s) and/or quoted tag slug(s) (comma separated)');
@@ -312,34 +315,22 @@ class RegenerateImagesCommand extends AbstractCommand
             $ids,
             $dryRun,
             null,
-            function (int $id, ?string $error) use ($bar) {
-                if ($error !== null) {
-                    $this->error(
-                        $this->trans('Error', [
-                            'id'      => $id,
-                            'message' => $error,
-                        ])
-                    );
-                }
-
-                $bar->advance();
-            }
+            $this->progressCallback($bar)
         );
 
         $bar->finish();
         $this->output->writeln('');
 
-        $this->printSummary($total, $result['success'], $result['errors'], $dryRun);
+        $this->printSummary($total, $result, $dryRun);
 
         return Command::SUCCESS;
     }
 
     private function processAllDiscussions(int $batchSize, bool $dryRun): int
     {
-        $total   = Discussion::count();
-        $success = 0;
-        $errors  = 0;
-        $offset  = 0;
+        $total  = Discussion::count();
+        $totals = $this->emptyTotals();
+        $offset = 0;
 
         $this->info($this->trans('StartAll', ['count' => $total]));
 
@@ -358,24 +349,7 @@ class RegenerateImagesCommand extends AbstractCommand
                 break;
             }
 
-            foreach ($ids as $id) {
-                try {
-                    if (!$dryRun) {
-                        $this->regenerator->regenerateDiscussion($id);
-                    }
-                    $success++;
-                } catch (\Throwable $e) {
-                    $errors++;
-                    $this->error(
-                        $this->trans('Error', [
-                            'id'      => $id,
-                            'message' => $e->getMessage(),
-                        ])
-                    );
-                }
-
-                $bar->advance();
-            }
+            $this->addTotals($totals, $this->regenerator->processIds($ids, $dryRun, null, $this->progressCallback($bar)));
 
             $offset += $batchSize;
         } while (true);
@@ -383,7 +357,7 @@ class RegenerateImagesCommand extends AbstractCommand
         $bar->finish();
         $this->output->writeln('');
 
-        $this->printSummary($total, $success, $errors, $dryRun);
+        $this->printSummary($total, $totals, $dryRun);
 
         return Command::SUCCESS;
     }
@@ -407,8 +381,7 @@ class RegenerateImagesCommand extends AbstractCommand
         $bar->start();
 
         $processed = 0;
-        $success   = 0;
-        $errors    = 0;
+        $totals    = $this->emptyTotals();
         $lastId    = 0;
 
         while ($limit === null || $processed < $limit) {
@@ -428,26 +401,7 @@ class RegenerateImagesCommand extends AbstractCommand
                 break;
             }
 
-            $result = $this->regenerator->processIds(
-                $ids,
-                $dryRun,
-                null,
-                function (int $id, ?string $error) use ($bar) {
-                    if ($error !== null) {
-                        $this->error(
-                            $this->trans('Error', [
-                                'id'      => $id,
-                                'message' => $error,
-                            ])
-                        );
-                    }
-
-                    $bar->advance();
-                }
-            );
-
-            $success   += $result['success'];
-            $errors    += $result['errors'];
+            $this->addTotals($totals, $this->regenerator->processIds($ids, $dryRun, null, $this->progressCallback($bar)));
             $processed += count($ids);
             $lastId     = max($ids);
         }
@@ -455,7 +409,7 @@ class RegenerateImagesCommand extends AbstractCommand
         $bar->finish();
         $this->output->writeln('');
 
-        $this->printSummary($processed, $success, $errors, $dryRun);
+        $this->printSummary($processed, $totals, $dryRun);
 
         return Command::SUCCESS;
     }
@@ -519,16 +473,68 @@ class RegenerateImagesCommand extends AbstractCommand
      * =====================
      */
 
-    private function printSummary(?int $total, int $success, int $errors, bool $dryRun): void
+    private function emptyTotals(): array
     {
+        return ['success' => 0, 'regenerated' => 0, 'unchanged' => 0, 'noImage' => 0, 'errors' => 0];
+    }
+
+    private function addTotals(array &$totals, array $result): void
+    {
+        foreach (array_keys($totals) as $key) {
+            $totals[$key] += $result[$key];
+        }
+    }
+
+    private function progressCallback(ProgressBar $bar): callable
+    {
+        return function (int $id, ?string $error) use ($bar) {
+            if ($error !== null) {
+                $this->error(
+                    $this->trans('Error', [
+                        'id'      => $id,
+                        'message' => $error,
+                    ])
+                );
+            }
+
+            $bar->advance();
+        };
+    }
+
+    /**
+     * @param array{success: int, regenerated: int, unchanged: int, noImage: int, errors: int} $totals
+     */
+    private function printSummary(?int $total, array $totals, bool $dryRun): void
+    {
+        $total ??= $totals['success'] + $totals['errors'];
+
+        // A dry run resolves nothing: only the numbers of discussions that would be processed are known
+        if ($dryRun) {
+            $this->info(
+                $this->trans('Summary', [
+                    'total'   => $total,
+                    'success' => $totals['success'],
+                    'errors'  => $totals['errors'],
+                    'mode'    => ' [DRY-RUN]',
+                ])
+            );
+
+            return;
+        }
+
         $this->info(
-            $this->trans('Summary', [
-                'total'   => $total ?? ($success + $errors),
-                'success' => $success,
-                'errors'  => $errors,
-                'mode'    => $dryRun ? ' [DRY-RUN]' : '',
+            $this->trans('SummaryDetailed', [
+                'total'       => $total,
+                'regenerated' => $totals['regenerated'],
+                'unchanged'   => $totals['unchanged'],
+                'noImage'     => $totals['noImage'],
+                'errors'      => $totals['errors'],
             ])
         );
+
+        if ($totals['noImage'] > 0) {
+            $this->output->writeln('<comment>' . $this->trans('NoImageHint', ['count' => $totals['noImage']]) . '</comment>');
+        }
     }
 
     protected function trans(string $key, array $params = []): string

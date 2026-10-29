@@ -49,6 +49,7 @@
 - Admin: the discussion check in the debug modal now reports the real decision of the card image resolver (source picked, reason, actual file, skipped sources with their reason) instead of always showing a computed `discussion-*.webp` name, which was wrong for default images and for rejected or failed external images. Note: this check can generate the card image file, like a regeneration.
 ### Fixed
 - Console: `regenerate-images` pagination and the `--without [-w]` selection (including when used alone) now work properly.
+- Console/Admin: the regenerate summary no longer reports discussions as successfully regenerated when nothing changed. It now distinguishes regenerated, unchanged and "without available image" discussions (no image in the first post and no tag or general default image) and errors, and hints at setting a default image for the latter.
 - Console: `migrate-images` used translation keys that did not exist (with dashes instead of underscores).
 - Backend: tag default image file names are now built from the loaded tag instead of the route parameter.
 - Admin: the Info tool no longer fails when listing folder status (non-static method called statically).

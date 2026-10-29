@@ -49,11 +49,14 @@ class RegenerateImagesController implements RequestHandlerInterface
         $result = $this->regenerator->processIds($ids, false, self::TIME_BUDGET);
 
         return new JsonResponse([
-            'selected'  => count($ids),
-            'success'   => $result['success'],
-            'errors'    => $result['errors'],
-            'failures'  => $result['failures'],
-            'remaining' => $result['remaining'],
+            'selected'    => count($ids),
+            'success'     => $result['success'],
+            'regenerated' => $result['regenerated'],
+            'unchanged'   => $result['unchanged'],
+            'noImage'     => $result['noImage'],
+            'errors'      => $result['errors'],
+            'failures'    => $result['failures'],
+            'remaining'   => $result['remaining'],
         ]);
     }
 }

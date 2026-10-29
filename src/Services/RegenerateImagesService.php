@@ -20,6 +20,10 @@ class RegenerateImagesService
 {
     public const DEFAULT_LIMIT = 20;
 
+    public const STATUS_REGENERATED = 'regenerated';
+    public const STATUS_UNCHANGED = 'unchanged';
+    public const STATUS_NO_IMAGE = 'no_image';
+
     public function __construct(
         protected CardImageRegenerationService $regenerator,
         protected ExtensionManager $extensionManager
@@ -33,13 +37,20 @@ class RegenerateImagesService
      *                                  At least one discussion is always processed.
      * @param callable|null $onItem     called after each discussion with (int $id, ?string $errorMessage)
      *
-     * @return array{success: int, errors: int, failures: array<int, array{id: int, message: string}>, remaining: int[]}
+     * `success` counts every discussion processed without error (regenerated + unchanged + noImage; all of them in a
+     * dry run, where nothing is resolved). `noImage` are the discussions still without any card image because the resolver
+     * found nothing (no image in the first post, no tag or general default image).
+     *
+     * @return array{success: int, regenerated: int, unchanged: int, noImage: int, errors: int, failures: array<int, array{id: int, message: string}>, remaining: int[]}
      */
     public function processIds(array $ids, bool $dryRun = false, ?float $timeBudget = null, ?callable $onItem = null): array
     {
         $start = microtime(true);
         $remaining = array_values($ids);
         $success = 0;
+        $regenerated = 0;
+        $unchanged = 0;
+        $noImage = 0;
         $errors = 0;
         $failures = [];
 
@@ -55,7 +66,11 @@ class RegenerateImagesService
 
             try {
                 if (!$dryRun) {
-                    $this->regenerateDiscussion($id);
+                    match ($this->regenerateDiscussion($id)) {
+                        self::STATUS_REGENERATED => $regenerated++,
+                        self::STATUS_NO_IMAGE => $noImage++,
+                        default => $unchanged++,
+                    };
                 }
                 $success++;
             } catch (\Throwable $e) {
@@ -70,14 +85,20 @@ class RegenerateImagesService
         }
 
         return [
-            'success'   => $success,
-            'errors'    => $errors,
-            'failures'  => $failures,
-            'remaining' => $remaining,
+            'success'     => $success,
+            'regenerated' => $regenerated,
+            'unchanged'   => $unchanged,
+            'noImage'     => $noImage,
+            'errors'      => $errors,
+            'failures'    => $failures,
+            'remaining'   => $remaining,
         ];
     }
 
-    public function regenerateDiscussion(int $discussionId): void
+    /**
+     * @return string one of the STATUS_* constants
+     */
+    public function regenerateDiscussion(int $discussionId): string
     {
         $discussion = Discussion::with('firstPost')->find($discussionId);
 
@@ -87,7 +108,13 @@ class RegenerateImagesService
 
         $html = $discussion->firstPost ? $discussion->firstPost->formatContent() : null;
 
-        $this->regenerator->regenerate($discussion, $html);
+        if ($this->regenerator->regenerate($discussion, $html)) {
+            return self::STATUS_REGENERATED;
+        }
+
+        return $discussion->walsgit_card_image_url === null
+            ? self::STATUS_NO_IMAGE
+            : self::STATUS_UNCHANGED;
     }
 
     /**
