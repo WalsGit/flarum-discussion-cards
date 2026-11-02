@@ -53,6 +53,8 @@
   | `@keyframes scroll` | `@keyframes dc-scroll` |
 - Admin: the stylesheet no longer styles every modal of the admin panel (`.Modal-body`), it now only targets the extension's own modals. Admin class names (`DC-*`, `DiscussionCardsSettings`, `Debug-discussion`, …) were normalized to `dc-*` as well.
 - Admin: the discussion check in the debug modal now reports the real decision of the card image resolver (source picked, reason, actual file, skipped sources with their reason) instead of always showing a computed `discussion-*.webp` name, which was wrong for default images and for rejected or failed external images. Note: this check can generate the card image file, like a regeneration.
+- Backend: discussions saved before 2.1.0 with an external image URL keep it as is until their card image is regenerated (use the regenerate tool, or the repair tool to find them).
+
 ### Fixed
 - Console: `regenerate-images` pagination and the `--without [-w]` selection (including when used alone) now work properly.
 - Console/Admin: the regenerate summary no longer reports discussions as successfully regenerated when nothing changed. It now distinguishes regenerated, unchanged and "without available image" discussions (no image in the first post and no tag or general default image) and errors, and hints at setting a default image for the latter.

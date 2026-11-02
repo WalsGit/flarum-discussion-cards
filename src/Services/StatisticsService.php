@@ -72,7 +72,7 @@ class StatisticsService
         // Extracting filename to compare it with image files on disk
         $usedImagesSet = array_flip(array_map(fn($url) => basename($url), $usedImages));
 
-        // --- Counting discussions whose stored image file is missing or on another origin ---
+        // --- Counting discussions whose stored image file is missing from the disk ---
         $brokenImages = 0;
         foreach ($usedImages as $url) {
             [$category] = $this->brokenImages->classify((string) $url, $files);
