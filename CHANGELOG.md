@@ -15,6 +15,10 @@
 - Backend: the card copy of the blog's default image is refreshed when the image is uploaded in `fof/blog` and deleted when it is removed. Note that card images are not regenerated automatically: images regeneration is needed after a deletion without replacement.
 - Admin: new "Repair broken images" tool (Tools menu) and a "Broken images" counter in the stats banner. It detects the discussions whose card image file is missing from the server or whose image URL uses another domain, scheme or folder than the forum's, regenerates their images, and can set the ones still broken back to empty as a last resort. Missing default images (general, tag, blog) are also reported but need to be fixed manually.
 - Console: `discussion-cards:repair-images` command with `--dry-run` and `--reset-null` options, the CLI equivalent of the "Repair broken images" tool.
+- Console: added a new `--log` option on `discussion-cards:regenerate-images`, `discussion-cards:repair-images` and `discussion-cards:purge-images` that writes the command that was run and the detail of each discussion or file processed to a log file in `storage/logs/walsgit-discussion-cards/`.
+- Console: the same details are shown line by line in the terminal with the `-v` flag (instead of the progress bar), with the progress as a counter at the end of each line.
+- Admin: new "Debug options" section at the end of the settings page with "Log actions" (who ran which tool and a summary of the result, in `admin-tools-actions-<date>.log`) and "Log action details" (with each discussion or file processed in a dedicated file). They only apply to actions run from the admin page's tools menu, not to Console commands.
+- Backend: debug logs (`admin-tools-actions`, `regenerate`, `repair` and `purge`) older than 7 days are deleted whenever a log is written; no cron needed. Migration logs are never deleted.
 
 ### Changed
 - Backend: card images are generated with short network timeouts (2s to connect, 4s in total) when a user is waiting for a post to be created or edited; console and admin tools keep longer ones.

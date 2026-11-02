@@ -40,6 +40,7 @@ As of version `1.4.0` new CLI commands have been added to manage card images:
 - `php flarum discussion-cards:purge-images` to delete unused or all card images from server.
 - `php flarum discussion-cards:regenerate-images` to regenerate card images or generate missing card images.
 - `php flarum discussion-cards:repair-images` to detect and repair broken card images (deleted files, changed domain or folder). Added in version `2.1.0`.
+As of version `2.1.0` the three commands above have a `--log` option (writes the command and the detail of each discussion or file to a log file) and show the same details in the terminal with `-v` or `--verbose` flag.
 All details on how to use them can be found in the extension's wiki on github (See Documentation in the Links section below or in the Admin Settings Page). You can also add the `--help` flag to each command to list options.
 
 ## 🖼️ Screenshots
