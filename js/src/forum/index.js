@@ -11,6 +11,8 @@ import ListItem from "./components/ListItem";
 import checkOverflowingContent from "./helpers/checkOverflowingContent";
 import Post from "flarum/common/models/Post";
 import Discussion from "flarum/common/models/Discussion";
+import DiscussionControls from "flarum/forum/utils/DiscussionControls";
+import BaseItem from "./components/common/BaseItem";
 
 /**
  * Parse the allowed tags setting (JSON string) into an array of tag ids as strings.
@@ -237,6 +239,117 @@ extend(Post.prototype, "delete", function (promise) {
 
   promise.then(() => refreshCardImage(discussion)).catch(() => {});
 });
+
+/**
+ * Ids of the discussions whose card image is being regenerated (prevents double clicks)
+ */
+const regeneratingImages = new Set();
+
+/**
+ * Ask the server to regenerate the card image of a discussion and update its card
+ */
+function regenerateCardImage(discussion) {
+  const id = discussion.id();
+
+  if (regeneratingImages.has(id)) {
+    return;
+  }
+
+  regeneratingImages.add(id);
+  m.redraw();
+
+  // Without the client-side "?r=" added by a previous regeneration
+  const previousUrl = (discussion.attribute("cardImageUrl") || "").replace(
+    /[?&]r=\d+$/,
+    ""
+  );
+
+  app
+    .request({
+      method: "POST",
+      url:
+        app.forum.attribute("apiUrl") +
+        "/walsgit/discussion-cards/regenerate-image/" +
+        id,
+    })
+    .then((response) => {
+      // Nothing to do: leave the card as it is
+      if (response.status === "unchanged") {
+        app.alerts.show(
+          { type: "success" },
+          app.translator.trans(
+            "walsgit_discussion_cards.forum.regenerateImageUnchanged"
+          )
+        );
+        return;
+      }
+
+      let url = response.cardImageUrl || null;
+
+      // Same URL (e.g. file recreated under the same name): add a client-side query string so the
+      // card retries the image (it shows its stub for a URL that failed) and the browser cache is bypassed
+      if (url !== null && url === previousUrl) {
+        url += (url.includes("?") ? "&" : "?") + "r=" + Date.now();
+      }
+
+      discussion.pushAttributes({ cardImageUrl: url });
+
+      const key =
+        response.status === "no_image"
+          ? "regenerateImageNoImage"
+          : "regenerateImageDone";
+
+      app.alerts.show(
+        { type: response.status === "no_image" ? "warning" : "success" },
+        app.translator.trans("walsgit_discussion_cards.forum." + key)
+      );
+    })
+    .catch((error) => {
+      console.error(
+        app.translator.trans(
+          "walsgit_discussion_cards.forum.regenerateImageError"
+        ),
+        error
+      );
+      app.alerts.show(
+        { type: "error" },
+        app.translator.trans(
+          "walsgit_discussion_cards.forum.regenerateImageError"
+        )
+      );
+    })
+    .finally(() => {
+      regeneratingImages.delete(id);
+      m.redraw();
+    });
+}
+
+/**
+ * Adds a "Regenerate card image" item in the menu of the cards (admins only)
+ */
+extend(
+  DiscussionControls,
+  "moderationControls",
+  function (items, discussion, context) {
+    if (!app.session.user?.isAdmin() || !(context instanceof BaseItem)) {
+      return;
+    }
+
+    const loading = regeneratingImages.has(discussion.id());
+
+    items.add(
+      "walsgitRegenerateCardImage",
+      <Button
+        icon="fas fa-image"
+        loading={loading}
+        disabled={loading}
+        onclick={() => regenerateCardImage(discussion)}
+      >
+        {app.translator.trans("walsgit_discussion_cards.forum.regenerateImage")}
+      </Button>
+    );
+  }
+);
 
 // Allow flarum to discover modules
 import "./forum";

@@ -12,6 +12,7 @@
 namespace Walsgit\Discussion\Cards\Api\Controllers;
 
 use Flarum\Discussion\Discussion;
+use Flarum\Foundation\Paths;
 use Flarum\Foundation\ValidationException;
 use Flarum\Http\RequestUtil;
 use Flarum\Locale\Translator;
@@ -29,10 +30,14 @@ use Walsgit\Discussion\Cards\Services\RegenerateImagesService;
  */
 class RegenerateDiscussionImageController implements RequestHandlerInterface
 {
+    /** Stored value of a discussion image file (the only kind of file a regeneration can recreate). */
+    protected const DISCUSSION_FILE = '#^discussion-\d+-[a-f0-9]+-[a-f0-9]+\.webp$#';
+
     public function __construct(
         protected RegenerateImagesService $regenerator,
         protected CardImageUrlBuilder $urlBuilder,
-        protected Translator $translator
+        protected Translator $translator,
+        protected Paths $paths
     ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -53,6 +58,11 @@ class RegenerateDiscussionImageController implements RequestHandlerInterface
             return new JsonResponse(['errors' => [['status' => '404', 'code' => 'not_found']]], 404);
         }
 
+        // Was the current image file missing from the disk? (the stored value does not change if it is recreated)
+        $fileMissingBefore = $this->discussionFileMissing(
+            Discussion::query()->whereKey($id)->value('walsgit_card_image_url')
+        );
+
         try {
             $outcome = $this->regenerator->regenerateDiscussionDetailed($id);
         } catch (\Throwable $e) {
@@ -62,10 +72,30 @@ class RegenerateDiscussionImageController implements RequestHandlerInterface
         // Read back the stored value: it is null when the discussion ended up with no card image
         $stored = Discussion::query()->whereKey($id)->value('walsgit_card_image_url');
 
+        $status = $outcome['status'];
+
+        // Same path in the database, but the file was missing and has been recreated: it is a regeneration
+        if ($status === RegenerateImagesService::STATUS_UNCHANGED && $fileMissingBefore && !$this->discussionFileMissing($stored)) {
+            $status = RegenerateImagesService::STATUS_REGENERATED;
+        }
+
         return new JsonResponse([
             // regenerated, unchanged or no_image (RegenerateImagesService::STATUS_*)
-            'status'       => $outcome['status'],
+            'status'       => $status,
             'cardImageUrl' => $this->urlBuilder->build($stored),
         ]);
+    }
+
+    /**
+     * True if the stored value is a discussion image file (strict name, inside the extension's folder)
+     * that does not exist on the disk. Anything else (null, external URL, default image): false.
+     */
+    protected function discussionFileMissing(?string $stored): bool
+    {
+        if ($stored === null || !preg_match(self::DISCUSSION_FILE, $stored)) {
+            return false;
+        }
+
+        return !is_file($this->paths->public . '/assets/extensions/walsgit-discussion-cards/' . $stored);
     }
 }

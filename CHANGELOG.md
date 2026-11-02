@@ -19,6 +19,7 @@
 - Console: the same details are shown line by line in the terminal with the `-v` flag (instead of the progress bar), with the progress as a counter at the end of each line.
 - Admin: new "Debug options" section at the end of the settings page with "Log actions" (who ran which tool and a summary of the result, in `admin-tools-actions-<date>.log`) and "Log action details" (with each discussion or file processed in a dedicated file). They only apply to actions run from the admin page's tools menu, not to Console commands.
 - Backend: debug logs (`admin-tools-actions`, `regenerate`, `repair` and `purge`) older than 7 days are deleted whenever a log is written; no cron needed. Migration logs are never deleted.
+- Forum: admins get a "Regenerate card image" item in the menu of the cards (primary and list cards, not in the standard Flarum list) to regenerate the image of a single discussion. Using a new admin-only endpoint `POST /api/walsgit/discussion-cards/regenerate-image/{id}`.
 
 ### Changed
 - Backend: card images are now stored as a path relative to the extension's assets folder instead of an absolute URL, so a change of domain, scheme or sub-folder no longer breaks them. A migration converts the existing ones (external image URLs saved before 2.1.0 are left as they are). The `cardImageUrl` API attribute still returns an absolute URL, rebuilt from the forum's current URL. Breaking Change: **Extensions or themes that read the `discussions.walsgit_card_image_url` column directly now get a relative path.**

@@ -2,6 +2,11 @@ walsgit_discussion_cards:
   forum:
     replies: "Replies: {count}"
     unreadReplies: "Unread replies: {count}"
+    regenerateImage: "Regenerate card image"
+    regenerateImageDone: "The card image was successfully regenerated."
+    regenerateImageUnchanged: "The card image is already up to date."
+    regenerateImageNoImage: "No image available for this discussion (none in the first post and no default image)."
+    regenerateImageError: "The card image could not be regenerated."
     console:
       postUpdateCardImageError: "Discussion Cards> Error while refreshing updated card image for this discussion: "
       brokenCardImage: "Discussion Cards> Card image of discussion #{id} could not be loaded, a placeholder (stub image) was displayed."
