@@ -21,7 +21,7 @@ class InfoService
 
     public function getFileSystemInfo(): array
     {
-        $assetsPath = $this->paths->public . '/assets/extensions/walsgit-discussion-cards';
+        $assetsPath = ExtensionPaths::assetsPath($this->paths);
         $logsPath = $this->paths->storage . '/logs/walsgit-discussion-cards';
         $tempPath = sys_get_temp_dir();
 

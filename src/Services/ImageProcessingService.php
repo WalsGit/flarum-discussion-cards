@@ -24,9 +24,9 @@ use RuntimeException;
 class ImageProcessingService
 {
     protected array $directories = [
-        'default'    => 'assets/extensions/walsgit-discussion-cards/',
-        'tag'        => 'assets/extensions/walsgit-discussion-cards/tags/',
-        'discussion' => 'assets/extensions/walsgit-discussion-cards/discussions/',
+        'default'    => ExtensionPaths::ASSETS_DIR . '/',
+        'tag'        => ExtensionPaths::ASSETS_DIR . '/tags/',
+        'discussion' => ExtensionPaths::ASSETS_DIR . '/discussions/',
     ];
 
     protected array $defaults = [
@@ -233,7 +233,7 @@ class ImageProcessingService
      */
     public function resolveExtensionDefaultImage(string $imageUrl): ?string
     {
-        $prefix = '/assets/extensions/walsgit-discussion-cards/';
+        $prefix = '/' . ExtensionPaths::ASSETS_DIR . '/';
         $relative = $this->localRelativePath($imageUrl);
 
         if ($relative === null || !str_starts_with($relative, $prefix)) {
@@ -472,7 +472,7 @@ class ImageProcessingService
     */
     public function cleanupOldDiscussionImages(int $discussionId, ?string $keepFilename = null): void
     {
-        $path = $this->paths->public . '/assets/extensions/walsgit-discussion-cards';
+        $path = ExtensionPaths::assetsPath($this->paths);
         $pattern = $path . "/discussion-{$discussionId}-*.webp";
 
         foreach (glob($pattern) ?: [] as $old) {
@@ -498,7 +498,7 @@ class ImageProcessingService
 
         $filename = "blog-default-card-image.webp";
 
-        $assetsPath = $this->paths->public . '/assets/extensions/walsgit-discussion-cards';
+        $assetsPath = ExtensionPaths::assetsPath($this->paths);
         if (!is_dir($assetsPath)) {
             @mkdir($assetsPath, 0775, true);
         }

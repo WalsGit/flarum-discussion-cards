@@ -55,7 +55,7 @@ class PurgeImagesService
         $this->skippedFiles = [];
         $this->updatedDiscussions = 0;
 
-        $directory = '/assets/extensions/walsgit-discussion-cards';
+        $directory = '/' . ExtensionPaths::ASSETS_DIR;
         $path = $this->paths->public . $directory;
 
         if (!is_dir($path)) {

@@ -23,9 +23,6 @@ use Illuminate\Database\ConnectionInterface;
  */
 class BrokenImagesService
 {
-    protected const DISCUSSION_FILE = '#^discussion-\d+-[a-f0-9]+-[a-f0-9]+\.webp$#';
-    protected const DEFAULT_FILE = '#^(?:tags/tag-\d+-)?(?:[a-z0-9-]+-)?default-card-image\.webp$#';
-
     /** The file exists. */
     public const OK = 'ok';
 
@@ -53,7 +50,7 @@ class BrokenImagesService
      */
     public function listFiles(): array
     {
-        $basePath = $this->paths->public . '/assets/extensions/walsgit-discussion-cards';
+        $basePath = ExtensionPaths::assetsPath($this->paths);
         $files = [];
 
         if (!is_dir($basePath)) {
@@ -88,8 +85,8 @@ class BrokenImagesService
         }
 
         $file = $stored;
-        $isDiscussionFile = (bool) preg_match(self::DISCUSSION_FILE, $file);
-        $isDefaultFile = !$isDiscussionFile && preg_match(self::DEFAULT_FILE, $file);
+        $isDiscussionFile = (bool) preg_match(ExtensionPaths::DISCUSSION_FILE, $file);
+        $isDefaultFile = !$isDiscussionFile && preg_match(ExtensionPaths::DEFAULT_FILE, $file);
 
         if (!$isDiscussionFile && !$isDefaultFile) {
             return [self::EXTERNAL, null];

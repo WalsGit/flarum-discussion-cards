@@ -22,6 +22,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Walsgit\Discussion\Cards\Services\CardImageUrlBuilder;
+use Walsgit\Discussion\Cards\Services\ExtensionPaths;
 use Walsgit\Discussion\Cards\Services\RegenerateImagesService;
 
 /**
@@ -30,9 +31,6 @@ use Walsgit\Discussion\Cards\Services\RegenerateImagesService;
  */
 class RegenerateDiscussionImageController implements RequestHandlerInterface
 {
-    /** Stored value of a discussion image file (the only kind of file a regeneration can recreate). */
-    protected const DISCUSSION_FILE = '#^discussion-\d+-[a-f0-9]+-[a-f0-9]+\.webp$#';
-
     public function __construct(
         protected RegenerateImagesService $regenerator,
         protected CardImageUrlBuilder $urlBuilder,
@@ -92,10 +90,10 @@ class RegenerateDiscussionImageController implements RequestHandlerInterface
      */
     protected function discussionFileMissing(?string $stored): bool
     {
-        if ($stored === null || !preg_match(self::DISCUSSION_FILE, $stored)) {
+        if ($stored === null || !preg_match(ExtensionPaths::DISCUSSION_FILE, $stored)) {
             return false;
         }
 
-        return !is_file($this->paths->public . '/assets/extensions/walsgit-discussion-cards/' . $stored);
+        return !is_file(ExtensionPaths::assetsPath($this->paths) . '/' . $stored);
     }
 }

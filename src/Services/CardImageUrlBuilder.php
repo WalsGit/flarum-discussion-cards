@@ -41,7 +41,7 @@ class CardImageUrlBuilder
         }
 
         // Computed once, not once per discussion
-        $this->prefix ??= $this->url->to('forum')->path('assets/extensions/walsgit-discussion-cards/');
+        $this->prefix ??= $this->url->to('forum')->path(ExtensionPaths::ASSETS_DIR . '/');
 
         return $this->prefix . ltrim($stored, '/');
     }

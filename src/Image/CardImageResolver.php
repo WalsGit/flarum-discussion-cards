@@ -16,6 +16,7 @@ use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\Foundation\Config;
 use Flarum\Formatter\Formatter;
 use Flarum\Foundation\Paths;
+use Walsgit\Discussion\Cards\Services\ExtensionPaths;
 use Walsgit\Discussion\Cards\Services\ImageProcessingService;
 use Walsgit\Discussion\Cards\Services\HtmlImageExtractor;
 use Walsgit\Discussion\Cards\Services\RemoteImageFetcher;
@@ -232,7 +233,7 @@ class CardImageResolver
             return $defaultImage;
         }
 
-        $assetsPath = $this->paths->public . '/assets/extensions/walsgit-discussion-cards';
+        $assetsPath = ExtensionPaths::assetsPath($this->paths);
         if (!is_dir($assetsPath)) {
             @mkdir($assetsPath, 0775, true);
         }

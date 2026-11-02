@@ -16,6 +16,7 @@ use Flarum\Foundation\Paths;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Str;
 use Walsgit\Discussion\Cards\Services\CardImageRegenerationService;
+use Walsgit\Discussion\Cards\Services\ExtensionPaths;
 
 class DeleteCardImageOnDiscussionDelete
 {
@@ -74,7 +75,7 @@ class DeleteCardImageOnDiscussionDelete
             return;
         }
 
-        $path = $this->paths->public . '/assets/extensions/walsgit-discussion-cards/' . $filename;
+        $path = ExtensionPaths::assetsPath($this->paths) . '/' . $filename;
 
         if (is_file($path)) {
             @unlink($path);
