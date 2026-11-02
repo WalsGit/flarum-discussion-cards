@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [2.1.0] - 2026-11-03
 ### Security
 - Backend: remote card images are now also validated for IPv6 NAT64 addresses (the embedded IPv4 address must be public), and redirects are re-validated.
 - Backend: the shortcut that reuses `default-card-image.webp` is now limited to the extension's own local files and can no longer be triggered by arbitrary image URLs.

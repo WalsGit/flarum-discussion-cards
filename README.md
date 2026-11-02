@@ -58,7 +58,7 @@ You can help translate it to your language via Weblate: [here for Flarum V2](htt
 - Thanks to whomever suggested on Discord to use the tags selection component (sorry, we can no longer access the messages on Discord to mention them properly).
 - New settings page inspired by ``Friends of Flarum``'s [Best Answer](https://github.com/FriendsOfFlarum/best-answer) Extension.
 - Additional tags settings based on ``@askvortsov``'s [Discussion Templates](https://github.com/askvortsov1/flarum-discussion-templates) Extension.
-- Developed this with the help of AI (mainly ChatGPT, Gemini, Claude Code using Ollama Cloud models & Claude.ai).
+- Developed this with the help of AI (mainly Claude Code, ChatGPT, Gemini, Claude Code using Ollama Cloud models & Claude.ai).
 
 ## 📥️ Installation
 ### ⚠️ IMPORTANT 
@@ -82,6 +82,8 @@ _(see [full documentation here](https://github.com/WalsGit/flarum-discussion-car
 >ℹ️  If you're updating from version `1.3.0` or earlier TO version `1.4.0` or later, run `php flarum discussion-cards:migrate-images` manually after `php flarum migrate`: it moves and converts the old images used for cards to the new file structure and format (see the changelog of version `1.4.0` for details). You will also need to regenerate card images (see the post installation instructions above).
 
 > 🔒 Version `2.0.3` is a complementary security release: all `2.x` users are strongly advised to update.
+
+> ℹ️ Version `2.1.0`: adds breaking changes like converting the stored card image paths (they no longer depend on your domain or sub-folder). Cards whose image comes from an old external URL keep it until their card image is regenerated. Run `php flarum discussion-cards:repair-images --dry-run` to check for broken card images.
 
 ```sh
 composer update walsgit/flarum-discussion-cards
