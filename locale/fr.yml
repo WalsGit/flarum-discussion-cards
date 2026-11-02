@@ -159,6 +159,12 @@ walsgit_discussion_cards:
         showRepostIcon_help: "Nécessite d'activer les liens Repost sur les cartes (ci-dessus). Ajoute une icône de lien avant le titre des cartes dont la discussion commence par une url."
         showRepostDomain_label: "Afficher le domaine de l'URL après le titre"
         showRepostDomain_help: "Nécessite d'activer les liens Repost sur les cartes (ci-dessus). Ajoute le domaine de l'url après le titre des cartes dont la discussion commence par une url."
+        debugOptions_title: "Options de debugging"
+        debugOptions_info: "Écrire dans un fichier de log le détail de ce que vous faites avec les outils d'administration (régénérer, réparer ou purger les images). Les fichiers de log se trouvent dans storage/logs/walsgit-discussion-cards/ et vous pouvez les consulter avec l'extension ianm/log-viewer, un terminal ou un explorateur de fichiers. Les fichiers de log sont supprimés après 7 jours (la vérification se fait à chaque écriture d'un log). Ces réglages ne loggent pas les commandes CLI (utilisez leur option --log pour cela). <strong>RECOMMANDÉ : n'activer ces options que temporairement, quand c'est nécessaire pour le debug.</strong>"
+        logActions_label: "Logger les actions"
+        logActions_help: "Enregistre chaque action lancée depuis ces outils d'administration : purger les images, régénérer les images ou réparer les images cassées, sans détails (simplement qui, quel outil et un résumé du résultat). Fichier : admin-tools-actions-AAAA-MM-JJ.log"
+        logActionDetails_label: "Logger le détail des actions"
+        logActionDetails_help: "Comme « Logger les actions » mais avec plus de détails : notamment chaque discussion ou fichier traité et son résultat. Attention : peut produire de gros fichiers sur un gros forum. Fichiers: {purge/regenerate/repair}-AAAA-MM-JJ.log"
     tags:
       options_heading: "Discussion Cards"
       activation_button: "Activez pour cette étiquette"

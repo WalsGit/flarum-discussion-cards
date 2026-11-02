@@ -159,6 +159,12 @@ walsgit_discussion_cards:
         showRepostIcon_help: "Requires allowing the Repost links behavior on cards (above). Adds a link icon before the title of cards whose discussion starts with a url."
         showRepostDomain_label: "Show the URL's domain after the title"
         showRepostDomain_help: "Requires allowing the Repost links behavior on cards (above). Adds the domain of the url after the title of cards whose discussion starts with a url."
+        debugOptions_title: "Debug options"
+        debugOptions_info: "Write to a log file details of what you do with the admin tools (regenerate, repair or purge images). Log files are in storage/logs/walsgit-discussion-cards/ and you can view them with the ianm/log-viewer extension, the console or a file explorer. Log files are deleted after 7 days (checks are done each time a log is written). These settings do not log console commands (use --log option for those). <strong>RECOMMENDED to only temporarily activate these options when needed for debugging.</strong>"
+        logActions_label: "Log actions"
+        logActions_help: "Logs each action run from these admin tools: purge images, regenerate images or repair broken images, without details (simply who, which tool, and a summary of the result). File: admin-tools-actions-AAAA-MM-JJ.log"
+        logActionDetails_label: "Log action details"
+        logActionDetails_help: "Same as \"Log actions\" but with more details: such as each discussion or file processed and its result. Warning: can produce large files on big forums. Files: {purge/regenerate/repair}-AAAA-MM-JJ.log"
     tags:
       options_heading: "Discussion Cards"
       activation_button: "Activate for this tag"

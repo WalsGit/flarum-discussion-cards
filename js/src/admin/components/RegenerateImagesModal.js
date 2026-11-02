@@ -2,6 +2,7 @@ import Form from "flarum/common/components/Form";
 import Modal from "flarum/common/components/Modal";
 import Button from "flarum/common/components/Button";
 import app from "flarum/admin/app";
+import newActionId from "../helpers/newActionId";
 
 export default class RegenerateImagesModal extends Modal {
   oninit(vnode) {
@@ -180,6 +181,8 @@ export default class RegenerateImagesModal extends Modal {
       errors: 0,
     };
 
+    const log = { action: "regenerate-" + type, actionId: newActionId() };
+
     // One request processes as many discussions as its time budget allows,
     // then we call again with the ids left over until nothing remains
     const run = (body) =>
@@ -189,7 +192,7 @@ export default class RegenerateImagesModal extends Modal {
           url:
             app.forum.attribute("apiUrl") +
             "/walsgit/discussion-cards/regenerate-images",
-          body,
+          body: { ...body, ...log },
         })
         .then((result) => {
           if (body.mode) {

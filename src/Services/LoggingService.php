@@ -23,7 +23,7 @@ class LoggingService
     /**
      * Prefixes of the debug logs subject to the retention. Others (e.g. `migration`) are never deleted.
      */
-    protected const CLEANED_PREFIXES = ['regenerate', 'repair', 'purge'];
+    protected const CLEANED_PREFIXES = ['regenerate', 'repair', 'purge', 'admin-tools-actions'];
 
     protected static bool $cleaned = false;
 
@@ -46,6 +46,9 @@ class LoggingService
     public function log(string $message, string $level = 'INFO', array $context = []): void
     {
         $this->cleanOldLogs();
+
+        // One line per entry: a message (e.g. an exception message) must not be able to forge other lines
+        $message = preg_replace('/\s*[\r\n]+\s*/', ' ', $message) ?? $message;
 
         $timestamp = date('Y-m-d H:i:s');
         $logMessage = "[{$timestamp}] [{$level}] {$message}" . $this->formatContext($context) . PHP_EOL;

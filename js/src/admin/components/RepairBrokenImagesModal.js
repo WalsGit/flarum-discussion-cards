@@ -2,6 +2,7 @@ import Form from "flarum/common/components/Form";
 import Modal from "flarum/common/components/Modal";
 import Button from "flarum/common/components/Button";
 import app from "flarum/admin/app";
+import newActionId from "../helpers/newActionId";
 
 const T =
   "walsgit_discussion_cards.admin.settings.statsToolsBanner.repairImagesModal_";
@@ -260,6 +261,8 @@ export default class RepairBrokenImagesModal extends Modal {
     const pending = this.scan.ids.slice();
     const total = pending.length;
     const totals = { success: 0, errors: 0 };
+    const actionId = newActionId();
+    let first = true;
 
     this.working = true;
     this.failed = false;
@@ -279,9 +282,15 @@ export default class RepairBrokenImagesModal extends Modal {
         .request({
           method: "POST",
           url: API() + "regenerate-images",
-          body: { ids: pending.splice(0, REGENERATE_CHUNK) },
+          body: {
+            ids: pending.splice(0, REGENERATE_CHUNK),
+            action: "repair",
+            actionId,
+            ...(first ? { start: true } : {}),
+          },
         })
         .then((result) => {
+          first = false;
           totals.success += result.success;
           totals.errors += result.errors;
           this.failures = this.failures.concat(result.failures);
@@ -317,6 +326,7 @@ export default class RepairBrokenImagesModal extends Modal {
 
   reset() {
     const pending = this.scan.ids.slice();
+    const actionId = newActionId();
     let reset = 0;
 
     this.working = true;
@@ -332,7 +342,11 @@ export default class RepairBrokenImagesModal extends Modal {
         .request({
           method: "POST",
           url: API() + "broken-images/reset",
-          body: { ids: pending.splice(0, RESET_CHUNK) },
+          body: {
+            ids: pending.splice(0, RESET_CHUNK),
+            action: "repair",
+            actionId,
+          },
         })
         .then((result) => {
           reset += result.reset;

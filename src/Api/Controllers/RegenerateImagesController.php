@@ -17,6 +17,7 @@ use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Walsgit\Discussion\Cards\Services\ActionLogger;
 use Walsgit\Discussion\Cards\Services\RegenerateImagesService;
 
 class RegenerateImagesController implements RequestHandlerInterface
@@ -27,13 +28,23 @@ class RegenerateImagesController implements RequestHandlerInterface
     /** Maximum number of ids accepted in one request. */
     protected const MAX_IDS = 200;
 
-    public function __construct(protected RegenerateImagesService $regenerator) {}
+    public function __construct(
+        protected RegenerateImagesService $regenerator,
+        protected ActionLogger $actionLogger
+    ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        RequestUtil::getActor($request)->assertAdmin();
+        $actor = RequestUtil::getActor($request);
+        $actor->assertAdmin();
 
         $body = (array) $request->getParsedBody();
+        $log = $this->actionLogger->open(
+            $actor,
+            Arr::get($body, 'action'),
+            Arr::get($body, 'actionId'),
+            ['regenerate-latest', 'regenerate-ltno', 'regenerate-without', 'repair']
+        );
         $ids = Arr::get($body, 'ids');
 
         if (is_array($ids)) {
@@ -46,7 +57,30 @@ class RegenerateImagesController implements RequestHandlerInterface
             $ids = $this->regenerator->selectByMode((string) Arr::get($body, 'mode', 'latest'));
         }
 
-        $result = $this->regenerator->processIds($ids, false, self::TIME_BUDGET);
+        // The first batch of an action carries the preset (regenerate) or the start flag (repair)
+        if ($log && (Arr::has($body, 'mode') || Arr::get($body, 'start') === true)) {
+            $log->info('Started: ' . count($ids) . ' discussion(s) in the first batch');
+        }
+
+        $onItem = $log && $log->wantsDetails()
+            ? function (int $id, ?string $error, array $detail = []) use ($log) {
+                if (!empty($detail)) {
+                    $log->item($detail);
+                }
+            }
+            : null;
+
+        $result = $this->regenerator->processIds($ids, false, self::TIME_BUDGET, $onItem);
+
+        $log?->info(sprintf(
+            'Batch: success=%d regenerated=%d unchanged=%d noImage=%d errors=%d remaining=%d',
+            $result['success'],
+            $result['regenerated'],
+            $result['unchanged'],
+            $result['noImage'],
+            $result['errors'],
+            count($result['remaining'])
+        ));
 
         return new JsonResponse([
             'selected'    => count($ids),

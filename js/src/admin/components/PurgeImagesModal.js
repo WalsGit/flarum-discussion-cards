@@ -2,6 +2,7 @@ import Form from "flarum/common/components/Form";
 import Modal from "flarum/common/components/Modal";
 import Button from "flarum/common/components/Button";
 import app from "flarum/admin/app";
+import newActionId from "../helpers/newActionId";
 
 export default class PurgeImagesModal extends Modal {
   oninit(vnode) {
@@ -119,7 +120,11 @@ export default class PurgeImagesModal extends Modal {
           url:
             app.forum.attribute("apiUrl") +
             "/walsgit/discussion-cards/purge-images" +
-            (type === "all" ? "?all=true" : ""),
+            (type === "all" ? "?all=true&" : "?") +
+            "action=" +
+            (type === "all" ? "purge-all" : "purge-unused") +
+            "&actionId=" +
+            newActionId(),
         })
         .then((result) => {
           this.loading = false;

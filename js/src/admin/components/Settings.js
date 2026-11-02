@@ -489,6 +489,40 @@ export default class Settings extends ExtensionPage {
                 disabled: !repostLinksEnabled,
               })}
             </div>
+
+            {/* ============== DEBUG OPTIONS SECTION ============== */}
+            <h3>
+              {app.translator.trans(
+                "walsgit_discussion_cards.admin.settings.general.debugOptions_title"
+              )}
+            </h3>
+            <p className="helpText">
+              {app.translator.trans(
+                "walsgit_discussion_cards.admin.settings.general.debugOptions_info"
+              )}
+            </p>
+            <div className="dc-section">
+              {this.buildSettingComponent({
+                type: "switch",
+                setting: "walsgit_discussion_cards_logActions",
+                label: app.translator.trans(
+                  "walsgit_discussion_cards.admin.settings.general.logActions_label"
+                ),
+                help: app.translator.trans(
+                  "walsgit_discussion_cards.admin.settings.general.logActions_help"
+                ),
+              })}
+              {this.buildSettingComponent({
+                type: "switch",
+                setting: "walsgit_discussion_cards_logActionDetails",
+                label: app.translator.trans(
+                  "walsgit_discussion_cards.admin.settings.general.logActionDetails_label"
+                ),
+                help: app.translator.trans(
+                  "walsgit_discussion_cards.admin.settings.general.logActionDetails_help"
+                ),
+              })}
+            </div>
             {this.submitButton()}
           </div>
         </div>
