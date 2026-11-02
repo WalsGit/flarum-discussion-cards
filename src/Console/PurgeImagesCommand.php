@@ -20,11 +20,14 @@
  *      > will delete the card images of specific discussion ids (comma separated, excluding default images)
  * discussion-cards:purge-images --dry-run
  *      > will simulate without deleting anything
+ * discussion-cards:purge-images --log
+ *      > will log details to storage/logs/walsgit-discussion-cards/purge-YYYY-MM-DD.log (and delete any log files older than 7 days)
  */
 
 namespace Walsgit\Discussion\Cards\Console;
 
 use Flarum\Console\AbstractCommand;
+use Flarum\Foundation\Paths;
 use Flarum\Locale\Translator;
 use Symfony\Component\Console\Input\InputOption;
 use Walsgit\Discussion\Cards\Services\PurgeImagesException;
@@ -32,9 +35,12 @@ use Walsgit\Discussion\Cards\Services\PurgeImagesService;
 
 class PurgeImagesCommand extends AbstractCommand
 {
+    protected RunReporter $reporter;
+
     public function __construct(
         protected PurgeImagesService $purger,
-        protected Translator $translator
+        protected Translator $translator,
+        protected Paths $paths
     ) {
         parent::__construct();
     }
@@ -61,6 +67,12 @@ class PurgeImagesCommand extends AbstractCommand
                 null,
                 InputOption::VALUE_NONE,
                 'Simulate without deleting anything'
+            )
+            ->addOption(
+                'log',
+                null,
+                InputOption::VALUE_NONE,
+                'Write the command and each deleted or skipped file to the log file (storage/logs/walsgit-discussion-cards/purge-YYYY-MM-DD.log). Skipped files are shown in the terminal with -v'
             );
     }
 
@@ -70,6 +82,9 @@ class PurgeImagesCommand extends AbstractCommand
         $dryRun = (bool) $this->input->getOption('dry-run');
         $discussionOption = $this->input->getOption('discussion');
         $discussionIds = [];
+
+        $this->reporter = new RunReporter($this->input, $this->output, $this->paths, 'purge');
+        $this->reporter->start($dryRun);
 
         if ($all && is_string($discussionOption)) {
             return $this->invalid();
@@ -98,13 +113,26 @@ class PurgeImagesCommand extends AbstractCommand
         try {
             $result = $this->purger->purge($all, $discussionIds, $dryRun);
         } catch (PurgeImagesException $e) {
+            $this->reporter->logOnly('Error: ' . $e->getMessage() . ' ' . json_encode($e->params), 'ERROR');
             $this->error($this->trans($e->getMessage(), $e->params));
             return 1;
         }
 
         foreach ($result['deletedFiles'] as $file) {
+            $this->reporter->logOnly('deleted: ' . $file);
             $this->output->writeln($this->trans('purgeImagesDelete', ['file' => $file]));
         }
+
+        foreach ($result['skippedFiles'] as $file) {
+            $this->reporter->logOnly('skipped: ' . $file);
+        }
+
+        $this->reporter->logOnly(sprintf(
+            'Summary: deleted=%d skipped=%d updated=%d',
+            $result['deleted'],
+            $result['skipped'],
+            $result['updated']
+        ));
 
         if ($this->output->isVerbose()) {
             foreach ($result['skippedFiles'] as $file) {
@@ -126,6 +154,7 @@ class PurgeImagesCommand extends AbstractCommand
 
     protected function invalid(): int
     {
+        $this->reporter->logOnly('Invalid arguments', 'ERROR');
         $this->error($this->trans('purgeImagesInvalidArguments'));
         return 1;
     }

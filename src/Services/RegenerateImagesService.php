@@ -15,6 +15,7 @@ use Exception;
 use Flarum\Discussion\Discussion;
 use Flarum\Extension\ExtensionManager;
 use Illuminate\Database\Eloquent\Builder;
+use Walsgit\Discussion\Cards\Image\CardImageDecision;
 
 class RegenerateImagesService
 {
@@ -35,7 +36,9 @@ class RegenerateImagesService
      * @param int[]         $ids
      * @param float|null    $timeBudget seconds after which we stop and return the remaining ids (null: no limit).
      *                                  At least one discussion is always processed.
-     * @param callable|null $onItem     called after each discussion with (int $id, ?string $errorMessage)
+     * @param callable|null $onItem     called after each discussion with (int $id, ?string $errorMessage, array $detail);
+     *                                  $detail is described by ItemLogFormatter::item() (id, status, source, file, sourceImage,
+     *                                  skipped, error), callbacks may declare only the first parameters
      *
      * `success` counts every discussion processed without error (regenerated + unchanged + noImage; all of them in a
      * dry run, where nothing is resolved). `noImage` are the discussions still without any card image because the resolver
@@ -63,10 +66,22 @@ class RegenerateImagesService
 
             $id = (int) array_shift($remaining);
             $error = null;
+            $detail = ['id' => $id, 'status' => 'dry_run'];
 
             try {
                 if (!$dryRun) {
-                    match ($this->regenerateDiscussion($id)) {
+                    $outcome = $this->regenerateDiscussionDetailed($id);
+                    $decision = $outcome['decision'];
+                    $detail = [
+                        'id' => $id,
+                        'status' => $outcome['status'],
+                        'source' => $decision->source,
+                        'file' => $decision->file,
+                        'sourceImage' => $decision->sourceImage,
+                        'skipped' => $decision->skipped,
+                    ];
+
+                    match ($outcome['status']) {
                         self::STATUS_REGENERATED => $regenerated++,
                         self::STATUS_NO_IMAGE => $noImage++,
                         default => $unchanged++,
@@ -77,10 +92,11 @@ class RegenerateImagesService
                 $errors++;
                 $error = $e->getMessage();
                 $failures[] = ['id' => $id, 'message' => $error];
+                $detail = ['id' => $id, 'status' => 'error', 'error' => $error];
             }
 
             if ($onItem !== null) {
-                $onItem($id, $error);
+                $onItem($id, $error, $detail);
             }
         }
 
@@ -100,6 +116,14 @@ class RegenerateImagesService
      */
     public function regenerateDiscussion(int $discussionId): string
     {
+        return $this->regenerateDiscussionDetailed($discussionId)['status'];
+    }
+
+    /**
+     * @return array{status: string, decision: CardImageDecision} status is one of the STATUS_* constants
+     */
+    public function regenerateDiscussionDetailed(int $discussionId): array
+    {
         $discussion = Discussion::with('firstPost')->find($discussionId);
 
         if (!$discussion) {
@@ -108,13 +132,17 @@ class RegenerateImagesService
 
         $html = $discussion->firstPost ? $discussion->firstPost->formatContent() : null;
 
-        if ($this->regenerator->regenerate($discussion, $html)) {
-            return self::STATUS_REGENERATED;
+        $result = $this->regenerator->regenerateWithDecision($discussion, $html);
+
+        if ($result['changed']) {
+            $status = self::STATUS_REGENERATED;
+        } else {
+            $status = $discussion->walsgit_card_image_url === null
+                ? self::STATUS_NO_IMAGE
+                : self::STATUS_UNCHANGED;
         }
 
-        return $discussion->walsgit_card_image_url === null
-            ? self::STATUS_NO_IMAGE
-            : self::STATUS_UNCHANGED;
+        return ['status' => $status, 'decision' => $result['decision']];
     }
 
     /**

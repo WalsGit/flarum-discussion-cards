@@ -12,6 +12,7 @@
 namespace Walsgit\Discussion\Cards\Services;
 
 use Flarum\Discussion\Discussion;
+use Walsgit\Discussion\Cards\Image\CardImageDecision;
 use Walsgit\Discussion\Cards\Image\CardImageResolver;
 
 class CardImageRegenerationService
@@ -30,16 +31,26 @@ class CardImageRegenerationService
      */
     public function regenerate(Discussion $discussion, ?string $firstPostHtml = null, bool $interactive = false): bool
     {
-        $imageUrl = $this->resolver->resolve($discussion, $firstPostHtml, $interactive);
+        return $this->regenerateWithDecision($discussion, $firstPostHtml, $interactive)['changed'];
+    }
 
-        if ($imageUrl === $discussion->walsgit_card_image_url) {
-            return false;
+    /**
+     * Same as regenerate(), but also returns what the resolver decided (for the debug logs).
+     *
+     * @return array{changed: bool, decision: CardImageDecision}
+     */
+    public function regenerateWithDecision(Discussion $discussion, ?string $firstPostHtml = null, bool $interactive = false): array
+    {
+        $decision = $this->resolver->resolveWithDecision($discussion, $firstPostHtml, $interactive);
+
+        if ($decision->url === $discussion->walsgit_card_image_url) {
+            return ['changed' => false, 'decision' => $decision];
         }
 
-        $discussion->walsgit_card_image_url = $imageUrl;
+        $discussion->walsgit_card_image_url = $decision->url;
         $discussion->save();
 
-        return true;
+        return ['changed' => true, 'decision' => $decision];
     }
 
     /**
