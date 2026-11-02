@@ -24,9 +24,8 @@ use RuntimeException;
 class ImageProcessingService
 {
     protected array $directories = [
-        'default'    => 'assets/extensions/walsgit-discussion-cards/',
-        'tag'        => 'assets/extensions/walsgit-discussion-cards/tags/',
-        'discussion' => 'assets/extensions/walsgit-discussion-cards/discussions/',
+        'default'    => ExtensionPaths::ASSETS_DIR . '/',
+        'tag'        => ExtensionPaths::ASSETS_DIR . '/tags/',
     ];
 
     protected array $defaults = [
@@ -96,8 +95,7 @@ class ImageProcessingService
         $this->assertWebpSupport();
 
         try {
-            @ini_set('memory_limit', '256M');
-
+            $this->ensureMemoryLimit();
             $this->assertSafeDimensions($sourcePath);
 
             $image = ImageManager::gd()->read($sourcePath);
@@ -134,6 +132,46 @@ class ImageProcessingService
         if ($width < 1 || $height < 1 || ($width * $height) > self::MAX_PIXELS) {
             throw new InvalidArgumentException("Image dimensions too large ({$width}x{$height}).");
         }
+    }
+
+        /** Memory (in bytes) needed to decode images up to MAX_PIXELS. */
+    protected const REQUIRED_MEMORY = 256 * 1024 * 1024;
+
+    /**
+     * Raises memory_limit to 256M only if it is currently lower (never lowers it).
+     */
+    protected function ensureMemoryLimit(): void
+    {
+        $current = $this->parseMemoryLimit((string) ini_get('memory_limit'));
+
+        // -1 = unlimited
+        if ($current === -1 || $current >= self::REQUIRED_MEMORY) {
+            return;
+        }
+
+        @ini_set('memory_limit', '256M');
+    }
+
+    /**
+     * Converts a php.ini memory value ("128M", "1G", "512K", "-1", "1048576") to bytes.
+     * Returns -1 for unlimited (or if the value can't be read, so we never touch it).
+     */
+    protected function parseMemoryLimit(string $value): int
+    {
+        $value = trim($value);
+
+        if ($value === '' || $value === '-1') {
+            return -1;
+        }
+
+        $number = (int) $value;
+
+        return match (strtolower(substr($value, -1))) {
+            'g' => $number * 1024 ** 3,
+            'm' => $number * 1024 ** 2,
+            'k' => $number * 1024,
+            default => $number,
+        };
     }
 
     /**
@@ -185,6 +223,30 @@ class ImageProcessingService
         $real = $relative !== null ? realpath($this->paths->public . $relative) : false;
 
         return ($real !== false && is_file($real) && $this->isInsideAllowedRoot($real)) ? $real : null;
+    }
+
+    /**
+     * If the URL points to one of the extension's own default images (general, tag or blog default),
+     * returns its path relative to the extension's assets folder (ex.: "tags/tag-3-default-card-image.webp").
+     * Returns null for anything else (external URL, other local file...).
+     */
+    public function resolveExtensionDefaultImage(string $imageUrl): ?string
+    {
+        $prefix = '/' . ExtensionPaths::ASSETS_DIR . '/';
+        $relative = $this->localRelativePath($imageUrl);
+
+        if ($relative === null || !str_starts_with($relative, $prefix)) {
+            return null;
+        }
+
+        $inner = substr($relative, strlen($prefix));
+
+        if (!preg_match('#^(?:tags/)?(?:[a-z0-9-]+-)?default-card-image\.webp$#', $inner)) {
+            return null;
+        }
+
+        // The file must really exist inside public/
+        return $this->resolveLocalPath($imageUrl) !== null ? $inner : null;
     }
 
     /**
@@ -274,14 +336,6 @@ class ImageProcessingService
      */
     public function generateFilename(string $origin, $context = null): string
     {
-        // Special case for 3rd party BLOG Extension: blog-default-{hash}.png will generate blog-default-card-image.webp
-        if ($origin === 'discussion' && $context && $context->getParsedBody()['filename'] ?? null) {
-            $filename = $context->getParsedBody()['filename'];
-            if (preg_match('/^blog\-default\-[a-z0-9]+\.png$/i', $filename)) {
-                return 'blog-default-card-image.webp';
-            }
-        }
-
         switch ($origin) {
             case 'default':
                 return 'default-card-image.webp';
@@ -305,16 +359,6 @@ class ImageProcessingService
                 }
 
                 return "tag-{$tagId}-default-card-image.webp";
-
-            case 'discussion':
-                if (
-                    empty($context['discussionId']) ||
-                    empty($context['urlHash']) ||
-                    empty($context['etagHash'])
-                ) {
-                    return '';
-                }
-                return "discussion-{$context['discussionId']}-{$context['urlHash']}-{$context['etagHash']}.webp";
 
             default:
                 throw new InvalidArgumentException($this->translator->trans('walsgit_discussion_cards.admin.errors.filenameInvalidOrigin', ['origin' => $origin]));
@@ -340,7 +384,7 @@ class ImageProcessingService
      * Download a remote image OR copy a local one into a temporary file.
      * Returns the path to the temporary file, or null on failure.
      */
-    public function downloadOrCopyImage(string $imageUrl): ?string
+    public function downloadOrCopyImage(string $imageUrl, bool $interactive = false): ?string
     {
         // 1. Create temp file
         $temp = tempnam(sys_get_temp_dir(), 'cardimg_');
@@ -363,7 +407,7 @@ class ImageProcessingService
         }
 
         // --- REMOTE IMAGE ------------------------------------------------------
-        if (!$this->fetcher->download($imageUrl, $temp)) {
+        if (!$this->fetcher->download($imageUrl, $temp, $interactive)) {
             @unlink($temp);
             return null;
         }
@@ -375,7 +419,7 @@ class ImageProcessingService
      * Generate Hash that will be used to check if image has changed
      * before (downloading &) processing it. The hash will be saved in the filename for futur checks
      */
-    public function computeEtagHash(string $imageUrl, string $baseUrl): string
+    public function computeEtagHash(string $imageUrl, string $baseUrl, bool $interactive = false): string
     {
         // --- Step 1: check if it's a local image ---
         if ($this->isLocalUrl($imageUrl)) {
@@ -386,7 +430,7 @@ class ImageProcessingService
         }
 
         // --- Step 2: remote image (one request, cached by the fetcher) ---
-        $info = $this->fetcher->probe($imageUrl);
+        $info = $this->fetcher->probe($imageUrl, $interactive);
 
         // If the request failed or was refused → use image url as hash
         if ($info === null) {
@@ -405,52 +449,58 @@ class ImageProcessingService
 
 
     /*
-    * Remove old discussion card images
+    * Remove old discussion card images (the file named $keepFilename is never deleted)
     */
-    public function cleanupOldDiscussionImages(int $discussionId): void
+    public function cleanupOldDiscussionImages(int $discussionId, ?string $keepFilename = null): void
     {
-        $path = $this->paths->public . '/assets/extensions/walsgit-discussion-cards';
+        $path = ExtensionPaths::assetsPath($this->paths);
         $pattern = $path . "/discussion-{$discussionId}-*.webp";
 
-        foreach (glob($pattern) as $old) {
+        foreach (glob($pattern) ?: [] as $old) {
+            if ($keepFilename !== null && basename($old) === $keepFilename) {
+                continue;
+            }
+
             @unlink($old);
         }
     }
 
     /**
      * 3rd party Blog Extension support:
-     * Optimize the "blog-default-{hash}.png" image provided by the blog extension.
-     * Returns the optimized WebP filename, or null if the URL is not a blog-default image.
+     * Optimize the "blog_default_image-{hash}.png" image provided by the blog extension (fof/blog).
+     * Returns the optimized WebP filename, or null if the URL is not a blog default image.
      */
     public function optimizeBlogDefaultImage(string $imageUrl, string $baseUrl): ?string
     {
-        // Match URLs like:  baseurl/assets/blog-default-xxxx.png|jpg|gif|webp
-        if (!preg_match('#^' . preg_quote($baseUrl, '#') . '/assets/blog-default-([a-z0-9]+)\.(jpe?g|png|gif|webp)$#i', $imageUrl, $m)) {
+        // Match URLs like:  baseurl/assets/blog_default_image-xxxx.png|jpg|gif|webp
+        if (!preg_match('#^' . preg_quote($baseUrl, '#') . '/assets/blog_default_image-([a-z0-9]+)\.(jpe?g|png|gif|webp)$#i', $imageUrl, $m)) {
             return null; // Not a blog-default image
         }
 
         $filename = "blog-default-card-image.webp";
 
-        $assetsPath = $this->paths->public . '/assets/extensions/walsgit-discussion-cards';
+        $assetsPath = ExtensionPaths::assetsPath($this->paths);
         if (!is_dir($assetsPath)) {
             @mkdir($assetsPath, 0775, true);
         }
 
         $filepath = $assetsPath . '/' . $filename;
 
-        // If already optimized return filename
-        if (file_exists($filepath)) {
-            return $filename;
-        }
-
         // Local source path
         $localPath = $this->resolveLocalPath($imageUrl);
-        if ($localPath === null) {
+
+        // If already optimized and not older than the source, return filename.
+        // The 3rd party blog extension gives a new file name to its default image at each upload,
+        // so a source newer than our WebP means the default image has been replaced.
+        if (file_exists($filepath)) {
+            if ($localPath === null || (int) @filemtime($filepath) >= (int) @filemtime($localPath)) {
+                return $filename;
+            }
+        } elseif ($localPath === null) {
             return null; // not a usable local file
         }
 
         try {
-            @ini_set('memory_limit', '256M');
             $this->processImage($localPath, $filepath, $this->getDefaultsFor('discussion'));
         } catch (\Throwable $e) {
             return null;

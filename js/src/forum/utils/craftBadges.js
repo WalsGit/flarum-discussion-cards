@@ -4,7 +4,7 @@ import Tooltip from "flarum/common/components/Tooltip";
 export default function craftBadges(badges) {
   if (badges.length) {
     return [
-      m(".cardBadges", [
+      m(".dc-card-badges", [
         badges.map((badge) => {
           return [
             m(
@@ -13,7 +13,7 @@ export default function craftBadges(badges) {
                 text: badge.attrs.label ? badge.attrs.label[0] : "",
                 position: "right",
               },
-              m("span.cardBadge.Badge.Badge--" + badge.attrs.type, [
+              m("span.dc-card-badge.Badge.Badge--" + badge.attrs.type, [
                 Icon.component({
                   name: badge.attrs.icon,
                 }),

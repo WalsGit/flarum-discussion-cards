@@ -21,7 +21,11 @@ For full list of changes & new features, please refer to the CHANGELOG.md file.
 
 ### 🧩  3rd party extensions support
 - **Flarum V2**
-    - As of version `2.0.0` only `fof/discussion-views`is supported. The other extensions that where supported in V1 have yet to be ported for Flarum V2 as of the latest release. Support will be added once they'll be ported or it will be dropped unless an alternative is released.
+    - As of version `2.1.0`, supported again:
+        - `michaelbelgium/flarum-discussion-views` for views count on cards.
+        - `fof/blog` (successor of the abandoned `v17development/flarum-blog`) for blog post cards.
+        - `shebaoting/flarum-repost` (formerly `shebaoting/repost`) for "link sharing", with two new optional settings to add a link icon before the card title and the url's domain after it.
+    - As of version `2.0.0` `fof/discussion-views` is supported for views count on cards.
 
 - **Flarum V1**
     - Until version `1.3.0` `flarumite/simple-discussion-views` was supported to show discussion views count on cards (see replacement below)
@@ -32,9 +36,11 @@ For full list of changes & new features, please refer to the CHANGELOG.md file.
 
 ### 🖥️ Console Commands (CLI)
 As of version `1.4.0` new CLI commands have been added to manage card images:
-- `php flarum discussion-cards:migrate-images` (runs automatically on update).
+- `php flarum discussion-cards:migrate-images` to migrate old default images (pre `1.4.0`). It is **not** run automatically: run it manually after updating if you come from `1.3.0` or earlier.
 - `php flarum discussion-cards:purge-images` to delete unused or all card images from server.
 - `php flarum discussion-cards:regenerate-images` to regenerate card images or generate missing card images.
+- `php flarum discussion-cards:repair-images` to detect and repair broken card images (deleted files). Added in version `2.1.0`.
+As of version `2.1.0` the three commands above have a `--log` option (writes the command and the detail of each discussion or file to a log file) and show the same details in the terminal with `-v` or `--verbose` flag.
 All details on how to use them can be found in the extension's wiki on github (See Documentation in the Links section below or in the Admin Settings Page). You can also add the `--help` flag to each command to list options.
 
 ## 🖼️ Screenshots
@@ -46,13 +52,13 @@ The extension is natively in English 🇬🇧 & French 🇫🇷;  it's partially
 You can help translate it to your language via Weblate: [here for Flarum V2](https://weblate.rob006.net/projects/flarum2/walsgit-discussion-cards/).
 
 ### 🗒️ Notes
-- V2 developed and tested on Flarum 2.0.0-rc.1 (first version released `2.0.0`).
+- Latest release developed and tested on Flarum 2.0.2 (first V2 version released `2.0.0`).
 - V1 developed and tested on Flarum 1.8.7 (first version released `1.0.0`) and last version `1.4.4` was developed and tested on Flarum 1.8.16.
-- As of version `1.4.0` it requires a Flarum minimum version of 1.8.0.
+- V1: as of version `1.4.0` it requires a Flarum minimum version of 1.8.0.
 - Thanks to whomever suggested on Discord to use the tags selection component (sorry, we can no longer access the messages on Discord to mention them properly).
 - New settings page inspired by ``Friends of Flarum``'s [Best Answer](https://github.com/FriendsOfFlarum/best-answer) Extension.
 - Additional tags settings based on ``@askvortsov``'s [Discussion Templates](https://github.com/askvortsov1/flarum-discussion-templates) Extension.
-- Developed this with the help of AI (mainly ChatGPT, Gemini, Claude Code using Ollama Cloud models & Claude.ai).
+- Developed this with the help of AI (mainly Claude Code, ChatGPT, Gemini, Claude Code using Ollama Cloud models & Claude.ai).
 
 ## 📥️ Installation
 ### ⚠️ IMPORTANT 
@@ -72,12 +78,12 @@ php flarum discussion-cards:regenerate-images -w [Number]
 ```
 _(see [full documentation here](https://github.com/WalsGit/flarum-discussion-cards/wiki/CLI-Commands#discussion-cardsregenerate-images) for more options on the command)_
 
-ℹ️ _Note that, as of versions `2.0.1` (V2) & `1.4.4` (V1), right after the installation, an automatic command will run to generate card images for the 20 latest, top & newest discussions_
-
 ## ↕️  Updating
->ℹ️  If you're updating from version `1.3.0` or earlier TO version `1.4.0` or later not that the `discussion-cards:migrate-images` command will be automatically run to move and convert old images used for cards to new file structure and format (See changelog of version `1.4.0` for more details). You will also need to need to regenerate card images if you updating from those older versions (see post installation instruction above)
+>ℹ️  If you're updating from version `1.3.0` or earlier TO version `1.4.0` or later, run `php flarum discussion-cards:migrate-images` manually after `php flarum migrate`: it moves and converts the old images used for cards to the new file structure and format (see the changelog of version `1.4.0` for details). You will also need to regenerate card images (see the post installation instructions above).
 
 > 🔒 Version `2.0.3` is a complementary security release: all `2.x` users are strongly advised to update.
+
+> ℹ️ Version `2.1.0`: adds breaking changes like converting the stored card image paths (they no longer depend on your domain or sub-folder). Cards whose image comes from an old external URL keep it until their card image is regenerated. Run `php flarum discussion-cards:repair-images --dry-run` to check for broken card images.
 
 ```sh
 composer update walsgit/flarum-discussion-cards

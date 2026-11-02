@@ -12,105 +12,85 @@
 namespace Walsgit\Discussion\Cards\Api\Controllers;
 
 use Flarum\Http\RequestUtil;
+use Illuminate\Support\Arr;
 use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Flarum\Foundation\Paths;
-use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
+use Walsgit\Discussion\Cards\Services\ActionLogger;
+use Walsgit\Discussion\Cards\Services\RegenerateImagesService;
 
 class RegenerateImagesController implements RequestHandlerInterface
 {
-    public function __construct(protected Paths $paths) {}
+    /** Seconds after which a request stops processing and returns the remaining ids. */
+    protected const TIME_BUDGET = 10.0;
+
+    /** Maximum number of ids accepted in one request. */
+    protected const MAX_IDS = 200;
+
+    public function __construct(
+        protected RegenerateImagesService $regenerator,
+        protected ActionLogger $actionLogger
+    ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $actor = RequestUtil::getActor($request);
         $actor->assertAdmin();
 
-        $queryParams = $request->getQueryParams();
-        //$all = isset($queryParams['all']) && $queryParams['all'] === 'true';
-        $ltno = isset($queryParams['ltno']) && $queryParams['ltno'] === 'true';
-        $without = isset($queryParams['without']) && $queryParams['without'] === 'true';
+        $body = (array) $request->getParsedBody();
+        $log = $this->actionLogger->open(
+            $actor,
+            Arr::get($body, 'action'),
+            Arr::get($body, 'actionId'),
+            ['regenerate-latest', 'regenerate-ltno', 'regenerate-without', 'repair']
+        );
+        $ids = Arr::get($body, 'ids');
 
-        // Setting the command to use
-        $command = ['php', 'flarum', 'discussion-cards:regenerate-images'];
-        // if ($all) {
-        //     $command[] = '--all';
-        // }
-        if ($ltno) {
-            $command[] = '-l';
-            $command[] = '-t';
-            $command[] = '-N';
-            $command[] = '-o';
+        if (is_array($ids)) {
+            // Next calls: ids left over by the previous call
+            $ids = array_values(array_unique(array_filter(
+                array_map('intval', array_filter(array_slice($ids, 0, self::MAX_IDS), 'is_numeric'))
+            )));
+        } else {
+            // First call: the server selects the discussions from a preset
+            $ids = $this->regenerator->selectByMode((string) Arr::get($body, 'mode', 'latest'));
         }
 
-        if ($without) {
-            $command[] = '-a';
-            $command[] = '-w';
-            $command[] = '20';
+        // The first batch of an action carries the preset (regenerate) or the start flag (repair)
+        if ($log && (Arr::has($body, 'mode') || Arr::get($body, 'start') === true)) {
+            $log->info('Started: ' . count($ids) . ' discussion(s) in the first batch');
         }
 
-        // Executing the command
-        $process = new Process($command);
-        $process->setWorkingDirectory($this->paths->base);
-        $process->setTimeout(300); // 5 minutes timeout
-
-        try {
-            $process->mustRun();
-
-            $output = $process->getOutput();
-            $errorOutput = $process->getErrorOutput();
-
-            // Parsing summary to get the stats
-            $summary = $this->parseSummary($output);
-
-            $result = [
-                'command' => implode(' ', $command),
-                'output' => explode("\n", trim($output)),
-                'errorOutput' => $errorOutput,
-                'exitCode' => $process->getExitCode(),
-                'summary' => $summary
-            ];
-        } catch (ProcessFailedException $exception) {
-            $result = [
-                'command' => implode(' ', $command),
-                'output' => [],
-                'errorOutput' => $exception->getMessage(),
-                'exitCode' => $exception->getProcess()->getExitCode(),
-                'summary' => [
-                    'total' => 0,
-                    'success' => 0,
-                    'errors' => 0
-                ]
-            ];
-        }
-
-        return new JsonResponse($result);
-    }
-
-    /**
-     * Parse the command output to extract statistics
-     */
-    private function parseSummary(string $output)
-    {
-        $summary = [
-            'total' => 0,
-            'success' => 0,
-            'errors' => 0
-        ];
-
-        $lines = explode("\n", $output);
-        foreach ($lines as $line) {
-            if (preg_match('/Regeneration summary: (\d+) processed, (\d+) successful & (\d+) errors/', $line, $matches)) {
-                $summary['total'] = (int)$matches[1];
-                $summary['success'] = (int)$matches[2];
-                $summary['errors'] = (int)$matches[3];
-                break;
+        $onItem = $log && $log->wantsDetails()
+            ? function (int $id, ?string $error, array $detail = []) use ($log) {
+                if (!empty($detail)) {
+                    $log->item($detail);
+                }
             }
-        }
+            : null;
 
-        return $summary;
+        $result = $this->regenerator->processIds($ids, false, self::TIME_BUDGET, $onItem);
+
+        $log?->info(sprintf(
+            'Batch: success=%d regenerated=%d unchanged=%d noImage=%d errors=%d remaining=%d',
+            $result['success'],
+            $result['regenerated'],
+            $result['unchanged'],
+            $result['noImage'],
+            $result['errors'],
+            count($result['remaining'])
+        ));
+
+        return new JsonResponse([
+            'selected'    => count($ids),
+            'success'     => $result['success'],
+            'regenerated' => $result['regenerated'],
+            'unchanged'   => $result['unchanged'],
+            'noImage'     => $result['noImage'],
+            'errors'      => $result['errors'],
+            'failures'    => $result['failures'],
+            'remaining'   => $result['remaining'],
+        ]);
     }
 }

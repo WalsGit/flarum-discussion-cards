@@ -2,6 +2,7 @@ import Form from "flarum/common/components/Form";
 import Modal from "flarum/common/components/Modal";
 import Button from "flarum/common/components/Button";
 import app from "flarum/admin/app";
+import newActionId from "../helpers/newActionId";
 
 export default class RegenerateImagesModal extends Modal {
   oninit(vnode) {
@@ -9,13 +10,12 @@ export default class RegenerateImagesModal extends Modal {
 
     this.loading = false;
     this.output = "";
-    this.commandOutput = [];
-    this.exitCode = 0;
-    this.errorOutput = "";
+    this.summary = null;
+    this.failures = [];
   }
 
   className() {
-    return "RegenerateImagesModal Modal--medium";
+    return "dc-modal dc-regenerate-modal Modal--medium";
   }
 
   title() {
@@ -114,32 +114,46 @@ export default class RegenerateImagesModal extends Modal {
           {/* ==== OUTPUT ==== */}
           {this.output && (
             <div className="Form-group">
-              <div className="RegenerateImages-output">
+              <div className="dc-regenerate-output">
                 <pre>{this.output}</pre>
               </div>
             </div>
           )}
-          {this.exitCode === 0 &&
-            this.commandOutput &&
-            this.commandOutput.length > 0 && (
-              <div className="Form-group">
-                <div className="RegenerateImages-summary">
-                  {this.commandOutput
-                    .filter(
-                      (line) =>
-                        line &&
-                        (line.startsWith("➡ Regeneration summary:") || line[0])
-                    )
-                    .map((line, index) => (
-                      <div key={index}>{line}</div>
-                    ))}
-                </div>
-              </div>
-            )}
-          {this.exitCode === 1 && this.errorOutput && (
+          {this.summary && (
             <div className="Form-group">
-              <div className="RegenerateImages-error">
-                <div>Error: {this.errorOutput}</div>
+              <div className="dc-regenerate-summary">
+                {app.translator.trans(
+                  "walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_summary",
+                  {
+                    total: this.summary.done,
+                    regenerated: this.summary.regenerated,
+                    unchanged: this.summary.unchanged,
+                    noImage: this.summary.noImage,
+                    errors: this.summary.errors,
+                  }
+                )}
+              </div>
+              {this.summary.noImage > 0 && (
+                <div className="helpText">
+                  {app.translator.trans(
+                    "walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_noImageHint",
+                    { count: this.summary.noImage }
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          {this.failures.length > 0 && (
+            <div className="Form-group">
+              <div className="dc-regenerate-error">
+                {this.failures.map((failure) => (
+                  <div key={failure.id}>
+                    {app.translator.trans(
+                      "walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_failure",
+                      { id: failure.id, message: failure.message }
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -151,63 +165,85 @@ export default class RegenerateImagesModal extends Modal {
   regenerateImages(type) {
     this.regenerateType = type;
     this.loading = true;
+    this.summary = null;
+    this.failures = [];
     this.output = app.translator.trans(
       "walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_runningCommand"
     );
-    this.commandOutput = [];
     m.redraw.sync(); // Force immediate redraw
 
-    setTimeout(() => {
+    const totals = {
+      selected: 0,
+      done: 0,
+      regenerated: 0,
+      unchanged: 0,
+      noImage: 0,
+      errors: 0,
+    };
+
+    const log = { action: "regenerate-" + type, actionId: newActionId() };
+
+    // One request processes as many discussions as its time budget allows,
+    // then we call again with the ids left over until nothing remains
+    const run = (body) =>
       app
         .request({
           method: "POST",
           url:
             app.forum.attribute("apiUrl") +
-            "/walsgit/discussion-cards/regenerate-images" +
-            (type === "ltno"
-              ? "?ltno=true"
-              : type === "without"
-              ? "?without=true"
-              : ""),
+            "/walsgit/discussion-cards/regenerate-images",
+          body: { ...body, ...log },
         })
         .then((result) => {
-          this.loading = false;
-          this.output = result.command + "\n";
-          this.commandOutput = result.output;
-          this.exitCode = result.exitCode;
-          this.errorOutput = result.errorOutput;
-          m.redraw();
+          if (body.mode) {
+            totals.selected = result.selected;
+          }
 
-          // Show success message
-          app.alerts.show(
-            { type: "success" },
-            app.translator.trans(
-              "walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_success"
-            )
-          );
-        })
-        .catch((err) => {
-          this.loading = false;
-          this.output = app.translator.trans(
-            "walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_error"
-          );
-          this.commandOutput = [];
-          this.exitCode = 1;
-          this.errorOutput =
-            err.message ||
-            app.translator.trans(
-              "walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_unknownError"
+          totals.regenerated += result.regenerated;
+          totals.unchanged += result.unchanged;
+          totals.noImage += result.noImage;
+          totals.errors += result.errors;
+          totals.done += result.success + result.errors;
+          this.failures = this.failures.concat(result.failures);
+
+          if (result.remaining.length > 0) {
+            this.output = app.translator.trans(
+              "walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_progress",
+              { done: totals.done, total: totals.selected }
             );
-          m.redraw();
+            m.redraw();
 
-          // Show error message
-          app.alerts.show(
-            { type: "error" },
-            app.translator.trans(
-              "walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_error"
-            )
-          );
+            return run({ ids: result.remaining });
+          }
         });
-    }, 500); // 500ms delay to see the running message
+
+    run({ mode: type })
+      .then(() => {
+        this.loading = false;
+        this.output = "";
+        this.summary = totals;
+        m.redraw();
+
+        app.alerts.show(
+          { type: "success" },
+          app.translator.trans(
+            "walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_success"
+          )
+        );
+      })
+      .catch(() => {
+        this.loading = false;
+        this.output = app.translator.trans(
+          "walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_error"
+        );
+        m.redraw();
+
+        app.alerts.show(
+          { type: "error" },
+          app.translator.trans(
+            "walsgit_discussion_cards.admin.settings.statsToolsBanner.regenerateImagesModal_error"
+          )
+        );
+      });
   }
 }

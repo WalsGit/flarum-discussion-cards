@@ -11,30 +11,58 @@
 
 namespace Walsgit\Discussion\Cards\Api\Controllers;
 
-use Flarum\Settings\SettingsRepositoryInterface;
-use Flarum\User\Exception\PermissionDeniedException;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Server\RequestHandlerInterface;
-use Laminas\Diactoros\Response\JsonResponse;
+use Flarum\Foundation\ValidationException;
 use Flarum\Http\RequestUtil;
+use Flarum\Locale\Translator;
+use Flarum\Settings\SettingsRepositoryInterface;
+use Flarum\Tags\Tag;
+use Illuminate\Support\Arr;
+use Laminas\Diactoros\Response\JsonResponse;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 class UpdateAllowedTagsController implements RequestHandlerInterface
 {
-    public function __construct(protected SettingsRepositoryInterface $settings) {}
+    public function __construct(
+        protected SettingsRepositoryInterface $settings,
+        protected Translator $translator
+    ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $actor = RequestUtil::getActor($request);
+        RequestUtil::getActor($request)->assertAdmin();
 
-        if (!$actor->isAdmin()) {
-            throw new PermissionDeniedException();
+        $ids = Arr::get((array) $request->getParsedBody(), 'allowedTags');
+
+        if (!is_array($ids)) {
+            throw new ValidationException([
+                'allowedTags' => $this->translator->trans('walsgit_discussion_cards.admin.errors.allowedTagsInvalid'),
+            ]);
         }
 
-        $body = $request->getParsedBody();
-        $allowedTags = isset($body['allowedTags']) ? json_encode($body['allowedTags']) : '[]';
+        // Keep positive integer ids only (int or digit string), without duplicates
+        $ids = array_filter($ids, fn($id) => is_int($id) || (is_string($id) && ctype_digit($id)));
+        $ids = array_values(array_unique(array_filter(
+            array_map('intval', $ids),
+            fn($id) => $id > 0
+        )));
 
-        $this->settings->set('walsgit_discussion_cards_allowedTags', $allowedTags);
+        // Keep only tags that really exist
+        $existing = Tag::query()
+            ->whereIn('id', $ids)
+            ->pluck('id')
+            ->map(fn($id) => (int) $id)
+            ->all();
+
+        $ids = array_values(array_intersect($ids, $existing));
+        sort($ids);
+
+        // Normalized format: JSON array of id strings, ex.: ["1","4","12"]
+        $this->settings->set(
+            'walsgit_discussion_cards_allowedTags',
+            json_encode(array_map('strval', $ids))
+        );
 
         return new JsonResponse(['status' => 'success']);
     }

@@ -8,6 +8,6 @@ export default class DiscussionTags extends Component {
   view(vnode) {
     const { discussion } = this.attrs;
 
-    return <div className="cardTags">{craftTags(discussion.tags())}</div>;
+    return <div className="dc-card-tags">{craftTags(discussion.tags())}</div>;
   }
 }

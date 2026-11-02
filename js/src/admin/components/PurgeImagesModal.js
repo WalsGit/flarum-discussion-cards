@@ -2,6 +2,7 @@ import Form from "flarum/common/components/Form";
 import Modal from "flarum/common/components/Modal";
 import Button from "flarum/common/components/Button";
 import app from "flarum/admin/app";
+import newActionId from "../helpers/newActionId";
 
 export default class PurgeImagesModal extends Modal {
   oninit(vnode) {
@@ -9,11 +10,11 @@ export default class PurgeImagesModal extends Modal {
 
     this.loading = false;
     this.output = "";
-    this.commandOutput = [];
+    this.summary = null;
   }
 
   className() {
-    return "PurgeImagesModal Modal--medium";
+    return "dc-modal dc-purge-modal Modal--medium";
   }
 
   title() {
@@ -79,17 +80,22 @@ export default class PurgeImagesModal extends Modal {
           </div>
           {this.output && (
             <div className="Form-group">
-              <div className="PurgeImages-output">
+              <div className="dc-purge-output">
                 <pre>{this.output}</pre>
               </div>
             </div>
           )}
-          {this.commandOutput.length > 0 && (
+          {this.summary && (
             <div className="Form-group">
-              <div className="PurgeImages-summary">
-                {this.commandOutput.map((line, index) => (
-                  <div key={index}>{line}</div>
-                ))}
+              <div className="dc-purge-summary">
+                {app.translator.trans(
+                  "walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_summary",
+                  {
+                    deleted: this.summary.deleted,
+                    skipped: this.summary.skipped,
+                    updated: this.summary.updated,
+                  }
+                )}
               </div>
             </div>
           )}
@@ -104,7 +110,7 @@ export default class PurgeImagesModal extends Modal {
     this.output = app.translator.trans(
       "walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_runningCommand"
     );
-    this.commandOutput = [];
+    this.summary = null;
     m.redraw.sync(); // Force immediate redraw
 
     setTimeout(() => {
@@ -114,15 +120,27 @@ export default class PurgeImagesModal extends Modal {
           url:
             app.forum.attribute("apiUrl") +
             "/walsgit/discussion-cards/purge-images" +
-            (type === "all" ? "?all=true" : ""),
+            (type === "all" ? "?all=true&" : "?") +
+            "action=" +
+            (type === "all" ? "purge-all" : "purge-unused") +
+            "&actionId=" +
+            newActionId(),
         })
         .then((result) => {
           this.loading = false;
-          this.output = result.command + "\n";
-          this.commandOutput = result.output;
+
+          // The server refused to run the purge (already running, missing folder...)
+          if (result.error) {
+            this.output = result.error;
+            m.redraw();
+            app.alerts.show({ type: "error" }, result.error);
+            return;
+          }
+
+          this.output = "";
+          this.summary = result;
           m.redraw();
 
-          // Show success message
           app.alerts.show(
             { type: "success" },
             app.translator.trans(
@@ -135,15 +153,8 @@ export default class PurgeImagesModal extends Modal {
           this.output = app.translator.trans(
             "walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_error"
           );
-          this.commandOutput = [
-            err.message ||
-              app.translator.trans(
-                "walsgit_discussion_cards.admin.settings.statsToolsBanner.purgeImagesModal_unknownError"
-              ),
-          ];
           m.redraw();
 
-          // Show error message
           app.alerts.show(
             { type: "error" },
             app.translator.trans(

@@ -12,14 +12,16 @@
 /**
  * This adds a CLI command discussion-cards:purge-images to delete non-used (orphan) card images or delete all of them.
  * Note that default images (general, tag) will never be deleted by these commands
- * discussion-cards:purge-images 
+ * discussion-cards:purge-images
  *      > will delete permanently all discussion card images not in use (not in db)
- * discussion-cards:purge-images -a | --all 
+ * discussion-cards:purge-images -a | --all
  *      > will delete ALL discussion card images (excluding default images)
- * discussion-cards:purge-images -d | --discussion [discussion.id] 
+ * discussion-cards:purge-images -d | --discussion [discussion.id]
  *      > will delete the card images of specific discussion ids (comma separated, excluding default images)
  * discussion-cards:purge-images --dry-run
  *      > will simulate without deleting anything
+ * discussion-cards:purge-images --log
+ *      > will log details to storage/logs/walsgit-discussion-cards/purge-YYYY-MM-DD.log (and delete any log files older than 7 days)
  */
 
 namespace Walsgit\Discussion\Cards\Console;
@@ -27,26 +29,18 @@ namespace Walsgit\Discussion\Cards\Console;
 use Flarum\Console\AbstractCommand;
 use Flarum\Foundation\Paths;
 use Flarum\Locale\Translator;
-use Illuminate\Database\ConnectionInterface;
-use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\InputOption;
+use Walsgit\Discussion\Cards\Services\PurgeImagesException;
+use Walsgit\Discussion\Cards\Services\PurgeImagesService;
 
 class PurgeImagesCommand extends AbstractCommand
 {
-    protected bool $dryRun = false;
-
-    protected int $deletedFiles = 0;
-    protected int $skippedFiles = 0;
-    protected int $updatedDiscussions = 0;
-
-    /** @var resource|null */
-    protected $lockHandle = null;
-    protected int $lockTimeout = 30;
+    protected RunReporter $reporter;
 
     public function __construct(
-        protected Paths $paths,
-        protected ConnectionInterface $db,
-        protected Translator $translator
+        protected PurgeImagesService $purger,
+        protected Translator $translator,
+        protected Paths $paths
     ) {
         parent::__construct();
     }
@@ -73,14 +67,24 @@ class PurgeImagesCommand extends AbstractCommand
                 null,
                 InputOption::VALUE_NONE,
                 'Simulate without deleting anything'
+            )
+            ->addOption(
+                'log',
+                null,
+                InputOption::VALUE_NONE,
+                'Write the command and each deleted or skipped file to the log file (storage/logs/walsgit-discussion-cards/purge-YYYY-MM-DD.log). Skipped files are shown in the terminal with -v'
             );
     }
 
     protected function fire(): int
     {
         $all = (bool) $this->input->getOption('all');
-        $this->dryRun = (bool) $this->input->getOption('dry-run');
+        $dryRun = (bool) $this->input->getOption('dry-run');
         $discussionOption = $this->input->getOption('discussion');
+        $discussionIds = [];
+
+        $this->reporter = new RunReporter($this->input, $this->output, $this->paths, 'purge');
+        $this->reporter->start($dryRun);
 
         if ($all && is_string($discussionOption)) {
             return $this->invalid();
@@ -92,194 +96,67 @@ class PurgeImagesCommand extends AbstractCommand
             if ($discussionOption === '' || !preg_match('/^\d+(,\d+)*$/', $discussionOption)) {
                 return $this->invalid();
             }
+
+            $discussionIds = array_map('intval', explode(',', $discussionOption));
         }
 
-        if (!$this->acquireLock()) {
-            $this->error($this->trans('purgeImagesAlreadyRunning'));
-            return 1;
+        $this->info($this->trans('purgeImagesStart'));
+
+        if ($dryRun) {
+            $this->output->writeln('<comment>' . $this->trans('purgeImagesDryRun') . '</comment>');
+        }
+
+        if (!$all && empty($discussionIds)) {
+            $this->info($this->trans('purgeImagesScan'));
         }
 
         try {
-            $directory = '/assets/extensions/walsgit-discussion-cards';
-            $imagesPath = $this->paths->public . $directory;
+            $result = $this->purger->purge($all, $discussionIds, $dryRun);
+        } catch (PurgeImagesException $e) {
+            $this->reporter->logOnly('Error: ' . $e->getMessage() . ' ' . json_encode($e->params), 'ERROR');
+            $this->error($this->trans($e->getMessage(), $e->params));
+            return 1;
+        }
 
-            if (!is_dir($imagesPath)) {
-                $this->error(
-                    $this->trans('purgeImagesDirectoryNotFound', ['directory' => $directory])
-                );
-                return 1;
-            }
+        foreach ($result['deletedFiles'] as $file) {
+            $this->reporter->logOnly('deleted: ' . $file);
+            $this->output->writeln($this->trans('purgeImagesDelete', ['file' => $file]));
+        }
 
-            $this->info($this->trans('purgeImagesStart'));
+        foreach ($result['skippedFiles'] as $file) {
+            $this->reporter->logOnly('skipped: ' . $file);
+        }
 
-            if ($this->dryRun) {
+        $this->reporter->logOnly(sprintf(
+            'Summary: deleted=%d skipped=%d updated=%d',
+            $result['deleted'],
+            $result['skipped'],
+            $result['updated']
+        ));
+
+        if ($this->output->isVerbose()) {
+            foreach ($result['skippedFiles'] as $file) {
                 $this->output->writeln(
-                    '<comment>' . $this->trans('purgeImagesDryRun') . '</comment>'
+                    '<comment>' . $this->trans('purgeImagesFileSkipped', ['file' => $file]) . '</comment>'
                 );
             }
-
-            if ($all) {
-                $this->purgeAllDiscussionImages($imagesPath);
-            } elseif (is_string($discussionOption)) {
-                foreach (array_map('intval', explode(',', $discussionOption)) as $id) {
-                    $this->purgeDiscussionImages($imagesPath, $id);
-                }
-            } else {
-                $this->purgeOrphanImages($imagesPath);
-            }
-
-            $this->printSummary();
-            $this->info($this->trans('purgeImagesEnd'));
-
-            return 0;
-        } finally {
-            $this->releaseLock();
-        }
-    }
-
-    /* ============================================================= */
-
-    protected function acquireLock(): bool
-    {
-        $lockDir = $this->paths->storage . '/locks';
-
-        if (!is_dir($lockDir)) {
-            mkdir($lockDir, 0755, true);
         }
 
-        $lockFile = $lockDir . '/discussion-cards-purge-images.lock';
-        $this->lockHandle = fopen($lockFile, 'c');
-
-        if ($this->lockHandle === false) {
-            return false;
-        }
-
-        $start = time();
-
-        while (!flock($this->lockHandle, LOCK_EX | LOCK_NB)) {
-            if ((time() - $start) >= $this->lockTimeout) {
-                return false;
-            }
-            usleep(250000);
-        }
-
-        $this->logVerbose('purgeImagesLockAcquired');
-
-        return true;
-    }
-
-    protected function releaseLock(): void
-    {
-        if ($this->lockHandle) {
-            flock($this->lockHandle, LOCK_UN);
-            fclose($this->lockHandle);
-            $this->lockHandle = null;
-
-            $this->logVerbose('purgeImagesLockReleased');
-        }
-    }
-
-    protected function purgeOrphanImages(string $path): void
-    {
-        $this->info($this->trans('purgeImagesScan'));
-
-        $used = $this->db->table('discussions')
-            ->whereNotNull('walsgit_card_image_url')
-            ->pluck('walsgit_card_image_url')
-            ->map(fn($url) => basename($url))
-            ->flip()
-            ->all();
-
-        foreach (scandir($path) as $file) {
-            if ($this->isDeletableDiscussionImage($file)) {
-                if (!isset($used[$file])) {
-                    $this->deleteFile($path, $file);
-                } else {
-                    $this->skippedFiles++;
-                    $this->logVerbose('purgeImagesFileSkipped', ['file' => $file]);
-                }
-            }
-        }
-    }
-
-    protected function purgeAllDiscussionImages(string $path): void
-    {
-        foreach (scandir($path) as $file) {
-            if ($this->isDeletableDiscussionImage($file)) {
-                $this->deleteFile($path, $file);
-            }
-        }
-
-        if (!$this->dryRun) {
-            $this->updatedDiscussions = $this->db->table('discussions')
-                ->whereNotNull('walsgit_card_image_url')
-                ->where('walsgit_card_image_url', 'not like', '%default-card-image.webp')
-                ->update(['walsgit_card_image_url' => null]);
-        }
-    }
-
-    protected function purgeDiscussionImages(string $path, int $discussionId): void
-    {
-        foreach (scandir($path) as $file) {
-            if (
-                $this->isDeletableDiscussionImage($file) &&
-                Str::startsWith($file, 'discussion-' . $discussionId . '-')
-            ) {
-                $this->deleteFile($path, $file);
-            }
-        }
-
-        if (!$this->dryRun) {
-            $this->updatedDiscussions += $this->db->table('discussions')
-                ->where('id', $discussionId)
-                ->whereNotNull('walsgit_card_image_url')
-                ->update(['walsgit_card_image_url' => null]);
-        }
-    }
-
-    protected function deleteFile(string $path, string $file): void
-    {
-        $this->output->writeln(
-            $this->trans('purgeImagesDelete', ['file' => $file])
-        );
-
-        if (!$this->dryRun) {
-            unlink($path . '/' . $file);
-        }
-
-        $this->deletedFiles++;
-    }
-
-    protected function isDeletableDiscussionImage(string $file): bool
-    {
-        return
-            Str::startsWith($file, 'discussion-') &&
-            Str::endsWith($file, '.webp') &&
-            !Str::contains($file, 'default-card-image');
-    }
-
-    protected function printSummary(): void
-    {
         $this->info($this->trans('purgeImagesSummary', [
-            'deleted' => $this->deletedFiles,
-            'skipped' => $this->skippedFiles,
-            'updated' => $this->updatedDiscussions,
+            'deleted' => $result['deleted'],
+            'skipped' => $result['skipped'],
+            'updated' => $result['updated'],
         ]));
+        $this->info($this->trans('purgeImagesEnd'));
+
+        return 0;
     }
 
     protected function invalid(): int
     {
+        $this->reporter->logOnly('Invalid arguments', 'ERROR');
         $this->error($this->trans('purgeImagesInvalidArguments'));
         return 1;
-    }
-
-    protected function logVerbose(string $key, array $params = []): void
-    {
-        if ($this->output->isVerbose()) {
-            $this->output->writeln(
-                '<comment>' . $this->trans($key, $params) . '</comment>'
-            );
-        }
     }
 
     protected function trans(string $key, array $params = []): string

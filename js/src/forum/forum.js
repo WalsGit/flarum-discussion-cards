@@ -1,5 +1,6 @@
 import "./components/CardItem";
 import "./components/ListItem";
+import "./components/BrokenImagesModal";
 
 import "./components/common/DiscussionMedia";
 import "./components/common/DiscussionPreview";

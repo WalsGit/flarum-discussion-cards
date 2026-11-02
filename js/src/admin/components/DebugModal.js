@@ -18,7 +18,7 @@ export default class DebugModal extends FormModal {
   }
 
   className() {
-    return "InfoModal Modal--large";
+    return "InfoModal dc-modal dc-debug-modal Modal--large";
   }
 
   title() {
@@ -31,7 +31,7 @@ export default class DebugModal extends FormModal {
     return (
       <div className="Modal-body">
         <div>
-          <pre className="InfoModal-content InfoSettings">
+          <pre className="InfoModal-content dc-info-settings">
             Discussion Cards version: {this.version + "\n"}
             ===== SETTINGS ===== {"\n"}
             {Object.keys(this.settings).map((key) => {
@@ -65,19 +65,15 @@ export default class DebugModal extends FormModal {
               }
 
               if (key === "useBlogImages") {
-                const blogExtensionInstalled = isExtensionInstalled(
-                  "v17development-blog"
-                )
+                const blogExtensionInstalled = isExtensionInstalled("fof-blog")
                   ? "is"
                   : "is not";
-                const blogExtensionActivated = isExtensionActive(
-                  "v17development-blog"
-                )
+                const blogExtensionActivated = isExtensionActive("fof-blog")
                   ? "is"
                   : "not";
                 settingLine =
                   settingLine +
-                  `\n └ [v17development/blog ${blogExtensionInstalled} installed & ${blogExtensionActivated} activated]`;
+                  `\n └ [fof/blog ${blogExtensionInstalled} installed & ${blogExtensionActivated} activated]`;
               }
 
               if (key === "allowRepostLinks") {
@@ -93,7 +89,7 @@ export default class DebugModal extends FormModal {
                   : "not";
                 settingLine =
                   settingLine +
-                  `\n └ [shebaoting/repost ${repostExtensionInstalled} installed & ${repostExtensionActivated} activated]`;
+                  `\n └ [shebaoting/flarum-repost ${repostExtensionInstalled} installed & ${repostExtensionActivated} activated]`;
               }
 
               return settingLine + "\n";
@@ -105,7 +101,7 @@ export default class DebugModal extends FormModal {
           <div className="InfoModal-actions">
             <Button
               className="Button Button--primary"
-              onclick={() => this.copyToClipboard(".InfoSettings")}
+              onclick={() => this.copyToClipboard(".dc-info-settings")}
             >
               {app.translator.trans(
                 "walsgit_discussion_cards.admin.settings.statsToolsBanner.debugModal_copyButton"
@@ -125,7 +121,7 @@ export default class DebugModal extends FormModal {
               )}
             </div>
 
-            <div className="Debug-discussion">
+            <div className="dc-debug-discussion">
               <div className="Form-group">
                 <label htmlFor="discussionId">
                   {app.translator.trans(
@@ -136,7 +132,7 @@ export default class DebugModal extends FormModal {
                   type="number"
                   id="discussionId"
                   name="discussionId"
-                  className="FormControl DC-Number"
+                  className="FormControl dc-number"
                   value={this.discussionId}
                   oninput={(e) => (this.discussionId = e.target.value)}
                 />
@@ -154,8 +150,8 @@ export default class DebugModal extends FormModal {
               </div>
             </div>
 
-            <div className="Debug-discussion-results">
-              <pre className="InfoModal-content InfoDiscussion">
+            <div className="dc-debug-discussion-results">
+              <pre className="InfoModal-content dc-info-discussion">
                 {this.output
                   ? this.output
                   : "Test results will be displayed here."}
@@ -164,7 +160,7 @@ export default class DebugModal extends FormModal {
             <div className="InfoModal-actions">
               <Button
                 className="Button Button--primary"
-                onclick={() => this.copyToClipboard(".InfoDiscussion")}
+                onclick={() => this.copyToClipboard(".dc-info-discussion")}
               >
                 {app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.statsToolsBanner.debugModal_copyButton"
@@ -218,9 +214,9 @@ export default class DebugModal extends FormModal {
   }
 
   checkDiscussion() {
-    const discussionId = parseInt(this.discussionId);
+    const discussionId = Number.parseInt(this.discussionId);
 
-    if (isNaN(discussionId) || discussionId < 1) {
+    if (Number.isNaN(discussionId) || discussionId < 1) {
       app.alerts.show(
         { type: "error" },
         app.translator.trans(

@@ -37,13 +37,13 @@ class MigrateImagesCommand extends AbstractCommand
 
     protected function fire(): int
     {
-        $this->info($this->translator->trans('walsgit-discussion-cards.admin.console.migrateImagesStart'));
+        $this->info($this->translator->trans('walsgit_discussion_cards.admin.console.migrateImagesStart'));
 
         try {
             $count = $this->migrator->runMigration();
-            $this->info($this->translator->trans('walsgit-discussion-cards.admin.console.migrateImagesEnd', ['count' => $count]));
+            $this->info($this->translator->trans('walsgit_discussion_cards.admin.console.migrateImagesEnd', ['count' => $count]));
         } catch (\Throwable $e) {
-            $this->error($this->translator->trans('walsgit-discussion-cards.admin.console.migrateImagesError') . $e->getMessage());
+            $this->error($this->translator->trans('walsgit_discussion_cards.admin.console.migrateImagesError') . $e->getMessage());
             $this->error($e->getTraceAsString());
             return 1;
         }

@@ -53,7 +53,7 @@ class TagImageController implements RequestHandlerInterface
                 ]);
                 
                 $result = $this->imageService->handleUpload($request, 'tag', [
-                    'tagId' => $tagId
+                    'tagId' => $tag->id
                 ]);
 
                 $tag->walsgit_discussion_cards_tag_default_image = 'tags/' . $result['path'];
@@ -62,7 +62,7 @@ class TagImageController implements RequestHandlerInterface
                 return $this->createTagResponse($tag);
 
             case 'DELETE':
-                $this->imageService->handleDelete('tag', "tag-{$tagId}-default-card-image.webp");
+                $this->imageService->handleDelete('tag', "tag-{$tag->id}-default-card-image.webp");
                 $tag->walsgit_discussion_cards_tag_default_image = null;
                 $tag->save();
 

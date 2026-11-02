@@ -35,6 +35,9 @@ class RemoteImageFetcher
 
     protected const CONNECT_TIMEOUT = 3;      // seconds
     protected const TOTAL_TIMEOUT = 10;       // seconds, for one fetch (all redirect hops included)
+    // Shorter limits used when a user is waiting for the response (post creation/edition)
+    protected const INTERACTIVE_CONNECT_TIMEOUT = 2; // seconds
+    protected const INTERACTIVE_TOTAL_TIMEOUT = 4;   // seconds, per fetch (all redirect hops included)
     protected const MAX_REDIRECTS = 3;
     protected const PROBE_MAX_BODY = 262144;  // 256 KB: cap for redirect bodies when only headers are wanted
     protected const PROBE_CACHE_TTL = 60;     // seconds
@@ -60,7 +63,7 @@ class RemoteImageFetcher
         '240.0.0.0/4',      // reserved
         // IPv6
         '::/96',            // unspecified, loopback and IPv4-compatible
-        '64:ff9b::/96',     // NAT64
+        '64:ff9b:1::/48',   // NAT64 local-use prefix (RFC 8215)
         '100::/64',         // discard-only
         '2001::/32',        // Teredo
         '2001:db8::/32',    // documentation
@@ -81,7 +84,7 @@ class RemoteImageFetcher
      * @return array{status: int, etag: string, last_modified: string, content_length: int|null, content_type: string}|null
      *         null when the URL is refused or the request failed
      */
-    public function probe(string $url): ?array
+    public function probe(string $url, bool $interactive = false): ?array
     {
         $cached = $this->probeCache[$url] ?? null;
 
@@ -89,7 +92,7 @@ class RemoteImageFetcher
             return $cached['info'];
         }
 
-        $response = $this->request($url, null, self::PROBE_MAX_BODY, true);
+        $response = $this->request($url, null, self::PROBE_MAX_BODY, true, $interactive);
         $info = $response !== null ? $this->extractInfo($response) : null;
 
         if (count($this->probeCache) >= self::PROBE_CACHE_MAX) {
@@ -104,9 +107,9 @@ class RemoteImageFetcher
     /**
      * True if the remote URL answers with a 2xx status.
      */
-    public function isAccessible(string $url): bool
+    public function isAccessible(string $url, bool $interactive = false): bool
     {
-        $info = $this->probe($url);
+        $info = $this->probe($url, $interactive);
 
         return $info !== null && $info['status'] >= 200 && $info['status'] < 300;
     }
@@ -115,9 +118,9 @@ class RemoteImageFetcher
      * Downloads a remote file into $targetPath (an existing, writable file).
      * Returns false if the URL is refused, the request fails or the file is too big.
      */
-    public function download(string $url, string $targetPath): bool
+    public function download(string $url, string $targetPath, bool $interactive = false): bool
     {
-        $response = $this->request($url, $targetPath, self::MAX_BYTES, false);
+        $response = $this->request($url, $targetPath, self::MAX_BYTES, false, $interactive);
 
         if ($response === null || !$this->isSuccess($response)) {
             return false;
@@ -136,15 +139,17 @@ class RemoteImageFetcher
      * @param bool        $headersOnly stop as soon as the final response headers are received
      * @return ResponseInterface|null  the final response, or null if anything went wrong
      */
-    protected function request(string $url, ?string $sinkPath, int $maxBytes, bool $headersOnly): ?ResponseInterface
+    protected function request(string $url, ?string $sinkPath, int $maxBytes, bool $headersOnly, bool $interactive = false): ?ResponseInterface
     {
-        $deadline = microtime(true) + self::TOTAL_TIMEOUT;
+        $total = $interactive ? self::INTERACTIVE_TOTAL_TIMEOUT : self::TOTAL_TIMEOUT;
+        $connectTimeout = $interactive ? self::INTERACTIVE_CONNECT_TIMEOUT : self::CONNECT_TIMEOUT;
+        $deadline = microtime(true) + $total;
 
         try {
             $current = new Uri($url);
 
             for ($hop = 0; $hop <= self::MAX_REDIRECTS; $hop++) {
-                $response = $this->sendOnce($current, $deadline, $sinkPath, $maxBytes, $headersOnly);
+                $response = $this->sendOnce($current, $deadline, $connectTimeout, $sinkPath, $maxBytes, $headersOnly);
 
                 if (!$this->isRedirect($response)) {
                     return $response;
@@ -164,7 +169,7 @@ class RemoteImageFetcher
      *
      * @throws Throwable when the target is refused or the request fails
      */
-    protected function sendOnce(UriInterface $uri, float $deadline, ?string $sinkPath, int $maxBytes, bool $headersOnly): ResponseInterface
+    protected function sendOnce(UriInterface $uri, float $deadline, int $connectTimeout, ?string $sinkPath, int $maxBytes, bool $headersOnly): ResponseInterface
     {
         $resolveEntry = $this->assertSafeTarget($uri);
 
@@ -177,7 +182,7 @@ class RemoteImageFetcher
         $captured = null;
         $stopped = false;
 
-        $options = $this->buildOptions($remaining, $maxBytes, $headersOnly, $captured, $stopped);
+        $options = $this->buildOptions($remaining, $connectTimeout, $maxBytes, $headersOnly, $captured, $stopped);
 
         if ($sinkPath !== null) {
             $options[RequestOptions::SINK] = $sinkPath;
@@ -206,13 +211,13 @@ class RemoteImageFetcher
      * @param ResponseInterface|null $captured filled with the response as soon as its headers arrive
      * @param bool                   $stopped  set to true when we interrupt the transfer on purpose
      */
-    protected function buildOptions(float $remaining, int $maxBytes, bool $headersOnly, ?ResponseInterface &$captured, bool &$stopped): array
+    protected function buildOptions(float $remaining, int $connectTimeout, int $maxBytes, bool $headersOnly, ?ResponseInterface &$captured, bool &$stopped): array
     {
         return [
             RequestOptions::ALLOW_REDIRECTS => false,
             RequestOptions::HTTP_ERRORS     => false,
             RequestOptions::DECODE_CONTENT  => false, // no compressed bodies: the size cap must apply to real bytes
-            RequestOptions::CONNECT_TIMEOUT => min(self::CONNECT_TIMEOUT, $remaining),
+            RequestOptions::CONNECT_TIMEOUT => min($connectTimeout, $remaining),
             RequestOptions::TIMEOUT         => $remaining,
             RequestOptions::HEADERS         => [
                 'User-Agent' => 'Flarum Discussion Cards (+https://github.com/WalsGit/flarum-discussion-cards)',
@@ -389,6 +394,12 @@ class RemoteImageFetcher
 
         // IPv4-mapped IPv6 address (::ffff:a.b.c.d): check the embedded IPv4 address instead
         if (strlen($packed) === 16 && str_starts_with($packed, str_repeat("\0", 10) . "\xff\xff")) {
+            return $this->isPublicIp((string) inet_ntop(substr($packed, 12)));
+        }
+
+        // NAT64 well-known prefix 64:ff9b::/96 (RFC 6052), used by DNS64 networks:
+        // the real destination is the embedded IPv4 address (last 4 bytes), so check that one instead
+        if (strlen($packed) === 16 && str_starts_with($packed, "\x00\x64\xff\x9b" . str_repeat("\0", 8))) {
             return $this->isPublicIp((string) inet_ntop(substr($packed, 12)));
         }
 

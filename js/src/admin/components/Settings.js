@@ -1,8 +1,6 @@
 import ExtensionPage from "flarum/admin/components/ExtensionPage";
 import app from "flarum/admin/app";
 import UploadImageButton from "flarum/common/components/UploadImageButton";
-import AlertWidget from "flarum/admin/components/AlertWidget";
-import Link from "flarum/common/components/Link";
 import isExtensionInstalled from "../helpers/isExtensionInstalled";
 import isExtensionActive from "../helpers/isExtensionActive";
 import Icon from "flarum/common/components/Icon";
@@ -22,9 +20,9 @@ export default class Settings extends ExtensionPage {
       url: "https://github.com/MichaelBelgium/flarum-discussion-views",
     };
     const blogExtension = {
-      id: "v17development-blog",
-      name: "Flarum Blog",
-      url: "https://discuss.flarum.org/d/33038-blog-adds-a-blog-section-to-your-community",
+      id: "fof-blog",
+      name: "FoF Blog",
+      url: "https://discuss.flarum.org/d/39435-fof-blog",
     };
     const repostExtension = {
       id: "shebaoting-repost",
@@ -32,16 +30,20 @@ export default class Settings extends ExtensionPage {
       url: "https://discuss.flarum.org/d/35420-repost",
     };
 
+    const repostLinksEnabled =
+      isExtensionActive(repostExtension.id) &&
+      Number(this.setting("walsgit_discussion_cards_allowRepostLinks")()) === 1;
+
     const warningIcon = <Icon name="fas fa-exclamation-triangle" />;
     const baseUrl = app.forum.attribute("baseUrl");
     const imagePath = baseUrl + "/assets/extensions/walsgit-discussion-cards/";
 
     return (
-      <div className="DiscussionCardsSettings">
+      <div className="dc-settings">
         <div className="container">
           <StatsToolsBanner />
 
-          <div className="DiscussionCardsSettings--content">
+          <div className="dc-settings--content">
             {/* ============== WHERE? SECTION ============== */}
             <h3>
               {app.translator.trans(
@@ -53,7 +55,7 @@ export default class Settings extends ExtensionPage {
                 "walsgit_discussion_cards.admin.settings.general.where_info"
               )}
             </p>
-            <div className="Section">
+            <div className="dc-section">
               {this.buildSettingComponent({
                 type: "flarum-tags.select-tags",
                 setting: "walsgit_discussion_cards_allowedTags",
@@ -90,10 +92,10 @@ export default class Settings extends ExtensionPage {
                 "walsgit_discussion_cards.admin.settings.general.primaryCardOptions_info"
               )}
             </p>
-            <div className="Section">
+            <div className="dc-section">
               {this.buildSettingComponent({
                 type: "number",
-                className: "DC-Number",
+                className: "dc-number",
                 setting: "walsgit_discussion_cards_primaryCards",
                 label: app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.primaryCards_label"
@@ -107,7 +109,7 @@ export default class Settings extends ExtensionPage {
               })}
               {this.buildSettingComponent({
                 type: "number",
-                className: "DC-Number",
+                className: "dc-number",
                 setting: "walsgit_discussion_cards_desktopCardWidth",
                 label: app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.desktopCardWidth_label"
@@ -122,7 +124,7 @@ export default class Settings extends ExtensionPage {
               })}
               {this.buildSettingComponent({
                 type: "number",
-                className: "DC-Number",
+                className: "dc-number",
                 setting: "walsgit_discussion_cards_tabletCardWidth",
                 label: app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.tabletCardWidth_label"
@@ -148,7 +150,7 @@ export default class Settings extends ExtensionPage {
                 "walsgit_discussion_cards.admin.settings.general.listCardOptions_info"
               )}
             </p>
-            <div className="Section">
+            <div className="dc-section">
               {this.buildSettingComponent({
                 type: "switch",
                 setting: "walsgit_discussion_cards_useListCards",
@@ -161,7 +163,7 @@ export default class Settings extends ExtensionPage {
               })}
               {this.buildSettingComponent({
                 type: "number",
-                className: "DC-Number",
+                className: "dc-number",
                 setting: "walsgit_discussion_cards_listCardsCount",
                 label: app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.listCardsCount_label"
@@ -187,9 +189,9 @@ export default class Settings extends ExtensionPage {
                 "walsgit_discussion_cards.admin.settings.general.cardOptions_info"
               )}
             </p>
-            <div className="Section">
-              <div className="DC-DefaultImageSettings">
-                <label className="DC-DefaultImageTitle">
+            <div className="dc-section">
+              <div className="dc-default-image-settings">
+                <label className="dc-default-image-title">
                   {app.translator.trans(
                     "walsgit_discussion_cards.admin.settings.general.defaultImage_title"
                   )}
@@ -201,7 +203,7 @@ export default class Settings extends ExtensionPage {
                 </p>
                 {app.forum.attribute("walsgitDiscussionCardsDefaultImage") ===
                 null ? (
-                  <div className="imgStub"></div>
+                  <div className="dc-img-stub"></div>
                 ) : (
                   ""
                 )}
@@ -220,7 +222,7 @@ export default class Settings extends ExtensionPage {
                     imagePath +
                     app.forum.attribute("walsgitDiscussionCardsDefaultImage")
                   }
-                  className="DC-UploadImageBtn"
+                  className="dc-upload-image-btn"
                 />
               </div>
               {this.buildSettingComponent({
@@ -301,28 +303,13 @@ export default class Settings extends ExtensionPage {
                 "walsgit_discussion_cards.admin.settings.general.otherOptions_title"
               )}
             </h3>
-            <AlertWidget
-              className="DebugWarningWidget"
-              alert={{
-                type: "warning",
-                dismissible: false,
-                title: app.translator.trans(
-                  "walsgit_discussion_cards.admin.settings.general.otherOptions_warningLabel"
-                ),
-                icon: "fas fa-exclamation-triangle",
-              }}
-            >
-              {app.translator.trans(
-                "walsgit_discussion_cards.admin.settings.general.otherOptions_warningText"
-              )}
-            </AlertWidget>
             <p className="helpText">
               {app.translator.trans(
                 "walsgit_discussion_cards.admin.settings.general.otherOptions_info"
               )}
             </p>
-            {/* fof/discussion-views OR michaelbelgium/flarum-ext-discussion-views */}
-            <div className="Section">
+            {/* fof/discussion-views OR michaelbelgium/flarum-discussion-views */}
+            <div className="dc-section">
               <h4>
                 {app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.showViews_title_start"
@@ -383,7 +370,7 @@ export default class Settings extends ExtensionPage {
                     : true,
               })}
               <hr></hr>
-              {/* v17development/flarum-blog */}
+              {/* fof/blog */}
               <h4>
                 {app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.blogExtension_title_start"
@@ -401,22 +388,17 @@ export default class Settings extends ExtensionPage {
               </h4>
               <div className="helpText">
                 <em>
-                  {
-                    !isExtensionInstalled(blogExtension.id)
-                      ? app.translator.trans(
-                          "walsgit_discussion_cards.admin.settings.general.blogExtension_notInstalled",
-                          { icon: warningIcon }
-                        )
-                      : !isExtensionActive(blogExtension.id)
-                      ? app.translator.trans(
-                          "walsgit_discussion_cards.admin.settings.general.blogExtension_notActivated",
-                          { icon: warningIcon }
-                        )
-                      : app.translator.trans(
-                          "walsgit_discussion_cards.admin.settings.general.blogExtension_tempExtensionMessage",
-                          { icon: warningIcon }
-                        ) /* Remove and replace with '' when fully supported for V2 */
-                  }
+                  {!isExtensionInstalled(blogExtension.id)
+                    ? app.translator.trans(
+                        "walsgit_discussion_cards.admin.settings.general.blogExtension_notInstalled",
+                        { icon: warningIcon }
+                      )
+                    : !isExtensionActive(blogExtension.id)
+                    ? app.translator.trans(
+                        "walsgit_discussion_cards.admin.settings.general.blogExtension_notActivated",
+                        { icon: warningIcon }
+                      )
+                    : ""}
                 </em>
               </div>
               {this.buildSettingComponent({
@@ -428,7 +410,7 @@ export default class Settings extends ExtensionPage {
                 help: app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.useBlogImages_help"
                 ),
-                disabled: true /* When V2 compatible: isExtensionActive(blogExtension.id) ? false : true, */,
+                disabled: !isExtensionActive(blogExtension.id),
               })}
               {this.buildSettingComponent({
                 type: "switch",
@@ -439,10 +421,10 @@ export default class Settings extends ExtensionPage {
                 help: app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.useBlogSummary_help"
                 ),
-                disabled: true /* When V2 compatible: isExtensionActive(blogExtension.id) ? false : true, */,
+                disabled: !isExtensionActive(blogExtension.id),
               })}
               <hr></hr>
-              {/* shebaoting/repost */}
+              {/* shebaoting/flarum-repost */}
               <h4>
                 {app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.repostExtension_title_start"
@@ -460,22 +442,17 @@ export default class Settings extends ExtensionPage {
               </h4>
               <div className="helpText">
                 <em>
-                  {
-                    !isExtensionInstalled(repostExtension.id)
-                      ? app.translator.trans(
-                          "walsgit_discussion_cards.admin.settings.general.repostExtension_notInstalled",
-                          { icon: warningIcon }
-                        )
-                      : !isExtensionActive(repostExtension.id)
-                      ? app.translator.trans(
-                          "walsgit_discussion_cards.admin.settings.general.repostExtension_notActivated",
-                          { icon: warningIcon }
-                        )
-                      : app.translator.trans(
-                          "walsgit_discussion_cards.admin.settings.general.blogExtension_tempExtensionMessage",
-                          { icon: warningIcon }
-                        ) /* Remove and replace with '' when fully supported for V2 */
-                  }
+                  {!isExtensionInstalled(repostExtension.id)
+                    ? app.translator.trans(
+                        "walsgit_discussion_cards.admin.settings.general.repostExtension_notInstalled",
+                        { icon: warningIcon }
+                      )
+                    : !isExtensionActive(repostExtension.id)
+                    ? app.translator.trans(
+                        "walsgit_discussion_cards.admin.settings.general.repostExtension_notActivated",
+                        { icon: warningIcon }
+                      )
+                    : ""}
                 </em>
               </div>
               {this.buildSettingComponent({
@@ -487,7 +464,63 @@ export default class Settings extends ExtensionPage {
                 help: app.translator.trans(
                   "walsgit_discussion_cards.admin.settings.general.allowRepostLinks_help"
                 ),
-                disabled: true /* When V2 compatible: isExtensionActive(repostExtension.id) ? false : true, */,
+                disabled: !isExtensionActive(repostExtension.id),
+              })}
+              {this.buildSettingComponent({
+                type: "switch",
+                setting: "walsgit_discussion_cards_showRepostIcon",
+                label: app.translator.trans(
+                  "walsgit_discussion_cards.admin.settings.general.showRepostIcon_label"
+                ),
+                help: app.translator.trans(
+                  "walsgit_discussion_cards.admin.settings.general.showRepostIcon_help"
+                ),
+                disabled: !repostLinksEnabled,
+              })}
+              {this.buildSettingComponent({
+                type: "switch",
+                setting: "walsgit_discussion_cards_showRepostDomain",
+                label: app.translator.trans(
+                  "walsgit_discussion_cards.admin.settings.general.showRepostDomain_label"
+                ),
+                help: app.translator.trans(
+                  "walsgit_discussion_cards.admin.settings.general.showRepostDomain_help"
+                ),
+                disabled: !repostLinksEnabled,
+              })}
+            </div>
+
+            {/* ============== DEBUG OPTIONS SECTION ============== */}
+            <h3>
+              {app.translator.trans(
+                "walsgit_discussion_cards.admin.settings.general.debugOptions_title"
+              )}
+            </h3>
+            <p className="helpText">
+              {app.translator.trans(
+                "walsgit_discussion_cards.admin.settings.general.debugOptions_info"
+              )}
+            </p>
+            <div className="dc-section">
+              {this.buildSettingComponent({
+                type: "switch",
+                setting: "walsgit_discussion_cards_logActions",
+                label: app.translator.trans(
+                  "walsgit_discussion_cards.admin.settings.general.logActions_label"
+                ),
+                help: app.translator.trans(
+                  "walsgit_discussion_cards.admin.settings.general.logActions_help"
+                ),
+              })}
+              {this.buildSettingComponent({
+                type: "switch",
+                setting: "walsgit_discussion_cards_logActionDetails",
+                label: app.translator.trans(
+                  "walsgit_discussion_cards.admin.settings.general.logActionDetails_label"
+                ),
+                help: app.translator.trans(
+                  "walsgit_discussion_cards.admin.settings.general.logActionDetails_help"
+                ),
               })}
             </div>
             {this.submitButton()}

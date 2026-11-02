@@ -3,11 +3,12 @@
 namespace Walsgit\Discussion\Cards;
 
 use Flarum\Extend;
-use Flarum\Api\Context;
 use Flarum\Api\Endpoint;
 use Flarum\Api\Resource;
 use Flarum\Api\Schema;
 use Flarum\Discussion\Discussion;
+use Flarum\Extension\ExtensionManager;
+use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\Tags\Api\Resource\TagResource;
 
 use Walsgit\Discussion\Cards\Api\Controllers\AdminImageController;
@@ -18,8 +19,12 @@ use Walsgit\Discussion\Cards\Api\Controllers\StatisticsController;
 use Walsgit\Discussion\Cards\Api\Controllers\RefreshStatsController;
 use Walsgit\Discussion\Cards\Api\Controllers\PurgeImagesController;
 use Walsgit\Discussion\Cards\Api\Controllers\RegenerateImagesController;
+use Walsgit\Discussion\Cards\Api\Controllers\RegenerateDiscussionImageController;
 use Walsgit\Discussion\Cards\Api\Controllers\ShowInfoController;
+use Walsgit\Discussion\Cards\Api\Controllers\ScanBrokenImagesController;
+use Walsgit\Discussion\Cards\Api\Controllers\ResetBrokenImagesController;
 use Walsgit\Discussion\Cards\Api\Controllers\CheckDiscussionController;
+use Walsgit\Discussion\Cards\Services\CardImageUrlBuilder;
 use Walsgit\Discussion\Cards\Validator\TagSettingsValidator;
 use Walsgit\Discussion\Cards\Validator\ImageUploadValidator;
 use Walsgit\Discussion\Cards\Providers\ImageProcessingProvider;
@@ -28,8 +33,10 @@ use Walsgit\Discussion\Cards\Providers\TagImageSelectorProvider;
 use Walsgit\Discussion\Cards\Console\MigrateImagesCommand;
 use Walsgit\Discussion\Cards\Console\PurgeImagesCommand;
 use Walsgit\Discussion\Cards\Console\RegenerateImagesCommand;
+use Walsgit\Discussion\Cards\Console\RepairImagesCommand;
 use Walsgit\Discussion\Cards\Listener\UpdateCardImageOnDiscussionUpdate;
 use Walsgit\Discussion\Cards\Listener\DeleteCardImageOnDiscussionDelete;
+use Walsgit\Discussion\Cards\Middleware\RefreshBlogDefaultImage;
 
 return [
     (new Extend\Frontend('forum'))
@@ -42,45 +49,32 @@ return [
 
     (new Extend\Locales(__DIR__ . '/locale')),
 
-    (new Extend\Theme())
-        ->addCustomLessVariable('desktop-card-width', function () {
-            $settings = resolve('flarum.settings');
-            return $settings->get('walsgit_discussion_cards_desktopCardWidth') . '%';
-        })
-        ->addCustomLessVariable('tablet-card-width', function () {
-            $settings = resolve('flarum.settings');
-            return $settings->get('walsgit_discussion_cards_tabletCardWidth') . '%';
-        }),
-
-    new Extenders\RegisterLessVariables(),
-
     (new Extend\ApiResource(Resource\DiscussionResource::class))
         ->endpoint(['index'], function (Endpoint\Index $endpoint) {
-            return $endpoint->addDefaultInclude(['firstPost', 'tags']);
-        }),
+            // firstPost is only needed for the text preview (global setting, no per-tag override).
+            $settings = resolve(SettingsRepositoryInterface::class);
 
-    (new Extend\ApiResource(Resource\PostResource::class))
-        ->fields(function () {
-            return [
-                Schema\Str::make('contentHtml')
-                    ->visible(function ($post, Context $context) {
-                        return $post instanceof \Flarum\Post\CommentPost;
-                    })
-                    ->get(function ($post) {
-                        if ($post instanceof \Flarum\Post\CommentPost) {
-                            return $post->formatContent();
-                        }
-                        return null;
-                    }),
-            ];
-        }),
+            if ((int) $settings->get('walsgit_discussion_cards_previewText') === 1) {
+                $endpoint->addDefaultInclude(['firstPost']);
 
-    (new Extend\ApiResource(Resource\DiscussionResource::class))
+                // blogMeta (3rd party blog extension) is only needed for the blog posts' summary used as preview text.
+                if ((int) $settings->get('walsgit_discussion_cards_useBlogSummary') === 1
+                    && resolve(ExtensionManager::class)->isEnabled('fof-blog')) {
+                    $endpoint->addDefaultInclude(['blogMeta']);
+                }
+            }
+
+            return $endpoint;
+        })
         ->fields(function () {
             return [
                 Schema\Str::make('cardImageUrl')
                     ->get(function (Discussion $discussion) {
-                        return $discussion->walsgit_card_image_url ?: null;
+                        // Stored value is a relative path: the URL is rebuilt from the current forum URL
+                        static $builder = null;
+                        $builder ??= resolve(CardImageUrlBuilder::class);
+
+                        return $builder->build($discussion->walsgit_card_image_url);
                     }),
             ];
         }),
@@ -109,6 +103,8 @@ return [
         ->serializeToForum('walsgitDiscussionCardsShowRepliesOnRight', 'walsgit_discussion_cards_showRepliesOnRight')
         ->serializeToForum('walsgitDiscussionCardsShowLastPostInfo', 'walsgit_discussion_cards_showLastPostInfo')
         ->serializeToForum('walsgitDiscussionCardsAllowRepostLinks', 'walsgit_discussion_cards_allowRepostLinks')
+        ->serializeToForum('walsgitDiscussionCardsShowRepostIcon', 'walsgit_discussion_cards_showRepostIcon')
+        ->serializeToForum('walsgitDiscussionCardsShowRepostDomain', 'walsgit_discussion_cards_showRepostDomain')
         ->serializeToForum('walsgitDiscussionCardsUseListCards', 'walsgit_discussion_cards_useListCards')
         ->serializeToForum('walsgitDiscussionCardsListCardsCount', 'walsgit_discussion_cards_listCardsCount'),
     
@@ -129,6 +125,10 @@ return [
     (new Extend\Validator(TagSettingsValidator::class)),
     (new Extend\Validator(ImageUploadValidator::class)),
 
+    // 3rd party extension fof/blog fires no event on its default image upload: refresh our optimized copy afterwards
+    (new Extend\Middleware('api'))
+        ->add(RefreshBlogDefaultImage::class),
+
     new Extend\ServiceProvider(ImageProcessingProvider::class),
     new Extend\ServiceProvider(HtmlImageExtractorProvider::class),
     new Extend\ServiceProvider(TagImageSelectorProvider::class),
@@ -144,11 +144,15 @@ return [
         ->post('/walsgit/discussion-cards/image-stats/refresh', 'walsgit.discussion-cards.image-stats.refresh', RefreshStatsController::class)
         ->post('/walsgit/discussion-cards/purge-images', 'walsgit.discussion-cards.purge-images', PurgeImagesController::class)
         ->post('/walsgit/discussion-cards/regenerate-images', 'walsgit.discussion-cards.regenerate-images', RegenerateImagesController::class)
+        ->post('/walsgit/discussion-cards/regenerate-image/{id}', 'walsgit.discussion-cards.regenerate-image', RegenerateDiscussionImageController::class)
+        ->get('/walsgit/discussion-cards/broken-images', 'walsgit.discussion-cards.broken-images', ScanBrokenImagesController::class)
+        ->post('/walsgit/discussion-cards/broken-images/reset', 'walsgit.discussion-cards.broken-images.reset', ResetBrokenImagesController::class)
         ->get('/walsgit/discussion-cards/info', 'walsgit.discussion-cards.info', ShowInfoController::class)
         ->get('/walsgit/discussion-cards/check-discussion/{id}', 'walsgit.discussion-cards.check-discussion', CheckDiscussionController::class),
     
     (new Extend\Console())
         ->command(MigrateImagesCommand::class)
         ->command(PurgeImagesCommand::class)
-        ->command(RegenerateImagesCommand::class),
+        ->command(RegenerateImagesCommand::class)
+        ->command(RepairImagesCommand::class),
 ];

@@ -31,7 +31,7 @@ export default class BaseItem extends Component {
     return [
       base,
       this.isRead() ? "read" : "",
-      this.discussion.isHidden() ? "Hidden" : "",
+      this.discussion.isHidden() ? "dc-item--hidden" : "",
     ]
       .filter(Boolean)
       .join(" ");

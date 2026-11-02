@@ -23,7 +23,8 @@ class StatisticsService
     public function __construct(
         protected Paths $paths,
         protected ConnectionInterface $db,
-        protected Cache $cache
+        protected Cache $cache,
+        protected BrokenImagesService $brokenImages
     ) {}
 
     public function getStats(): array
@@ -44,28 +45,21 @@ class StatisticsService
 
     protected function computeStats(): array
     {
-        $basePath = $this->paths->public . '/assets/extensions/walsgit-discussion-cards';
         $allImages = [];
         $discussionImages = [];
 
         // --- Listing all discussion images saved on disk ---
-        if (is_dir($basePath)) {
-            $iterator = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($basePath, \FilesystemIterator::SKIP_DOTS)
-            );
+        $files = $this->brokenImages->listFiles();
 
-            foreach ($iterator as $file) {
-                if ($file->isFile()) {
-                    $filename = $file->getFilename();
-                    $allImages[] = $filename;
+        foreach (array_keys($files) as $path) {
+            $filename = basename($path);
+            $allImages[] = $filename;
 
-                    if (
-                        str_starts_with($filename, 'discussion-') &&
-                        !str_ends_with($filename, 'default-card-image.webp')
-                    ) {
-                        $discussionImages[] = $filename;
-                    }
-                }
+            if (
+                str_starts_with($filename, 'discussion-') &&
+                !str_ends_with($filename, 'default-card-image.webp')
+            ) {
+                $discussionImages[] = $filename;
             }
         }
 
@@ -77,6 +71,19 @@ class StatisticsService
 
         // Extracting filename to compare it with image files on disk
         $usedImagesSet = array_flip(array_map(fn($url) => basename($url), $usedImages));
+
+        // --- Counting discussions whose stored image file is missing from the disk ---
+        $brokenImages = 0;
+        foreach ($usedImages as $url) {
+            [$category] = $this->brokenImages->classify((string) $url, $files);
+
+            if (in_array($category, [
+                BrokenImagesService::MISSING,
+                BrokenImagesService::DEFAULT_MISSING,
+            ], true)) {
+                $brokenImages++;
+            }
+        }
 
         // --- Counting Discussions without images (in DB) ---
         $discussionsWithoutImages = $this->db->table('discussions')
@@ -96,6 +103,7 @@ class StatisticsService
             'discussionImages' => count($discussionImages),
             'discussionsWithoutImages' => $discussionsWithoutImages,
             'unusedImages' => $unusedImages,
+            'brokenImages' => $brokenImages,
         ];
     }
 }

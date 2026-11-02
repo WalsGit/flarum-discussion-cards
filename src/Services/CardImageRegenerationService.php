@@ -12,6 +12,7 @@
 namespace Walsgit\Discussion\Cards\Services;
 
 use Flarum\Discussion\Discussion;
+use Walsgit\Discussion\Cards\Image\CardImageDecision;
 use Walsgit\Discussion\Cards\Image\CardImageResolver;
 
 class CardImageRegenerationService
@@ -21,42 +22,47 @@ class CardImageRegenerationService
     ) {}
 
     /**
-     * Regenerates and persists the discussion card image.
+     * Resolves the discussion card image and saves it (null included) if it changed.
+     * Exceptions are not caught: use tryRegenerate() where errors must never block.
      *
-     * - Uses CardImageResolver to determine the image URL
-     * - Persists the resolved image on the discussion
-     * - Returns true if an image has been applied, false otherwise
-     *
-     * @param Discussion   $discussion
-     * @param string|null  $firstPostHtml  Rendered HTML of the first post (optional)
-     * @param bool         $force          Force regeneration even if an image already exists
+     * @param string|null $firstPostHtml Rendered HTML of the first post (optional)
+     * @param bool        $interactive   true when a user is waiting for the response (short network timeouts)
+     * @return bool true if the saved card image changed
      */
-    public function regenerate(Discussion $discussion, ?string $firstPostHtml = null, bool $force = false): bool
+    public function regenerate(Discussion $discussion, ?string $firstPostHtml = null, bool $interactive = false): bool
     {
-        // Do not regenerate unless forced
-        if (!$force && !empty($discussion->walsgit_card_image_url)) {
-            return false;
-        }
-
-        $imageUrl = $this->resolver->resolve($discussion, $firstPostHtml);
-
-        if (!$imageUrl) {
-            return false;
-        }
-
-        // Persist resolved image
-        $discussion->walsgit_card_image_url = $imageUrl;
-        $discussion->save();
-
-        return true;
+        return $this->regenerateWithDecision($discussion, $firstPostHtml, $interactive)['changed'];
     }
 
     /**
-     * Clears the current card image (used before a forced regeneration).
+     * Same as regenerate(), but also returns what the resolver decided (for the debug logs).
+     *
+     * @return array{changed: bool, decision: CardImageDecision}
      */
-    public function clear(Discussion $discussion): void
+    public function regenerateWithDecision(Discussion $discussion, ?string $firstPostHtml = null, bool $interactive = false): array
     {
-        $discussion->walsgit_card_image_url = null;
+        $decision = $this->resolver->resolveWithDecision($discussion, $firstPostHtml, $interactive);
+
+        if ($decision->file === $discussion->walsgit_card_image_url) {
+            return ['changed' => false, 'decision' => $decision];
+        }
+
+        $discussion->walsgit_card_image_url = $decision->file;
         $discussion->save();
+
+        return ['changed' => true, 'decision' => $decision];
+    }
+
+    /**
+     * Same as regenerate(), but never throws and uses short network timeouts
+     * (for listeners: they run while a user waits and must not block post actions).
+     */
+    public function tryRegenerate(Discussion $discussion, ?string $firstPostHtml = null): bool
+    {
+        try {
+            return $this->regenerate($discussion, $firstPostHtml, true);
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 }

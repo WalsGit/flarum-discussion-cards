@@ -1,0 +1,149 @@
+name: CI
+
+on: [workflow_dispatch, push, pull_request]
+
+jobs:
+  # Format check + production build, then check the committed js/dist matches.
+  js:
+    name: JS (format, build, dist)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+          cache-dependency-path: js/yarn.lock
+
+      - name: Install dependencies
+        working-directory: js
+        run: yarn install --frozen-lockfile
+
+      - name: Check formatting
+        working-directory: js
+        run: yarn format-check
+
+      - name: Build
+        working-directory: js
+        run: yarn build
+
+      # Fails if the committed js/dist differs from a fresh build:
+      # run `yarn build` in js/ and commit js/dist.
+      - name: Check js/dist is up to date
+        run: |
+          if [ -n "$(git status --porcelain -- js/dist)" ]; then
+            echo "::error::js/dist is not up to date with the sources. Run 'yarn build' in js/ and commit js/dist."
+            git --no-pager diff --stat -- js/dist
+            exit 1
+          fi
+
+  # Fresh Flarum 2 install + extension migrations (up, down, up) on each database.
+  install:
+    name: Install (PHP ${{ matrix.php }}, ${{ matrix.db.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ["8.3", "8.4"]
+        db:
+          - name: MySQL 8.4
+            image: mysql:8.4
+            driver: mysql
+            user: root
+            port: 3306
+            health: mysqladmin ping -h 127.0.0.1 -ppassword
+          - name: MariaDB 11.8
+            image: mariadb:11.8
+            driver: mysql
+            user: root
+            port: 3306
+            health: healthcheck.sh --connect --innodb_initialized
+          - name: PostgreSQL 17
+            image: postgres:17
+            driver: pgsql
+            user: postgres
+            port: 5432
+            health: pg_isready -U postgres
+    services:
+      db:
+        image: ${{ matrix.db.image }}
+        env:
+          # Each image reads only its own variables.
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: flarum
+          MARIADB_ROOT_PASSWORD: password
+          MARIADB_DATABASE: flarum
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: flarum
+        ports:
+          - 3306:3306
+          - 5432:5432
+        options: >-
+          --health-cmd="${{ matrix.db.health }}"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl, dom, gd, json, mbstring, openssl, pdo_mysql, pdo_pgsql, tokenizer, zip
+          tools: composer:v2
+          coverage: none
+
+      - name: Check GD has WebP support
+        run: |
+          php -r 'exit(function_exists("imagewebp") ? 0 : 1);'
+
+      - name: Create a Flarum 2 skeleton
+        run: composer create-project flarum/flarum "$RUNNER_TEMP/forum" --no-interaction
+
+      - name: Require the extension from this checkout
+        working-directory: ${{ runner.temp }}/forum
+        run: |
+          composer config repositories.walsgit path "$GITHUB_WORKSPACE"
+          composer require "walsgit/flarum-discussion-cards:*@dev" --no-interaction
+
+      - name: Install Flarum
+        working-directory: ${{ runner.temp }}/forum
+        run: |
+          cat > install.yml <<'EOF'
+          debug: true
+          baseUrl: http://flarum.localhost
+          databaseConfiguration:
+            driver: ${{ matrix.db.driver }}
+            host: 127.0.0.1
+            port: ${{ matrix.db.port }}
+            database: flarum
+            username: ${{ matrix.db.user }}
+            password: password
+            prefix: ''
+          adminUser:
+            username: admin
+            password: password1234
+            email: admin@example.com
+          settings:
+            forum_title: CI
+          EOF
+          php flarum install --file=install.yml
+
+      - name: Enable the extension (runs its migrations)
+        working-directory: ${{ runner.temp }}/forum
+        run: |
+          php flarum extension:enable walsgit-discussion-cards
+          php flarum migrate
+
+      - name: Roll back the extension migrations, then migrate again
+        working-directory: ${{ runner.temp }}/forum
+        run: |
+          php flarum migrate:reset --extension=walsgit-discussion-cards
+          php flarum migrate
+
+      - name: Check the console commands load
+        working-directory: ${{ runner.temp }}/forum
+        run: |
+          php flarum cache:clear
+          php flarum discussion-cards:regenerate-images --help

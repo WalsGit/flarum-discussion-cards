@@ -20,7 +20,7 @@ export default class ListItem extends BaseItem {
       <div
         key={discussion.id()}
         data-id={discussion.id()}
-        className={this.getItemClasses("CardsListItem List")}
+        className={this.getItemClasses("dc-item dc-item--list")}
       >
         {DiscussionControls.controls(discussion, this).toArray().length
           ? m(
@@ -37,20 +37,20 @@ export default class ListItem extends BaseItem {
 
         <Link
           href={app.route.discussion(discussion, jumpTo)}
-          className="cardLink"
+          className="dc-card-link"
         >
           {/* Optional: Badges component */}
           <DiscussionBadges discussion={discussion} settings={settings} />
 
-          <div className="cardGrid">
-            <div className="rowSpan-3 colSpan">
+          <div className="dc-card-grid">
+            <div className="dc-row-span-3 dc-col-span">
               {/* Media component (image + views + author & date) */}
               <DiscussionMedia discussion={discussion} settings={settings} />
             </div>
 
-            <div className="rowSpan-3 colSpan-2">
-              <div className="flexBox">
-                <div className="cardTitle">
+            <div className="dc-row-span-3 dc-col-span-2">
+              <div className="dc-flex-box">
+                <div className="dc-card-title">
                   {/* Title component */}
                   <DiscussionTitle
                     discussion={discussion}

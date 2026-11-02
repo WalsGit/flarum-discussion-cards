@@ -29,23 +29,25 @@ export default class DiscussionReplies extends Component {
     // For Primary Cards layout (shows avatars & number of unread replies or total replies) and list cards layout on mobile
     if (layout === "card" || layout === "mobile") {
       return (
-        <div className="cardSpacer">
+        <div className="dc-card-spacer">
           <Link
-            className="Replies"
+            className="dc-replies"
             href={app.route.discussion(discussion, discussion.lastPostNumber())}
           >
-            <div className="Left">
-              <div className="Avatars">{craftRepliesAvatars(discussion)}</div>
-              <div className="ReplyCount">{replyText}</div>
+            <div className="dc-replies-left">
+              <div className="dc-replies-avatars">
+                {craftRepliesAvatars(discussion)}
+              </div>
+              <div className="dc-reply-count">{replyText}</div>
             </div>
-            <div className="Right">
+            <div className="dc-replies-right">
               {/* Optional: Last post (reply) info component */}
               <DiscussionLastPost
                 discussion={discussion}
                 settings={settings}
                 layout="card"
               />
-              <div className="Arrow">
+              <div className="dc-replies-arrow">
                 <Icon name="fa-solid fa-angle-right" />
               </div>
             </div>
@@ -72,8 +74,8 @@ export default class DiscussionReplies extends Component {
     // List cards responsive fallback when screen size is reduced to mobile or less (icon + number on the right)
     if (layout === "fallback") {
       return (
-        <div className="imageLabel discussionReplyCount">
-          <Icon name="fa-solid fa-comment" className="labelIcon" />
+        <div className="dc-image-label dc-image-label--replies">
+          <Icon name="fa-solid fa-comment" className="dc-label-icon" />
           {postCount}
         </div>
       );

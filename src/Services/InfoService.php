@@ -21,18 +21,18 @@ class InfoService
 
     public function getFileSystemInfo(): array
     {
-        $assetsPath = $this->paths->public . '/assets/extensions/walsgit-discussion-cards';
+        $assetsPath = ExtensionPaths::assetsPath($this->paths);
         $logsPath = $this->paths->storage . '/logs/walsgit-discussion-cards';
         $tempPath = sys_get_temp_dir();
 
-        $assetsPathText = InfoService::getDirInfo($assetsPath);
-        $logsPathText = InfoService::getDirInfo($logsPath);
-        $tempPathText = InfoService::getDirInfo($tempPath);
+        $assetsPathText = $this->getDirInfo($assetsPath);
+        $logsPathText = $this->getDirInfo($logsPath);
+        $tempPathText = $this->getDirInfo($tempPath);
 
         return [
             "Folder {$assetsPath} {$assetsPathText} \n",
             "Folder {$logsPath} {$logsPathText} \n",
-            "Folder {$tempPath} {$logsPathText} \n",
+            "Folder {$tempPath} {$tempPathText} \n",
             "PHP GD with WebP support: " . (ImageProcessingService::isWebpSupported() ? "YES" : "NO (card images cannot be generated)") . " \n",
         ];
     }
@@ -49,7 +49,7 @@ class InfoService
 
 
         return $exists
-            ? "exists " . ($writable ? "and is writable" : "but is NOT writable (permissions: {$permissions}")
+            ? "exists " . ($writable ? "and is writable" : "but is NOT writable (permissions: {$permissions})")
             : "doesn't exist";
     }
 }

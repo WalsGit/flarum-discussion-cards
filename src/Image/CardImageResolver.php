@@ -15,8 +15,8 @@ use Flarum\Discussion\Discussion;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\Foundation\Config;
 use Flarum\Formatter\Formatter;
-use Illuminate\Support\Str;
 use Flarum\Foundation\Paths;
+use Walsgit\Discussion\Cards\Services\ExtensionPaths;
 use Walsgit\Discussion\Cards\Services\ImageProcessingService;
 use Walsgit\Discussion\Cards\Services\HtmlImageExtractor;
 use Walsgit\Discussion\Cards\Services\RemoteImageFetcher;
@@ -36,34 +36,70 @@ class CardImageResolver
     ) {}
 
     /**
-     * Main resolver: returns an optimized image URL (absolute) or null.
+     * Main resolver: returns the card image path to store, relative to the extension's assets folder
+     * (ex.: "discussion-1-abc-def.webp", "tags/tag-3-default-card-image.webp"), or null.
+     *
+     * @param bool $interactive true when a user is waiting (short network timeouts)
      */
-    public function resolve(Discussion $discussion, ?string $firstPostHtml = null): ?string
+    public function resolve(Discussion $discussion, ?string $firstPostHtml = null, bool $interactive = false): ?string
     {
+        return $this->resolveWithDecision($discussion, $firstPostHtml, $interactive)->file;
+    }
+
+    /**
+     * Same process as resolve() (it is the only implementation), but also reports
+     * which source was chosen, the file used and the sources skipped on the way.
+     */
+    public function resolveWithDecision(Discussion $discussion, ?string $firstPostHtml = null, bool $interactive = false): CardImageDecision
+    {
+        $skipped = [];
+
         // 1. Support for 3rd party Blog Extension
-        if ($image = $this->resolveBlogImage($discussion, $firstPostHtml)) {
-            if ($optimized = $this->getOptimizedCardImage($discussion, $image)) {
-                return $optimized;
+        if ($image = $this->resolveBlogImage($discussion, $firstPostHtml, $interactive)) {
+            if ($optimized = $this->getOptimizedCardImage($discussion, $image, $interactive)) {
+                return $this->decision($optimized, CardImageDecision::SOURCE_BLOG, null, $image, $skipped);
             }
+            $skipped[] = ['source' => CardImageDecision::SOURCE_BLOG, 'reason' => CardImageDecision::SKIP_OPTIMIZATION_FAILED, 'image' => $image];
         }
 
         // 2. First image in first post
-        if ($image = $this->resolveFirstPostImage($discussion, $firstPostHtml)) {
-            if ($optimized = $this->getOptimizedCardImage($discussion, $image)) {
-                return $optimized;
-            }
+        $image = $this->extractFirstPostImage($discussion, $firstPostHtml);
+        if ($image === null) {
+            $skipped[] = ['source' => CardImageDecision::SOURCE_FIRST_POST, 'reason' => CardImageDecision::SKIP_NO_IMAGE, 'image' => null];
+        } elseif (!$this->isImageAccessible($image, $interactive)) {
+            $skipped[] = ['source' => CardImageDecision::SOURCE_FIRST_POST, 'reason' => CardImageDecision::SKIP_NOT_ACCESSIBLE, 'image' => $image];
+        } elseif ($optimized = $this->getOptimizedCardImage($discussion, $image, $interactive)) {
+            return $this->decision($optimized, CardImageDecision::SOURCE_FIRST_POST, null, $image, $skipped);
+        } else {
+            $skipped[] = ['source' => CardImageDecision::SOURCE_FIRST_POST, 'reason' => CardImageDecision::SKIP_OPTIMIZATION_FAILED, 'image' => $image];
         }
 
         // 3. Tag default image based on tag priority
         if ($image = $this->resolveTagImage($discussion)) {
-            return $image; // already a buildAssetUrl() result
+            return $this->decision($image, CardImageDecision::SOURCE_TAG, CardImageDecision::REASON_TAG, null, $skipped);
         }
 
         // 4. Fallback to global default image
         if ($image = $this->resolveGlobalDefault()) {
-            return $this->buildAssetUrl($image);
+            return $this->decision($image, CardImageDecision::SOURCE_GLOBAL, CardImageDecision::REASON_GLOBAL, null, $skipped);
         }
-        return null;
+
+        return new CardImageDecision(null, CardImageDecision::SOURCE_NONE, CardImageDecision::REASON_NONE, null, $skipped);
+    }
+
+    /**
+     * Builds the decision for a chosen file (path relative to the extension's assets folder).
+     * Without an explicit $reason, it is deduced from the file name.
+     */
+    protected function decision(string $file, string $source, ?string $reason, ?string $sourceImage, array $skipped): CardImageDecision
+    {
+        $reason ??= match (true) {
+            str_starts_with($file, 'discussion-') => CardImageDecision::REASON_OPTIMIZED,
+            $file === 'blog-default-card-image.webp' => CardImageDecision::REASON_BLOG_DEFAULT,
+            default => CardImageDecision::REASON_EXTENSION_DEFAULT,
+        };
+
+        return new CardImageDecision($file, $source, $reason, $sourceImage, $skipped);
     }
 
     // ====== Sub-resolvers ======
@@ -73,7 +109,7 @@ class CardImageResolver
      * Priority: featured image > first image in blog post > blog-default image
      * Returns an absolute image URL or null.
      */
-    public function resolveBlogImage(Discussion $discussion, ?string $firstPostHtml = null): ?string
+    public function resolveBlogImage(Discussion $discussion, ?string $firstPostHtml = null, bool $interactive = false): ?string
     {
         $useBlogImages = (int) $this->settings->get('walsgit_discussion_cards_useBlogImages');
 
@@ -86,8 +122,9 @@ class CardImageResolver
             ? $discussion->getRelation('blogMeta')
             : null;
 
-        // if not, load the old one
-        if (!$blogMeta) {
+        // if not, load it, but only when the blog extension is enabled (the relation is defined by it).
+        // A discussion without blog meta (ex.: native discussion with a blog tag) follows the usual resolving.
+        if (!$blogMeta && $discussion->isRelation('blogMeta')) {
             $blogMeta = $discussion->blogMeta;
         }
 
@@ -105,7 +142,7 @@ class CardImageResolver
         if (!empty($firstPostHtml)) {
             // 2-1. use provided first post HTML (only for create/update)
             $imageUrl = $this->htmlImageExtractor->extract($firstPostHtml);
-            if ($imageUrl && $this->isImageAccessible($imageUrl)) {
+            if ($imageUrl && $this->isImageAccessible($imageUrl, $interactive)) {
                 return $imageUrl;
             }
         } else {
@@ -114,7 +151,7 @@ class CardImageResolver
             if ($firstPost && method_exists($firstPost, 'formatContent')) {
                 $rendered = $firstPost->formatContent();
                 $imageUrl = $this->htmlImageExtractor->extract($rendered);
-                if ($imageUrl && $this->isImageAccessible($imageUrl)) {
+                if ($imageUrl && $this->isImageAccessible($imageUrl, $interactive)) {
                     return $imageUrl;
                 }
             }
@@ -134,40 +171,31 @@ class CardImageResolver
     }
 
     /**
-     * Resolve the first image found in the discussion's first post
+     * Extract the first image URL found in the discussion's first post (no accessibility check).
      * Returns absolute URL or null.
      */
-    protected function resolveFirstPostImage(Discussion $discussion, ?string $firstPostHtml = null): ?string
+    protected function extractFirstPostImage(Discussion $discussion, ?string $firstPostHtml = null): ?string
     {
-        $firstPost = $discussion->firstPost;
-
         if (!empty($firstPostHtml)) {
             // Use provided first post HTML (only for create/update)
             $imageUrl = $this->htmlImageExtractor->extract($firstPostHtml);
-            if ($imageUrl && $this->isImageAccessible($imageUrl)) {
-                return $imageUrl;
-            }
-            return null;
-            // Use the saved post in other cases
         } else {
+            // Use the saved post in other cases
+            $firstPost = $discussion->firstPost;
+
             if (! $firstPost || ! method_exists($firstPost, 'formatContent')) {
                 return null;
             }
+
+            $imageUrl = $this->htmlImageExtractor->extract($firstPost->formatContent());
         }
 
-        $rendered = $firstPost->formatContent();
-        $imageUrl = $this->htmlImageExtractor->extract($rendered);
-
-        if ($imageUrl && $this->isImageAccessible($imageUrl)) {
-            return $imageUrl;
-        }
-
-        return null;
+        return $imageUrl ?: null;
     }
 
     /**
      * Resolve tag default image by priority using TagImageSelector.
-     * Returns a built asset absolute URL or null.
+     * Returns the tag image path, relative to the extension's assets folder, or null.
      */
     protected function resolveTagImage(Discussion $discussion): ?string
     {
@@ -181,11 +209,7 @@ class CardImageResolver
 
         $tagImage = $this->tagSelector->selectTagImage($tags);
 
-        if ($tagImage) {
-            return $this->buildAssetUrl($tagImage);
-        }
-
-        return null;
+        return $tagImage ?: null;
     }
 
     /**
@@ -199,17 +223,17 @@ class CardImageResolver
 
     /**
      * Getting the optimized image for a card
-     * Given a discussion and a source image URL (absolute), returns an absolute URL
-     * pointing to the optimized webp asset, or null if the image could not be optimized.
+     * Given a discussion and a source image URL (absolute), returns the path of the optimized webp asset,
+     * relative to the extension's assets folder, or null if the image could not be optimized.
      */
-    protected function getOptimizedCardImage(Discussion $discussion, string $imageUrl): ?string
+    protected function getOptimizedCardImage(Discussion $discussion, string $imageUrl, bool $interactive = false): ?string
     {
-        // If this is already one of the default images (global or tag) we uploaded (no need to re-optimize)
-        if (Str::endsWith($imageUrl, 'default-card-image.webp')) {
-            return $imageUrl;
+        // If it's one of the extension's own default images (local file): no need to re-optimize
+        if ($defaultImage = $this->imageService->resolveExtensionDefaultImage($imageUrl)) {
+            return $defaultImage;
         }
 
-        $assetsPath = $this->paths->public . '/assets/extensions/walsgit-discussion-cards';
+        $assetsPath = ExtensionPaths::assetsPath($this->paths);
         if (!is_dir($assetsPath)) {
             @mkdir($assetsPath, 0775, true);
         }
@@ -218,7 +242,7 @@ class CardImageResolver
         $baseUrl = rtrim((string) $this->config->url(), '/');
         $optimizedBlog = $this->imageService->optimizeBlogDefaultImage($imageUrl, $baseUrl);
         if ($optimizedBlog) {
-            return $this->buildAssetUrl($optimizedBlog);
+            return $optimizedBlog;
         }
 
         // Check if image needs to be optimized
@@ -227,21 +251,18 @@ class CardImageResolver
         $urlHash = substr(sha1($imageUrl), 0, 10);
 
         // Compute ETag-like fingerprint via service (10 chars)
-        $etagHash = $this->imageService->computeEtagHash($imageUrl, $baseUrl);
+        $etagHash = $this->imageService->computeEtagHash($imageUrl, $baseUrl, $interactive);
 
         $filename = "discussion-{$discussionId}-{$urlHash}-{$etagHash}.webp";
         $filepath = $assetsPath . '/' . $filename;
 
         // If already optimized, return asset url
         if (file_exists($filepath)) {
-            return $this->buildAssetUrl($filename);
+            return $filename;
         }
 
-        // Remove old optimized files for this discussion
-        $this->imageService->cleanupOldDiscussionImages($discussionId);
-
         // Fetch (download or copy) to a temporary file via service
-        $temp = $this->imageService->downloadOrCopyImage($imageUrl);
+        $temp = $this->imageService->downloadOrCopyImage($imageUrl, $interactive);
 
         if (!$temp) {
             // fail -> let the resolver use the next fallback (tag / default image)
@@ -256,13 +277,36 @@ class CardImageResolver
                 $this->imageService->getDefaultsFor('discussion')
             );
         } catch (\Throwable $e) {
+            // Remove a possibly partial file, the previous card image is left untouched
+            @unlink($filepath);
             return null;
         } finally {
             @unlink($temp);
             gc_collect_cycles();
         }
 
-        return $this->buildAssetUrl($filename);
+        // The new image exists: the previous ones can now be removed
+        $this->imageService->cleanupOldDiscussionImages($discussionId, $filename);
+
+        return $filename;
+    }
+
+    /**
+     * 3rd party Blog Extension support: (re)generate blog-default-card-image.webp from the blog's current
+     * default image. The file is only rebuilt if the source is newer (see ImageProcessingService).
+     */
+    public function refreshBlogDefaultImage(): void
+    {
+        $blogDefault = $this->settings->get('blog_default_image_path');
+
+        if (!$blogDefault) {
+            return;
+        }
+
+        $this->imageService->optimizeBlogDefaultImage(
+            $this->absoluteUrl('assets/' . $blogDefault),
+            rtrim((string) $this->config->url(), '/')
+        );
     }
 
     // ====== helpers ======
@@ -276,12 +320,7 @@ class CardImageResolver
         return rtrim((string) $this->config->url(), '/') . '/' . ltrim($path, '/');
     }
 
-    protected function buildAssetUrl(string $filename): string
-    {
-        return rtrim((string) $this->config->url(), '/') . '/assets/extensions/walsgit-discussion-cards/' . ltrim($filename, '/');
-    }
-
-    public function isImageAccessible(string $url): bool
+    public function isImageAccessible(string $url, bool $interactive = false): bool
     {
         // Local image
         if ($this->imageService->isLocalUrl($url)) {
@@ -289,6 +328,6 @@ class CardImageResolver
         }
 
         // Remote image
-        return $this->fetcher->isAccessible($url);
+        return $this->fetcher->isAccessible($url, $interactive);
     }
 }

@@ -15,11 +15,12 @@ use Flarum\Post\Event\Deleting as PostDeleting;
 use Flarum\Foundation\Paths;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Str;
-use Walsgit\Discussion\Cards\Image\CardImageResolver;
+use Walsgit\Discussion\Cards\Services\CardImageRegenerationService;
+use Walsgit\Discussion\Cards\Services\ExtensionPaths;
 
 class DeleteCardImageOnDiscussionDelete
 {
-    public function __construct(protected Paths $paths, protected CardImageResolver $resolver) {}
+    public function __construct(protected Paths $paths, protected CardImageRegenerationService $regenerator) {}
 
     public function subscribe(Dispatcher $events): void
     {
@@ -57,47 +58,24 @@ class DeleteCardImageOnDiscussionDelete
         }
 
         $this->deleteImageFile($discussion);
-        $this->regenerateCardImage($discussion);
-    }
-
-    /**
-     * Regenerate the card image without taking the (being deleted) first post into account.
-     */
-    protected function regenerateCardImage(Discussion $discussion): void
-    {
-        try {
-            // Non empty string: makes the resolver skip the first post lookup (see resolveFirstPostImage())
-            $url = $this->resolver->resolve($discussion, 'deleted post');
-
-            if ($url !== $discussion->walsgit_card_image_url) {
-                $discussion->walsgit_card_image_url = $url;
-                $discussion->save();
-            }
-        } catch (\Throwable $e) {
-            // Never block post deletion
-        }
+        // Non empty string: makes the resolver skip the first post lookup (see resolveFirstPostImage())
+        $this->regenerator->tryRegenerate($discussion, 'deleted post');
     }
 
     /**
      * Delete the discussion's own card image file.
-     * Only files named discussion-{id}-{hash}-{hash}.webp, located in the extension's assets folder, can be deleted.
+     * The stored value is the file path relative to the extension's assets folder: only a name matching
+     * discussion-{id}-{hash}-{hash}.webp can be deleted (an external URL or a default image never matches).
      */
     protected function deleteImageFile(Discussion $discussion): void
     {
-        $imageUrl = $discussion->walsgit_card_image_url;
-
-        if (!$imageUrl) {
-            return;
-        }
-
-        // Only the filename matters: no dependency on the base URL (subfolder installs, etc.)
-        $filename = basename((string) parse_url($imageUrl, PHP_URL_PATH));
+        $filename = (string) $discussion->walsgit_card_image_url;
 
         if (!preg_match('/^discussion-' . (int) $discussion->id . '-[a-f0-9]{10}-[a-f0-9]{10}\.webp$/', $filename)) {
             return;
         }
 
-        $path = $this->paths->public . '/assets/extensions/walsgit-discussion-cards/' . $filename;
+        $path = ExtensionPaths::assetsPath($this->paths) . '/' . $filename;
 
         if (is_file($path)) {
             @unlink($path);

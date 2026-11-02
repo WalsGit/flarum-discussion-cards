@@ -15,18 +15,21 @@ use Flarum\Discussion\Discussion;
 use Flarum\Post\Event\Revised;
 use Flarum\Tags\Event\DiscussionWasTagged;
 use Illuminate\Events\Dispatcher;
-use Walsgit\Discussion\Cards\Image\CardImageResolver;
-use V17Development\FlarumBlog\Event\BlogMetaSaving;
+use Walsgit\Discussion\Cards\Services\CardImageRegenerationService;
+use FoF\Blog\BlogMeta;
+use FoF\Blog\Event\BlogMetaCreated;
+use FoF\Blog\Event\BlogMetaUpdated;
 
 class UpdateCardImageOnDiscussionUpdate
 {
-    public function __construct(protected CardImageResolver $resolver) {}
+    public function __construct(protected CardImageRegenerationService $regenerator) {}
 
     public function subscribe(Dispatcher $events): void
     {
         $events->listen(Revised::class, [$this, 'onPostRevised']);
         $events->listen(DiscussionWasTagged::class, [$this, 'onDiscussionTagged']);
-        $events->listen(BlogMetaSaving::class, [$this, 'onBlogMetaSaving']);
+        $events->listen(BlogMetaCreated::class, [$this, 'onBlogMetaCreated']);
+        $events->listen(BlogMetaUpdated::class, [$this, 'onBlogMetaUpdated']);
     }
 
     /**
@@ -40,13 +43,11 @@ class UpdateCardImageOnDiscussionUpdate
             return;
         }
 
-        $discussion = $post->discussion;
-
         $html = method_exists($post, 'formatContent')
             ? $post->formatContent()
             : null;
 
-        $this->regenerateCardImage($discussion, $html);
+        $this->regenerator->tryRegenerate($post->discussion, $html);
     }
 
     /**
@@ -61,54 +62,55 @@ class UpdateCardImageOnDiscussionUpdate
             ? $first->formatContent()
             : null;
 
-        $this->regenerateCardImage($discussion, $html);
+        $this->regenerator->tryRegenerate($discussion, $html);
     }
 
     /**
-     * 3. 3rd party Blog Extension support:
-     * Regenerate card image when a blog post is edited/modified (mainly for featured image changes)
+     * 3. 3rd party Blog Extension support (fof/blog):
+     * Regenerate card image when blog meta is created for an already existing discussion.
+     * When an article is created, the blog meta is saved before its first post exists
+     * (no first_post_id yet): the Posted listener then handles the card image.
      */
-    public function onBlogMetaSaving(Dispatcher $event)
+    public function onBlogMetaCreated(BlogMetaCreated $event)
     {
-        if (!isset($event->blogMeta) || !is_object($event->blogMeta)) {
+        $discussion = $event->blogMeta->discussion;
+
+        if (!$discussion || !$discussion->first_post_id) {
             return;
         }
 
-        // Get the discussion ID
-        $discussion = $event->blogMeta->discussion
-            ?? \Flarum\Discussion\Discussion::find($event->blogMeta->discussion_id);
+        $this->regenerateForBlogMeta($discussion, $event->blogMeta);
+    }
+
+    /**
+     * 4. 3rd party Blog Extension support (fof/blog):
+     * Regenerate card image when the featured image of a blog post changed.
+     */
+    public function onBlogMetaUpdated(BlogMetaUpdated $event)
+    {
+        if (!in_array('featured_image', $event->changed, true)) {
+            return;
+        }
+
+        $discussion = $event->blogMeta->discussion;
 
         if (!$discussion) {
             return;
         }
 
-        // Check if the featured image changed
-        $newFeatured = $event->data['attributes']['featuredImage'] ?? null;
-        if ($newFeatured !== null) {
-            $discussion->setRelation('blogMeta', $event->blogMeta);
-        }
+        $this->regenerateForBlogMeta($discussion, $event->blogMeta);
+    }
+
+    protected function regenerateForBlogMeta(Discussion $discussion, BlogMeta $blogMeta): void
+    {
+        // The resolver reads the blog meta from the relation: use the freshly saved one.
+        $discussion->setRelation('blogMeta', $blogMeta);
 
         $first = $discussion->firstPost;
         $html = ($first && method_exists($first, 'formatContent'))
             ? $first->formatContent()
             : null;
 
-        $this->regenerateCardImage($discussion, $html);
-    }
-
-    /**
-     * Regenerate card images
-     */
-    protected function regenerateCardImage(Discussion $discussion, ?string $html)
-    {
-        try {
-            $url = $this->resolver->resolve($discussion, $html);
-            if ($url && $url !== $discussion->walsgit_card_image_url) {
-                $discussion->walsgit_card_image_url = $url;
-                $discussion->save();
-            }
-        } catch (\Throwable $e) {
-            // Don't block post edition
-        }
+        $this->regenerator->tryRegenerate($discussion, $html);
     }
 }
