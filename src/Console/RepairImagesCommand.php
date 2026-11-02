@@ -174,9 +174,8 @@ class RepairImagesCommand extends AbstractCommand
     protected function report(array $scan): void
     {
         $this->reporter->logOnly(sprintf(
-            'Scan: missing=%d otherOrigin=%d defaultMissing=%d external=%d',
+            'Scan: missing=%d defaultMissing=%d external=%d',
             $scan['missing'],
-            $scan['otherOrigin'],
             $scan['defaultMissing'],
             $scan['external']
         ));
@@ -187,7 +186,6 @@ class RepairImagesCommand extends AbstractCommand
 
         $this->info($this->trans('Report', [
             'missing' => $scan['missing'],
-            'otherOrigin' => $scan['otherOrigin'],
             'defaultMissing' => $scan['defaultMissing'],
             'external' => $scan['external'],
         ]));

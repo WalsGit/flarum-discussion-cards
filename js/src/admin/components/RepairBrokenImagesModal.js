@@ -42,12 +42,10 @@ export default class RepairBrokenImagesModal extends Modal {
 
   content() {
     const scan = this.scan;
-    const repairable = scan ? scan.missing + scan.otherOrigin : 0;
+    const repairable = scan ? scan.missing : 0;
 
     const bold = (count) => <strong>{count}</strong>;
-    const total = scan
-      ? scan.missing + scan.otherOrigin + scan.defaultMissing
-      : 0;
+    const total = scan ? scan.missing + scan.defaultMissing : 0;
 
     return (
       <div className="Modal-body">
@@ -72,11 +70,6 @@ export default class RepairBrokenImagesModal extends Modal {
                 <li>
                   {app.translator.trans(T + "missing", {
                     count: bold(scan.missing),
-                  })}
-                </li>
-                <li>
-                  {app.translator.trans(T + "otherOrigin", {
-                    count: bold(scan.otherOrigin),
                   })}
                 </li>
               </ul>

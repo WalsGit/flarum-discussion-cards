@@ -15,40 +15,34 @@ use Flarum\Foundation\Paths;
 use Illuminate\Database\ConnectionInterface;
 
 /**
- * Detects the discussions whose stored card image URL points to an extension file that no longer works.
+ * Detects the discussions whose stored card image points to an extension file that no longer exists.
  *
- * Nothing is fetched and nothing is deleted here: the URL is parsed, the file name it ends with is validated
- * against a strict allowlist, then looked up in a single listing of the extension's assets folder.
+ * The stored value is a path relative to the extension's assets folder (an absolute URL can still be there
+ * for external images saved before 2.1.0). Nothing is fetched and nothing is deleted here: the path is
+ * validated against a strict allowlist, then looked up in a single listing of the extension's assets folder.
  */
 class BrokenImagesService
 {
-    /** Folder part of every card image URL created by this extension. */
-    protected const ASSETS_MARKER = '/assets/extensions/walsgit-discussion-cards/';
-
     protected const DISCUSSION_FILE = '#^discussion-\d+-[a-f0-9]+-[a-f0-9]+\.webp$#';
     protected const DEFAULT_FILE = '#^(?:tags/tag-\d+-)?(?:[a-z0-9-]+-)?default-card-image\.webp$#';
 
-    /** The file exists and the URL belongs to this forum. */
+    /** The file exists. */
     public const OK = 'ok';
 
     /** Discussion image: the file is gone from the disk. */
     public const MISSING = 'missing';
 
-    /** The file exists, but the URL uses another origin or base path (domain, scheme or sub-folder change). */
-    public const OTHER_ORIGIN = 'otherOrigin';
-
     /** Default image (general, tag or blog): the file is gone. Not fixed by a regeneration. */
     public const DEFAULT_MISSING = 'defaultMissing';
 
-    /** Not an extension file (external URL or unknown name): not checked. */
+    /** Not an extension file (external URL saved before 2.1.0 or unknown name): not checked. */
     public const EXTERNAL = 'external';
 
     protected const CHUNK_SIZE = 1000;
 
     public function __construct(
         protected Paths $paths,
-        protected ConnectionInterface $db,
-        protected ImageProcessingService $imageService
+        protected ConnectionInterface $db
     ) {}
 
     /**
@@ -81,21 +75,19 @@ class BrokenImagesService
     }
 
     /**
-     * Classifies one stored URL against the files on disk.
+     * Classifies one stored value against the files on disk.
      *
      * @param array<string, true> $files result of listFiles()
      * @return array{0: string, 1: string|null} [category, file relative to the assets folder (null: external)]
      */
-    public function classify(string $url, array $files): array
+    public function classify(string $stored, array $files): array
     {
-        $path = rawurldecode((string) parse_url($url, PHP_URL_PATH));
-        $position = strpos($path, self::ASSETS_MARKER);
-
-        if ($position === false) {
+        // Absolute URL (external image saved before 2.1.0)
+        if (preg_match('#^https?://#i', $stored)) {
             return [self::EXTERNAL, null];
         }
 
-        $file = substr($path, $position + strlen(self::ASSETS_MARKER));
+        $file = $stored;
         $isDiscussionFile = (bool) preg_match(self::DISCUSSION_FILE, $file);
         $isDefaultFile = !$isDiscussionFile && preg_match(self::DEFAULT_FILE, $file);
 
@@ -107,7 +99,7 @@ class BrokenImagesService
             return [$isDefaultFile ? self::DEFAULT_MISSING : self::MISSING, $file];
         }
 
-        return [$this->imageService->isLocalUrl($url) ? self::OK : self::OTHER_ORIGIN, $file];
+        return [self::OK, $file];
     }
 
     /**
@@ -115,7 +107,7 @@ class BrokenImagesService
      *
      * @param int $maxIds maximum number of repairable discussion ids returned (counts are always complete)
      * @return array{
-     *     missing: int, otherOrigin: int, defaultMissing: int, external: int, ok: int,
+     *     missing: int, defaultMissing: int, external: int, ok: int,
      *     defaults: array<int, array{file: string, discussions: int}>,
      *     ids: int[], truncated: bool
      * }
@@ -125,7 +117,6 @@ class BrokenImagesService
         $files = $this->listFiles();
         $counts = [
             self::MISSING => 0,
-            self::OTHER_ORIGIN => 0,
             self::DEFAULT_MISSING => 0,
             self::EXTERNAL => 0,
             self::OK => 0,
@@ -144,7 +135,7 @@ class BrokenImagesService
 
                     if ($category === self::DEFAULT_MISSING) {
                         $defaults[$file] = ($defaults[$file] ?? 0) + 1;
-                    } elseif ($category === self::MISSING || $category === self::OTHER_ORIGIN) {
+                    } elseif ($category === self::MISSING) {
                         if (count($ids) < $maxIds) {
                             $ids[] = (int) $row->id;
                         } else {
@@ -158,7 +149,6 @@ class BrokenImagesService
 
         return [
             'missing' => $counts[self::MISSING],
-            'otherOrigin' => $counts[self::OTHER_ORIGIN],
             'defaultMissing' => $counts[self::DEFAULT_MISSING],
             'external' => $counts[self::EXTERNAL],
             'ok' => $counts[self::OK],
@@ -175,7 +165,7 @@ class BrokenImagesService
     /**
      * Fallback when a regeneration could not fix a discussion: sets its card image URL back to NULL
      * (a later "without image" regeneration will pick it up).
-     * Every id is checked again: only discussions whose image is still missing or on another origin are touched,
+     * Every id is checked again: only discussions whose image file is still missing are touched,
      * so broken default images (which a NULL would not fix) and healthy cards are left alone.
      *
      * @param int[] $ids
@@ -198,7 +188,7 @@ class BrokenImagesService
             foreach ($rows as $row) {
                 [$category] = $this->classify((string) $row->walsgit_card_image_url, $files);
 
-                if ($category === self::MISSING || $category === self::OTHER_ORIGIN) {
+                if ($category === self::MISSING) {
                     $toReset[] = (int) $row->id;
                 }
             }

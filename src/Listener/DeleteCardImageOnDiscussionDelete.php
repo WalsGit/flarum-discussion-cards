@@ -63,18 +63,12 @@ class DeleteCardImageOnDiscussionDelete
 
     /**
      * Delete the discussion's own card image file.
-     * Only files named discussion-{id}-{hash}-{hash}.webp, located in the extension's assets folder, can be deleted.
+     * The stored value is the file path relative to the extension's assets folder: only a name matching
+     * discussion-{id}-{hash}-{hash}.webp can be deleted (an external URL or a default image never matches).
      */
     protected function deleteImageFile(Discussion $discussion): void
     {
-        $imageUrl = $discussion->walsgit_card_image_url;
-
-        if (!$imageUrl) {
-            return;
-        }
-
-        // Only the filename matters: no dependency on the base URL (subfolder installs, etc.)
-        $filename = basename((string) parse_url($imageUrl, PHP_URL_PATH));
+        $filename = (string) $discussion->walsgit_card_image_url;
 
         if (!preg_match('/^discussion-' . (int) $discussion->id . '-[a-f0-9]{10}-[a-f0-9]{10}\.webp$/', $filename)) {
             return;

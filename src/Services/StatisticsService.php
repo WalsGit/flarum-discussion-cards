@@ -79,7 +79,6 @@ class StatisticsService
 
             if (in_array($category, [
                 BrokenImagesService::MISSING,
-                BrokenImagesService::OTHER_ORIGIN,
                 BrokenImagesService::DEFAULT_MISSING,
             ], true)) {
                 $brokenImages++;
