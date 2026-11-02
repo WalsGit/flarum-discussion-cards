@@ -54,6 +54,7 @@
 - Admin: the stylesheet no longer styles every modal of the admin panel (`.Modal-body`), it now only targets the extension's own modals. Admin class names (`DC-*`, `DiscussionCardsSettings`, `Debug-discussion`, …) were normalized to `dc-*` as well.
 - Admin: the discussion check in the debug modal now reports the real decision of the card image resolver (source picked, reason, actual file, skipped sources with their reason) instead of always showing a computed `discussion-*.webp` name, which was wrong for default images and for rejected or failed external images. Note: this check can generate the card image file, like a regeneration.
 - Backend: discussions saved before 2.1.0 with an external image URL keep it as is until their card image is regenerated (use the regenerate tool, or the repair tool to find them).
+- Backend: added a migration that removes the unused `walsgit_discussion_cards_showReadCards` setting left in the database by the first versions (the setting actually used is `markReadCards`).
 
 ### Fixed
 - Console: `regenerate-images` pagination and the `--without [-w]` selection (including when used alone) now work properly.
