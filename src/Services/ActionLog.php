@@ -67,7 +67,7 @@ final class ActionLog
 
         $line = $this->prefix() . ItemLogFormatter::item($detail);
 
-        ($detail['status'] ?? '') === 'error' ? $this->detailsLogger->error($line) : $this->detailsLogger->info($line);
+        ($detail['status'] ?? '') === RegenerateImagesService::STATUS_ERROR ? $this->detailsLogger->error($line) : $this->detailsLogger->info($line);
     }
 
     private function prefix(): string

@@ -28,7 +28,7 @@ final class ItemLogFormatter
 
         if ($dryRun) {
             $line .= 'would be processed';
-        } elseif (($detail['status'] ?? '') === 'error') {
+        } elseif (($detail['status'] ?? '') === RegenerateImagesService::STATUS_ERROR) {
             $line .= 'error: ' . ($detail['error'] ?? 'unknown error');
         } else {
             $parts = [$detail['status']];

@@ -26,7 +26,6 @@ class ImageProcessingService
     protected array $directories = [
         'default'    => ExtensionPaths::ASSETS_DIR . '/',
         'tag'        => ExtensionPaths::ASSETS_DIR . '/tags/',
-        'discussion' => ExtensionPaths::ASSETS_DIR . '/discussions/',
     ];
 
     protected array $defaults = [
@@ -337,14 +336,6 @@ class ImageProcessingService
      */
     public function generateFilename(string $origin, $context = null): string
     {
-        // Special case for 3rd party Blog Extension: blog_default_image-{hash}.png will generate blog-default-card-image.webp
-        if ($origin === 'discussion' && $context && $context->getParsedBody()['filename'] ?? null) {
-            $filename = $context->getParsedBody()['filename'];
-            if (preg_match('/^blog_default_image-[a-z0-9]+\.png$/i', $filename)) {
-                return 'blog-default-card-image.webp';
-            }
-        }
-
         switch ($origin) {
             case 'default':
                 return 'default-card-image.webp';
@@ -368,16 +359,6 @@ class ImageProcessingService
                 }
 
                 return "tag-{$tagId}-default-card-image.webp";
-
-            case 'discussion':
-                if (
-                    empty($context['discussionId']) ||
-                    empty($context['urlHash']) ||
-                    empty($context['etagHash'])
-                ) {
-                    return '';
-                }
-                return "discussion-{$context['discussionId']}-{$context['urlHash']}-{$context['etagHash']}.webp";
 
             default:
                 throw new InvalidArgumentException($this->translator->trans('walsgit_discussion_cards.admin.errors.filenameInvalidOrigin', ['origin' => $origin]));

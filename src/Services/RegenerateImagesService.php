@@ -25,6 +25,10 @@ class RegenerateImagesService
     public const STATUS_UNCHANGED = 'unchanged';
     public const STATUS_NO_IMAGE = 'no_image';
 
+    // Only in the detail given to the processIds() callback (not returned by regenerateDiscussionDetailed())
+    public const STATUS_ERROR = 'error';
+    public const STATUS_DRY_RUN = 'dry_run';
+
     public function __construct(
         protected CardImageRegenerationService $regenerator,
         protected ExtensionManager $extensionManager
@@ -66,7 +70,7 @@ class RegenerateImagesService
 
             $id = (int) array_shift($remaining);
             $error = null;
-            $detail = ['id' => $id, 'status' => 'dry_run'];
+            $detail = ['id' => $id, 'status' => self::STATUS_DRY_RUN];
 
             try {
                 if (!$dryRun) {
@@ -92,7 +96,7 @@ class RegenerateImagesService
                 $errors++;
                 $error = $e->getMessage();
                 $failures[] = ['id' => $id, 'message' => $error];
-                $detail = ['id' => $id, 'status' => 'error', 'error' => $error];
+                $detail = ['id' => $id, 'status' => self::STATUS_ERROR, 'error' => $error];
             }
 
             if ($onItem !== null) {
@@ -109,14 +113,6 @@ class RegenerateImagesService
             'failures'    => $failures,
             'remaining'   => $remaining,
         ];
-    }
-
-    /**
-     * @return string one of the STATUS_* constants
-     */
-    public function regenerateDiscussion(int $discussionId): string
-    {
-        return $this->regenerateDiscussionDetailed($discussionId)['status'];
     }
 
     /**

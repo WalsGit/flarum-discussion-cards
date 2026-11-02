@@ -273,6 +273,7 @@ function regenerateCardImage(discussion) {
         id,
     })
     .then((response) => {
+      // response.status: "regenerated", "unchanged" or "no_image" (RegenerateImagesService::STATUS_*)
       // Nothing to do: leave the card as it is
       if (response.status === "unchanged") {
         app.alerts.show(

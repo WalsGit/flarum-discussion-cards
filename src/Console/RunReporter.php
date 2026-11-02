@@ -17,6 +17,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Walsgit\Discussion\Cards\Services\ItemLogFormatter;
 use Walsgit\Discussion\Cards\Services\LoggingService;
+use Walsgit\Discussion\Cards\Services\RegenerateImagesService;
 
 /**
  * Debug output of a Console command run :
@@ -48,11 +49,6 @@ class RunReporter
     public function isVerbose(): bool
     {
         return $this->verbose;
-    }
-
-    public function isLogging(): bool
-    {
-        return $this->logger !== null;
     }
 
     /**
@@ -90,7 +86,7 @@ class RunReporter
 
         $this->line(
             ItemLogFormatter::item($detail, $this->total > 0 ? $this->done . '/' . $this->total : null, $this->dryRun),
-            ($detail['status'] ?? '') === 'error' ? 'ERROR' : 'INFO'
+            ($detail['status'] ?? '') === RegenerateImagesService::STATUS_ERROR ? 'ERROR' : 'INFO'
         );
     }
 
