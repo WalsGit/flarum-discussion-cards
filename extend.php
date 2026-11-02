@@ -19,6 +19,7 @@ use Walsgit\Discussion\Cards\Api\Controllers\StatisticsController;
 use Walsgit\Discussion\Cards\Api\Controllers\RefreshStatsController;
 use Walsgit\Discussion\Cards\Api\Controllers\PurgeImagesController;
 use Walsgit\Discussion\Cards\Api\Controllers\RegenerateImagesController;
+use Walsgit\Discussion\Cards\Api\Controllers\RegenerateDiscussionImageController;
 use Walsgit\Discussion\Cards\Api\Controllers\ShowInfoController;
 use Walsgit\Discussion\Cards\Api\Controllers\ScanBrokenImagesController;
 use Walsgit\Discussion\Cards\Api\Controllers\ResetBrokenImagesController;
@@ -143,6 +144,7 @@ return [
         ->post('/walsgit/discussion-cards/image-stats/refresh', 'walsgit.discussion-cards.image-stats.refresh', RefreshStatsController::class)
         ->post('/walsgit/discussion-cards/purge-images', 'walsgit.discussion-cards.purge-images', PurgeImagesController::class)
         ->post('/walsgit/discussion-cards/regenerate-images', 'walsgit.discussion-cards.regenerate-images', RegenerateImagesController::class)
+        ->post('/walsgit/discussion-cards/regenerate-image/{id}', 'walsgit.discussion-cards.regenerate-image', RegenerateDiscussionImageController::class)
         ->get('/walsgit/discussion-cards/broken-images', 'walsgit.discussion-cards.broken-images', ScanBrokenImagesController::class)
         ->post('/walsgit/discussion-cards/broken-images/reset', 'walsgit.discussion-cards.broken-images.reset', ResetBrokenImagesController::class)
         ->get('/walsgit/discussion-cards/info', 'walsgit.discussion-cards.info', ShowInfoController::class)
