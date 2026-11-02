@@ -35,7 +35,9 @@ export default class DiscussionReplies extends Component {
             href={app.route.discussion(discussion, discussion.lastPostNumber())}
           >
             <div className="dc-replies-left">
-              <div className="dc-replies-avatars">{craftRepliesAvatars(discussion)}</div>
+              <div className="dc-replies-avatars">
+                {craftRepliesAvatars(discussion)}
+              </div>
               <div className="dc-reply-count">{replyText}</div>
             </div>
             <div className="dc-replies-right">

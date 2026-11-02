@@ -126,7 +126,9 @@ app.initializers.add(
                 "--dc-desktop-card-width": cardWidthVar(
                   settings.desktopCardWidth
                 ),
-                "--dc-tablet-card-width": cardWidthVar(settings.tabletCardWidth),
+                "--dc-tablet-card-width": cardWidthVar(
+                  settings.tabletCardWidth
+                ),
               }}
             >
               {state

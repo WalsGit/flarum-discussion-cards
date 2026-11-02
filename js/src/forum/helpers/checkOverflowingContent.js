@@ -5,7 +5,9 @@ export default function checkOverflowingContent() {
   const cardListItemsOnPrimary = document.querySelectorAll(
     ".dc-item.dc-item--card .dc-card-link"
   );
-  const cardListItems = document.querySelectorAll(".dc-card-grid .dc-col-span-2");
+  const cardListItems = document.querySelectorAll(
+    ".dc-card-grid .dc-col-span-2"
+  );
 
   const toggleOverflowClass = function (cardTags, cardListItem) {
     if (!cardTags) return;
@@ -29,7 +31,9 @@ export default function checkOverflowingContent() {
     const cardTags = cardListItem.querySelector(".dc-flex-box .dc-card-tags");
     toggleOverflowClass(cardTags, cardListItem);
 
-    const cardTitle = cardListItem.querySelector(".dc-card-title h2.dc-card-heading");
+    const cardTitle = cardListItem.querySelector(
+      ".dc-card-title h2.dc-card-heading"
+    );
     if (!cardTitle) return;
 
     // only on tablet & desktop screens for title
