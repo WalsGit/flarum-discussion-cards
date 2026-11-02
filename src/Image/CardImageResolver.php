@@ -35,13 +35,14 @@ class CardImageResolver
     ) {}
 
     /**
-     * Main resolver: returns an optimized image URL (absolute) or null.
+     * Main resolver: returns the card image path to store, relative to the extension's assets folder
+     * (ex.: "discussion-1-abc-def.webp", "tags/tag-3-default-card-image.webp"), or null.
      *
      * @param bool $interactive true when a user is waiting (short network timeouts)
      */
     public function resolve(Discussion $discussion, ?string $firstPostHtml = null, bool $interactive = false): ?string
     {
-        return $this->resolveWithDecision($discussion, $firstPostHtml, $interactive)->url;
+        return $this->resolveWithDecision($discussion, $firstPostHtml, $interactive)->file;
     }
 
     /**
@@ -74,33 +75,30 @@ class CardImageResolver
 
         // 3. Tag default image based on tag priority
         if ($image = $this->resolveTagImage($discussion)) {
-            // already a buildAssetUrl() result
             return $this->decision($image, CardImageDecision::SOURCE_TAG, CardImageDecision::REASON_TAG, null, $skipped);
         }
 
         // 4. Fallback to global default image
         if ($image = $this->resolveGlobalDefault()) {
-            return $this->decision($this->buildAssetUrl($image), CardImageDecision::SOURCE_GLOBAL, CardImageDecision::REASON_GLOBAL, null, $skipped);
+            return $this->decision($image, CardImageDecision::SOURCE_GLOBAL, CardImageDecision::REASON_GLOBAL, null, $skipped);
         }
 
-        return new CardImageDecision(null, CardImageDecision::SOURCE_NONE, CardImageDecision::REASON_NONE, null, null, $skipped);
+        return new CardImageDecision(null, CardImageDecision::SOURCE_NONE, CardImageDecision::REASON_NONE, null, $skipped);
     }
 
     /**
-     * Builds the decision for a chosen asset URL. Without an explicit $reason, it is deduced from the file name.
+     * Builds the decision for a chosen file (path relative to the extension's assets folder).
+     * Without an explicit $reason, it is deduced from the file name.
      */
-    protected function decision(string $url, string $source, ?string $reason, ?string $sourceImage, array $skipped): CardImageDecision
+    protected function decision(string $file, string $source, ?string $reason, ?string $sourceImage, array $skipped): CardImageDecision
     {
-        $prefix = $this->buildAssetUrl('');
-        $file = str_starts_with($url, $prefix) ? substr($url, strlen($prefix)) : null;
-
         $reason ??= match (true) {
-            $file !== null && str_starts_with($file, 'discussion-') => CardImageDecision::REASON_OPTIMIZED,
+            str_starts_with($file, 'discussion-') => CardImageDecision::REASON_OPTIMIZED,
             $file === 'blog-default-card-image.webp' => CardImageDecision::REASON_BLOG_DEFAULT,
             default => CardImageDecision::REASON_EXTENSION_DEFAULT,
         };
 
-        return new CardImageDecision($url, $source, $reason, $file, $sourceImage, $skipped);
+        return new CardImageDecision($file, $source, $reason, $sourceImage, $skipped);
     }
 
     // ====== Sub-resolvers ======
@@ -196,7 +194,7 @@ class CardImageResolver
 
     /**
      * Resolve tag default image by priority using TagImageSelector.
-     * Returns a built asset absolute URL or null.
+     * Returns the tag image path, relative to the extension's assets folder, or null.
      */
     protected function resolveTagImage(Discussion $discussion): ?string
     {
@@ -210,11 +208,7 @@ class CardImageResolver
 
         $tagImage = $this->tagSelector->selectTagImage($tags);
 
-        if ($tagImage) {
-            return $this->buildAssetUrl($tagImage);
-        }
-
-        return null;
+        return $tagImage ?: null;
     }
 
     /**
@@ -228,14 +222,14 @@ class CardImageResolver
 
     /**
      * Getting the optimized image for a card
-     * Given a discussion and a source image URL (absolute), returns an absolute URL
-     * pointing to the optimized webp asset, or null if the image could not be optimized.
+     * Given a discussion and a source image URL (absolute), returns the path of the optimized webp asset,
+     * relative to the extension's assets folder, or null if the image could not be optimized.
      */
     protected function getOptimizedCardImage(Discussion $discussion, string $imageUrl, bool $interactive = false): ?string
     {
         // If it's one of the extension's own default images (local file): no need to re-optimize
         if ($defaultImage = $this->imageService->resolveExtensionDefaultImage($imageUrl)) {
-            return $this->buildAssetUrl($defaultImage);
+            return $defaultImage;
         }
 
         $assetsPath = $this->paths->public . '/assets/extensions/walsgit-discussion-cards';
@@ -247,7 +241,7 @@ class CardImageResolver
         $baseUrl = rtrim((string) $this->config->url(), '/');
         $optimizedBlog = $this->imageService->optimizeBlogDefaultImage($imageUrl, $baseUrl);
         if ($optimizedBlog) {
-            return $this->buildAssetUrl($optimizedBlog);
+            return $optimizedBlog;
         }
 
         // Check if image needs to be optimized
@@ -263,7 +257,7 @@ class CardImageResolver
 
         // If already optimized, return asset url
         if (file_exists($filepath)) {
-            return $this->buildAssetUrl($filename);
+            return $filename;
         }
 
         // Fetch (download or copy) to a temporary file via service
@@ -293,7 +287,7 @@ class CardImageResolver
         // The new image exists: the previous ones can now be removed
         $this->imageService->cleanupOldDiscussionImages($discussionId, $filename);
 
-        return $this->buildAssetUrl($filename);
+        return $filename;
     }
 
     /**
@@ -323,11 +317,6 @@ class CardImageResolver
         }
 
         return rtrim((string) $this->config->url(), '/') . '/' . ltrim($path, '/');
-    }
-
-    protected function buildAssetUrl(string $filename): string
-    {
-        return rtrim((string) $this->config->url(), '/') . '/assets/extensions/walsgit-discussion-cards/' . ltrim($filename, '/');
     }
 
     public function isImageAccessible(string $url, bool $interactive = false): bool

@@ -29,6 +29,7 @@ class CheckDiscussionService
         protected ImageProcessingService $imageService,
         protected TagImageSelector $tagSelector,
         protected RemoteImageFetcher $fetcher,
+        protected CardImageUrlBuilder $urlBuilder,
     ) {
         $this->resolver = $resolver;
         $this->htmlImageExtractor = $htmlImageExtractor;
@@ -150,10 +151,10 @@ class CheckDiscussionService
             array_push($output, "└ Source image: {$decision->sourceImage} \n");
         }
 
-        if ($decision->url === null) {
+        if ($decision->file === null) {
             array_push($output, "└ Card image: NONE (no global default image set, the stub will be used) \n");
         } else {
-            array_push($output, "└ Card image URL: {$decision->url} \n");
+            array_push($output, "└ Card image URL: {$this->urlBuilder->build($decision->file)} \n");
             array_push($output, "└ Card image file: {$decision->file} \n");
         }
 

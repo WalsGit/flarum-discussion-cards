@@ -43,11 +43,11 @@ class CardImageRegenerationService
     {
         $decision = $this->resolver->resolveWithDecision($discussion, $firstPostHtml, $interactive);
 
-        if ($decision->url === $discussion->walsgit_card_image_url) {
+        if ($decision->file === $discussion->walsgit_card_image_url) {
             return ['changed' => false, 'decision' => $decision];
         }
 
-        $discussion->walsgit_card_image_url = $decision->url;
+        $discussion->walsgit_card_image_url = $decision->file;
         $discussion->save();
 
         return ['changed' => true, 'decision' => $decision];

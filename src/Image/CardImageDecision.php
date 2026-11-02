@@ -36,16 +36,15 @@ final class CardImageDecision
     public const REASON_NONE = 'no_image';
 
     /**
-     * @param string|null $url         final absolute URL (what resolve() returns), null if none
      * @param string|null $file        path of the chosen file inside the extension's assets folder, null if none
+     *                                 (this is what is stored in the database)
      * @param string|null $sourceImage source image URL the card image was built from (blog / first post only)
      * @param array       $skipped     sources tried before, as [['source' => ..., 'reason' => ..., 'image' => ...], ...]
      */
     public function __construct(
-        public readonly ?string $url,
+        public readonly ?string $file,
         public readonly string $source,
         public readonly string $reason,
-        public readonly ?string $file = null,
         public readonly ?string $sourceImage = null,
         public readonly array $skipped = [],
     ) {}

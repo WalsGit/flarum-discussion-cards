@@ -23,6 +23,7 @@ use Walsgit\Discussion\Cards\Api\Controllers\ShowInfoController;
 use Walsgit\Discussion\Cards\Api\Controllers\ScanBrokenImagesController;
 use Walsgit\Discussion\Cards\Api\Controllers\ResetBrokenImagesController;
 use Walsgit\Discussion\Cards\Api\Controllers\CheckDiscussionController;
+use Walsgit\Discussion\Cards\Services\CardImageUrlBuilder;
 use Walsgit\Discussion\Cards\Validator\TagSettingsValidator;
 use Walsgit\Discussion\Cards\Validator\ImageUploadValidator;
 use Walsgit\Discussion\Cards\Providers\ImageProcessingProvider;
@@ -68,7 +69,11 @@ return [
             return [
                 Schema\Str::make('cardImageUrl')
                     ->get(function (Discussion $discussion) {
-                        return $discussion->walsgit_card_image_url ?: null;
+                        // Stored value is a relative path: the URL is rebuilt from the current forum URL
+                        static $builder = null;
+                        $builder ??= resolve(CardImageUrlBuilder::class);
+
+                        return $builder->build($discussion->walsgit_card_image_url);
                     }),
             ];
         }),
